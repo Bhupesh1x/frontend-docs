@@ -65,3 +65,55 @@ Each execution context goes through **two phases**:
 - After the entire program finishes execution:
   - The Global Execution Context is popped off the call stack.
 - This marks the end of JavaScript program execution.
+
+
+# Hoisting in JavaScript
+
+**What is Hoisting?**  
+Hoisting refers to JavaScript’s ability to access variables and functions **even before they are declared**.  
+This happens because JavaScript allocates memory for them before execution starts.
+
+---
+
+**How JavaScript Executes Code**  
+JavaScript runs code in two phases inside an Execution Context:  
+
+- **Memory Creation Phase:**  
+  - The entire file is scanned.
+  - Memory is reserved for variables and functions.
+  - Variables are initialized with `undefined`.
+  - Function declarations are stored with their full function body.
+
+- **Execution Phase:**  
+  - Code runs line by line.
+  - Variables get assigned with actual values.
+  - Functions are invoked.
+
+Because memory is set up in advance, identifiers can be accessed earlier — that behavior is known as **hoisting**.
+
+---
+
+**Variables vs Functions**  
+- Function declarations are fully hoisted — you can call them before defining them.  
+- Variables are hoisted but set to `undefined`.  
+- Arrow functions and function expressions behave like variables, so they also start off as `undefined`.
+
+---
+
+**Example**
+
+```js
+console.log(x); // undefined
+printHelloWorld(); // Hello world
+
+function printHelloWorld() {
+  console.log("Hello world");
+}
+
+console.log(myFunc); // undefined
+myFunc(); // TypeError: myFunc is not a function
+
+var myFunc = function () {
+  console.log("Hi there");
+};
+```
