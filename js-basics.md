@@ -117,3 +117,37 @@ var myFunc = function () {
   console.log("Hi there");
 };
 ```
+
+## How Functions Work in JavaScript
+
+Functions are the heart of JavaScript. We can think of them as **mini programs** that run inside the main program and have their own execution flow.
+
+---
+
+**Execution Context and Call Stack**  
+When a JavaScript program starts running, a **Global Execution Context (GEC)** is created and pushed onto the **call stack**.  
+Just like any execution context, it goes through two phases:
+- Memory Creation Phase
+- Code Execution Phase
+
+---
+
+**What Happens When a Function Is Called**  
+During the code execution phase, when JavaScript encounters a function call:
+- A **new execution context** is created for that function.
+- This execution context is pushed on top of the call stack.
+- Execution control moves to the **first line of the function body**.
+
+Inside this function execution context:
+- Memory is allocated for the function’s variables and parameters.
+- The function has access to its **own memory** and also to its **parent (outer) scope**.
+
+---
+
+**Function Completion**  
+Once the function finishes executing:
+- Its execution context is removed (popped) from the call stack.
+- Control returns back to the execution context below it.
+
+This push-and-pop behavior of execution contexts is what allows JavaScript to manage multiple function calls efficiently.
+
