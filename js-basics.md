@@ -151,3 +151,42 @@ Once the function finishes executing:
 
 This push-and-pop behavior of execution contexts is what allows JavaScript to manage multiple function calls efficiently.
 
+## Shortest Program in JavaScript
+
+**What is the Shortest Program?**  
+In JavaScript, the shortest program is an **empty file**. Even when there is nothing to execute, JavaScript still performs its internal setup.
+
+---
+
+**What JavaScript Does Internally**  
+When an empty file runs:
+- A **Global Execution Context (GEC)** is created.
+- It is pushed into the **call stack**.
+- The **global object (`window` in browsers)** is created.
+- The `this` keyword is set to refer to the global object.
+
+---
+
+**Execution Completion**  
+Since there is no code to execute:
+- The execution phase completes immediately.
+- The global execution context is popped out of the call stack.
+
+---
+
+**Global Scope**  
+- Any variables or functions declared in the global scope are attached to the global object.
+- The global scope includes everything that is **not inside any function**.
+- The variables and functions can be accessed using window.a or directly as a as it is in global scope.
+
+---
+
+**Example**
+
+```js
+var x = 10;
+console.log(x); // 10
+console.log(window.x); // 10
+console.log(this.x); // 10
+```
+
