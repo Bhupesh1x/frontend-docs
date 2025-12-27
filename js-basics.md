@@ -190,3 +190,35 @@ console.log(window.x); // 10
 console.log(this.x); // 10
 ```
 
+
+## Undefined vs Not Defined in JavaScript
+
+**What does `undefined` mean?**  
+In JavaScript, `undefined` is a **special value**. It acts as a placeholder for variables that have been **declared but not yet assigned a value**.
+
+When JavaScript allocates memory during the memory creation phase, variables are initialized with `undefined` until a value is assigned during execution.
+
+---
+
+**What does `not defined` mean?**  
+`not defined` means that a variable or function **does not exist in the program at all**.  
+It was never declared, so no memory was allocated for it.
+
+---
+
+**Key Difference**  
+- `undefined` → variable is declared and has memory, but no value yet  
+- `not defined` → variable is not declared and has no memory  
+
+Although you *can* manually assign `undefined` as a value, its main purpose is to indicate that a variable exists but hasn’t been assigned yet.
+
+---
+
+**Example**
+
+```js
+console.log(a); // undefined
+var a = 10;
+console.log(a); // 10
+
+console.log(x); // ReferenceError: x is not defined
