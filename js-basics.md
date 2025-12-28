@@ -277,3 +277,122 @@ a();
 ---
 
 - ![the-scope-chain](./js-basics-assets/the-scope-chain.png)
+
+# let, const vs var in JavaScript
+
+**Overview**  
+`let`, `const`, and `var` differ mainly in three areas:
+- Hoisting
+- Strictness (redeclaration & initialization)
+- Scope
+
+---
+
+**Hoisting Behavior**  
+All three keywords are hoisted, meaning memory is allocated before code execution starts.
+
+- Variables declared with `var` are initialized with `undefined` and attached to the global object.
+- `let` and `const` are also hoisted and initialized with `undefined`, but they are stored in a separate memory space (script scope).
+- Accessing `let` or `const` before initialization results in a `ReferenceError`. As they are in `Temporal dead zone` till they are initialized. They can be accessed only after initialized some value in it. 
+
+---
+
+**Temporal Dead Zone (TDZ)**  
+The time between hoisting and initialization of `let` and `const` variables is called the **Temporal Dead Zone**.
+
+During this period:
+- Variables exist in memory
+- But cannot be accessed
+
+Moving variable declarations to the top of the scope helps reduce the TDZ.
+
+---
+
+**Example**
+
+```js
+
+console.log(b); // Reference error
+
+
+console.log(a); // undefined
+
+var a = 10;
+
+let b = 10;
+
+console.log(a); // 10
+console.log(b); // 10
+
+```
+
+
+---
+
+**Strictness Rules**  
+- `var` allows redeclaration in the same scope.
+- `let` and `const` do not allow redeclaration in the same scope and will throw an error.
+
+`const` is stricter than `let`:
+- It must be declared and initialized in the same statement.
+- Reassignment is not allowed.
+- `let` allows declaration first and initialization later.
+
+---
+
+**Example**
+
+```js
+
+var a = 10;
+
+var a = "Hello world"; // allowed
+
+let x;
+
+x =  10;  // allowed: Can be declared first and initialized letter.
+
+let x = "Hello world"; // Error: cannot redeclare the let variables
+
+
+const b = 20; // allowed
+
+const b;
+
+b = 10;  // Syntax error: variable declared with const should be declared and initialized in the same statement.
+
+```
+
+---
+
+**Scope Differences**  
+- `var` is **function-scoped**.
+- `let` and `const` are **block-scoped**.
+
+This means:
+- `let` and `const` variables are accessible only within the block `{}` they are declared in.
+- `var` variables can be accessed outside blocks (if not inside a function).
+
+---
+
+**Example**
+
+```js
+
+if(true) {
+  var a = 10;
+  let b = 20;
+  const c = 30;
+
+  console.log(a); // 10
+  console.log(b); // 20
+  console.log(c); // 30
+}
+
+console.log(a); // 10
+console.log(b); // Error: Cannot access variables with let keyword outside of the block as they are block scope
+console.log(c); // Error: Cannot access variables with const keyword outside of the block as they are block scope
+
+```
+
+---
