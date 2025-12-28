@@ -222,3 +222,58 @@ var a = 10;
 console.log(a); // 10
 
 console.log(x); // ReferenceError: x is not defined
+```
+
+## The Scope Chain in JavaScript
+
+**What is Scope?**  
+Scope defines what variables and functions can be accessed at a particular place in the code.
+
+---
+
+**Execution Context and Lexical Environment**  
+Whenever an execution context is created in JavaScript, it contains:
+- Its own **local memory**
+- A **lexical environment**
+
+The lexical environment is a reference to the local memory + lexical environment of it's **parent scope** — the place where the function is physically available in the code.
+
+---
+
+**What is the Scope Chain?**  
+The whole chain of:
+- Execution context local memory + lexical environment forms a scope chain
+forms the **scope chain**.
+
+This chain determines what variables and functions are accessible in the current scope.
+
+---
+
+**How JavaScript Resolves Variables**  
+When JavaScript tries to access a variable or function:
+1. It first looks in the current local scope.
+2. If not found, it looks in it's lexical environment.
+3. This process continues up the chain until the **global scope** is reached.
+4. If JavaScript cannot find the variable or function anywhere in the scope chain, it throws a `ReferenceError` saying the identifier is not defined.
+
+The global execution context’s lexical environment points to `null`, which marks the end of the scope chain.
+
+---  
+
+**Example**
+
+```js
+
+function a() {
+  function b() {
+    console.log(b)  // 10
+  }
+  b()
+}
+let b = 10;
+a();
+```
+
+---
+
+- ![the-scope-chain](/js-basics-asstes/the-scope-chain.png)
