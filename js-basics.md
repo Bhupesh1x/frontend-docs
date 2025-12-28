@@ -276,4 +276,4 @@ a();
 
 ---
 
-- ![the-scope-chain](/js-basics-asstes/the-scope-chain.png)
+- ![the-scope-chain](./js-basics-assets/the-scope-chain.png)
