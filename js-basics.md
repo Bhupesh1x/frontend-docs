@@ -396,3 +396,87 @@ console.log(c); // Error: Cannot access variables with const keyword outside of 
 ```
 
 ---
+
+## Block Scope & Shadowing in JavaScript
+
+**What is a Block?**  
+A block is defined using curly braces `{}` and is also known as a **compound statement**.
+
+JavaScript uses blocks to group multiple statements in places where it expects a single statement, for example in `if`, `else`, `for`, etc.
+
+---
+
+**Why Blocks Are Needed**  
+Statements like `if` do not require `{}` by syntax, but blocks are used when we want to execute **multiple statements** instead of just one.
+
+---
+
+**Block Scope vs Function Scope**  
+- Variables declared with `let` and `const` inside `{}` are **block-scoped**.
+- They cannot be accessed outside the block.
+- `var` is **function-scoped**, not block-scoped.
+
+This means:
+- `var` declared inside a block still belongs to the enclosing function or global scope.
+- `let` and `const` declared in the global scope are stored in the **script scope**, not on the global object.
+
+---
+
+**Shadowing**  
+Shadowing occurs when a variable declared in an inner scope has the same name as a variable in an outer scope.
+
+In such cases:
+- The inner variable **shadows** the outer one inside that block.
+- Outside the block, the original variable remains unchanged for let and const in block scope.
+
+---
+
+**Illegal Shadowing**  
+Shadowing must respect scope rules.
+
+For example:
+- A `let` variable declared in an outer scope **cannot** be shadowed by a `var` in an inner scope.
+- This is called **illegal shadowing** and results in an error.
+
+---
+
+**Scope Rules Still Apply**  
+Blocks follow the same rules of:
+- Scope
+- Lexical environment
+- Scope chain
+
+Arrow functions follow the same scoping rules as regular functions.
+
+---
+
+**Example**
+
+```js
+// Block example
+if (true) console.log("Hello world"); // Hello world
+
+if (true) {
+  // Compound statement
+  let a = 10;
+  console.log(a); // 10
+}
+
+// Shadowing
+var a = 10;
+let b = 20;
+const c = 30;
+
+{
+  var a = 40;
+  let b = 50;
+  const c = 60;
+
+  console.log(a); // 40
+  console.log(b); // 50
+  console.log(c); // 60
+}
+
+console.log(a); // 40 (var is function/global scoped)
+console.log(b); // 20
+console.log(c); // 30
