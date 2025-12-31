@@ -67,7 +67,7 @@ Each execution context goes through **two phases**:
 - This marks the end of JavaScript program execution.
 
 
-# Hoisting in JavaScript
+## Hoisting in JavaScript
 
 **What is Hoisting?**  
 Hoisting refers to JavaScript’s ability to access variables and functions **even before they are declared**.  
@@ -278,7 +278,7 @@ a();
 
 - ![the-scope-chain](./js-basics-assets/the-scope-chain.png)
 
-# let, const vs var in JavaScript
+## let, const vs var in JavaScript
 
 **Overview**  
 `let`, `const`, and `var` differ mainly in three areas:
@@ -480,3 +480,66 @@ const c = 30;
 console.log(a); // 40 (var is function/global scoped)
 console.log(b); // 20
 console.log(c); // 30
+```
+
+---
+
+## Closures in JavaScript
+
+**What is a Closure?**  
+A function bundled together with its **surrounding state (lexical environment)** forms a closure.
+
+---
+
+**How Closures Work**  
+In JavaScript, every function has access to its **lexical environment** (outer scope).  
+Even if a function is returned and executed in a different scope, it still remembers the variables and functions from the scope where it was originally created.
+
+A function along with the reference to its outer scope forms a **closure**.
+
+---
+
+**Why Closures Are Powerful**  
+Closures become more interesting when a function is returned or passed around and executed elsewhere.  
+Even then, the function continues to hold references to variables in its lexical environment.
+
+These referenced values are **not garbage collected**, because they may be needed later.
+
+---
+
+**Common Use Cases of Closures**  
+Closures are commonly used in:
+- Functions like `once`
+- Memoization
+- Data hiding and encapsulation
+- Asynchronous code (callbacks, timers, promises)
+
+---
+
+**Examples**
+
+```js
+// Basic example
+function x() {
+  var a = 10;
+  function y() {
+    console.log(a);
+  }
+  y();
+}
+x(); // 10
+
+// Return example
+function x() {
+  var a = 10;
+  function y() {
+    console.log(a);
+  }
+  return y;
+}
+
+const z = x();
+console.log(z); // function y() {...}
+z(); // 10
+
+```
