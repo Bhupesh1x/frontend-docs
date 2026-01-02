@@ -543,3 +543,136 @@ console.log(z); // function y() {...}
 z(); // 10
 
 ```
+
+## setTimeout + Closures in JavaScript
+
+A common interview question that tricks up a lot of developers. Let's understand why and how to fix it.
+
+---
+
+## The Problem
+
+**Question:** Print numbers 1 to 5, where each number appears 1 second after the previous one.
+
+So we want:
+- 1 (after 1 second)
+- 2 (after 2 seconds)
+- 3 (after 3 seconds)
+- 4 (after 4 seconds)
+- 5 (after 5 seconds)
+
+---
+
+## First Attempt (This Won't Work!)
+```js
+function printNumber() {
+  for(var i = 1; i <= 5; i++) {
+    setTimeout(() => {
+      console.log(i);
+    }, i * 1000);
+  }
+}
+
+printNumber();
+```
+
+**What we expect:** 1, 2, 3, 4, 5
+
+**What we actually get:** 6, 6, 6, 6, 6
+
+But, Why is it printing 6 five times?
+
+---
+
+## Understanding Why This Happens
+
+Let's break it down:
+
+**Step 1: The loop runs really fast**
+- JavaScript doesn't wait for setTimeout to finish
+- It just registers the callback and moves on to the next iteration
+- So the loop completes almost instantly
+
+**Step 2: Loop finishes, i becomes 6**
+- The loop runs from i=1 to i=5
+- When i becomes 6, the condition `i <= 5` fails and loop stops
+- So now i = 6
+
+**Step 3: Callbacks start executing**
+- After 1 second, first callback runs and logs `i`
+- But i is now 6 (from step 2)
+- After 2 seconds, second callback runs and logs `i`
+- Still 6!
+- Same thing happens for all callbacks
+
+**The real problem:**
+- `var` is function-scoped, not block-scoped
+- There's only ONE variable `i` in the entire function
+- All 5 callbacks are looking at the same `i`
+- By the time they run, that `i` has the value 6
+
+Think of it like this: You write down the address of a house (variable i), not the value inside the house. When you go back to check the house later, someone has changed what's inside to 6.
+
+---
+
+#### Solution 1: Just Use `let` (Easiest Fix)
+```js
+function printNumber() {
+  for(let i = 1; i <= 5; i++) {
+    setTimeout(() => {
+      console.log(i);
+    }, i * 1000);
+  }
+}
+
+printNumber();
+// Output: 1, 2, 3, 4, 5 ✓
+```
+
+**Why does this work?**
+
+`let` is block-scoped. This means:
+- Each loop iteration gets its own separate `i`
+- It's like having 5 different variables: i1, i2, i3, i4, i5
+- Each callback remembers its own `i`
+
+This is the simplest solution. If you're writing new code, just use `let`.
+
+---
+
+#### Solution 2: Using Closures (The Old Way with `var`)
+
+But what if the interviewer specifically asks you to solve it with `var`?
+```js
+function printNumber() {
+  for(var i = 1; i <= 5; i++) {
+    function enclosed(x) {
+      setTimeout(() => {
+        console.log(x);
+      }, x * 1000);
+    }
+    enclosed(i);
+  }
+}
+
+printNumber();
+// Output: 1, 2, 3, 4, 5 ✓
+```
+
+**How does this work?**
+
+- We create a new function `enclosed` that takes a parameter `x`
+- Each time we call `enclosed(i)`, we pass the current value of i
+- This creates a new scope for each iteration
+- Each setTimeout callback now remembers its own `x` value
+
+We can think of it like taking a snapshot of `i` and storing it in `x` before moving to the next iteration.
+
+**Here's what happens:**
+- Loop iteration 1: enclosed(1) creates a scope with x=1
+- Loop iteration 2: enclosed(2) creates a scope with x=2
+- And so on...
+
+Each callback now has its own separate x to look at.
+
+---
