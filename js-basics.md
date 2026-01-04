@@ -7,11 +7,12 @@
 - Everything in JavaScript happens inside an Execution Context.
 
 - An Execution Context has two parts:
-  
+
   1. Memory Component (Variable Environment)
+
      - Stores variables and their values
      - Stores function declarations with their complete code
-  
+
   2. Code Component (Thread of Execution)
      - Executes the code line by line
 
@@ -33,6 +34,7 @@ Each execution context goes through **two phases**:
 2. **Code Execution Phase**
 
 **Memory Creation Phase**
+
 - JavaScript scans the entire code before execution.
 - Memory is allocated for variables and functions.
 - During this phase:
@@ -41,6 +43,7 @@ Each execution context goes through **two phases**:
 - No code is executed in this phase.
 
 **Code Execution Phase**
+
 - JavaScript executes the code **line by line**.
 - Values are assigned to variables.
 - Calculations and operations are performed.
@@ -66,7 +69,6 @@ Each execution context goes through **two phases**:
   - The Global Execution Context is popped off the call stack.
 - This marks the end of JavaScript program execution.
 
-
 ## Hoisting in JavaScript
 
 **What is Hoisting?**  
@@ -76,15 +78,16 @@ This happens because JavaScript allocates memory for them before execution start
 ---
 
 **How JavaScript Executes Code**  
-JavaScript runs code in two phases inside an Execution Context:  
+JavaScript runs code in two phases inside an Execution Context:
 
-- **Memory Creation Phase:**  
+- **Memory Creation Phase:**
+
   - The entire file is scanned.
   - Memory is reserved for variables and functions.
   - Variables are initialized with `undefined`.
   - Function declarations are stored with their full function body.
 
-- **Execution Phase:**  
+- **Execution Phase:**
   - Code runs line by line.
   - Variables get assigned with actual values.
   - Functions are invoked.
@@ -93,9 +96,10 @@ Because memory is set up in advance, identifiers can be accessed earlier — tha
 
 ---
 
-**Variables vs Functions**  
-- Function declarations are fully hoisted — you can call them before defining them.  
-- Variables are hoisted but set to `undefined`.  
+**Variables vs Functions**
+
+- Function declarations are fully hoisted — you can call them before defining them.
+- Variables are hoisted but set to `undefined`.
 - Arrow functions and function expressions behave like variables, so they also start off as `undefined`.
 
 ---
@@ -127,6 +131,7 @@ Functions are the heart of JavaScript. We can think of them as **mini programs**
 **Execution Context and Call Stack**  
 When a JavaScript program starts running, a **Global Execution Context (GEC)** is created and pushed onto the **call stack**.  
 Just like any execution context, it goes through two phases:
+
 - Memory Creation Phase
 - Code Execution Phase
 
@@ -134,11 +139,13 @@ Just like any execution context, it goes through two phases:
 
 **What Happens When a Function Is Called**  
 During the code execution phase, when JavaScript encounters a function call:
+
 - A **new execution context** is created for that function.
 - This execution context is pushed on top of the call stack.
 - Execution control moves to the **first line of the function body**.
 
 Inside this function execution context:
+
 - Memory is allocated for the function’s variables and parameters.
 - The function has access to its **own memory** and also to its **parent (outer) scope**.
 
@@ -146,6 +153,7 @@ Inside this function execution context:
 
 **Function Completion**  
 Once the function finishes executing:
+
 - Its execution context is removed (popped) from the call stack.
 - Control returns back to the execution context below it.
 
@@ -160,6 +168,7 @@ In JavaScript, the shortest program is an **empty file**. Even when there is not
 
 **What JavaScript Does Internally**  
 When an empty file runs:
+
 - A **Global Execution Context (GEC)** is created.
 - It is pushed into the **call stack**.
 - The **global object (`window` in browsers)** is created.
@@ -169,12 +178,14 @@ When an empty file runs:
 
 **Execution Completion**  
 Since there is no code to execute:
+
 - The execution phase completes immediately.
 - The global execution context is popped out of the call stack.
 
 ---
 
-**Global Scope**  
+**Global Scope**
+
 - Any variables or functions declared in the global scope are attached to the global object.
 - The global scope includes everything that is **not inside any function**.
 - The variables and functions can be accessed using window.a or directly as a as it is in global scope.
@@ -189,7 +200,6 @@ console.log(x); // 10
 console.log(window.x); // 10
 console.log(this.x); // 10
 ```
-
 
 ## Undefined vs Not Defined in JavaScript
 
@@ -206,11 +216,12 @@ It was never declared, so no memory was allocated for it.
 
 ---
 
-**Key Difference**  
-- `undefined` → variable is declared and has memory, but no value yet  
-- `not defined` → variable is not declared and has no memory  
+**Key Difference**
 
-Although you *can* manually assign `undefined` as a value, its main purpose is to indicate that a variable exists but hasn’t been assigned yet.
+- `undefined` → variable is declared and has memory, but no value yet
+- `not defined` → variable is not declared and has no memory
+
+Although you _can_ manually assign `undefined` as a value, its main purpose is to indicate that a variable exists but hasn’t been assigned yet.
 
 ---
 
@@ -233,6 +244,7 @@ Scope defines what variables and functions can be accessed at a particular place
 
 **Execution Context and Lexical Environment**  
 Whenever an execution context is created in JavaScript, it contains:
+
 - Its own **local memory**
 - A **lexical environment**
 
@@ -242,8 +254,9 @@ The lexical environment is a reference to the local memory + lexical environment
 
 **What is the Scope Chain?**  
 The whole chain of:
+
 - Execution context local memory + lexical environment forms a scope chain
-forms the **scope chain**.
+  forms the **scope chain**.
 
 This chain determines what variables and functions are accessible in the current scope.
 
@@ -251,6 +264,7 @@ This chain determines what variables and functions are accessible in the current
 
 **How JavaScript Resolves Variables**  
 When JavaScript tries to access a variable or function:
+
 1. It first looks in the current local scope.
 2. If not found, it looks in it's lexical environment.
 3. This process continues up the chain until the **global scope** is reached.
@@ -258,17 +272,16 @@ When JavaScript tries to access a variable or function:
 
 The global execution context’s lexical environment points to `null`, which marks the end of the scope chain.
 
----  
+---
 
 **Example**
 
 ```js
-
 function a() {
   function b() {
-    console.log(b)  // 10
+    console.log(b); // 10
   }
-  b()
+  b();
 }
 let b = 10;
 a();
@@ -282,6 +295,7 @@ a();
 
 **Overview**  
 `let`, `const`, and `var` differ mainly in three areas:
+
 - Hoisting
 - Strictness (redeclaration & initialization)
 - Scope
@@ -293,7 +307,7 @@ All three keywords are hoisted, meaning memory is allocated before code executio
 
 - Variables declared with `var` are initialized with `undefined` and attached to the global object.
 - `let` and `const` are also hoisted and initialized with `undefined`, but they are stored in a separate memory space (script scope).
-- Accessing `let` or `const` before initialization results in a `ReferenceError`. As they are in `Temporal dead zone` till they are initialized. They can be accessed only after initialized some value in it. 
+- Accessing `let` or `const` before initialization results in a `ReferenceError`. As they are in `Temporal dead zone` till they are initialized. They can be accessed only after initialized some value in it.
 
 ---
 
@@ -301,6 +315,7 @@ All three keywords are hoisted, meaning memory is allocated before code executio
 The time between hoisting and initialization of `let` and `const` variables is called the **Temporal Dead Zone**.
 
 During this period:
+
 - Variables exist in memory
 - But cannot be accessed
 
@@ -311,9 +326,7 @@ Moving variable declarations to the top of the scope helps reduce the TDZ.
 **Example**
 
 ```js
-
 console.log(b); // Reference error
-
 
 console.log(a); // undefined
 
@@ -323,17 +336,17 @@ let b = 10;
 
 console.log(a); // 10
 console.log(b); // 10
-
 ```
-
 
 ---
 
-**Strictness Rules**  
+**Strictness Rules**
+
 - `var` allows redeclaration in the same scope.
 - `let` and `const` do not allow redeclaration in the same scope and will throw an error.
 
 `const` is stricter than `let`:
+
 - It must be declared and initialized in the same statement.
 - Reassignment is not allowed.
 - `let` allows declaration first and initialization later.
@@ -365,11 +378,13 @@ b = 10;  // Syntax error: variable declared with const should be declared and in
 
 ---
 
-**Scope Differences**  
+**Scope Differences**
+
 - `var` is **function-scoped**.
 - `let` and `const` are **block-scoped**.
 
 This means:
+
 - `let` and `const` variables are accessible only within the block `{}` they are declared in.
 - `var` variables can be accessed outside blocks (if not inside a function).
 
@@ -378,8 +393,7 @@ This means:
 **Example**
 
 ```js
-
-if(true) {
+if (true) {
   var a = 10;
   let b = 20;
   const c = 30;
@@ -392,7 +406,6 @@ if(true) {
 console.log(a); // 10
 console.log(b); // Error: Cannot access variables with let keyword outside of the block as they are block scope
 console.log(c); // Error: Cannot access variables with const keyword outside of the block as they are block scope
-
 ```
 
 ---
@@ -411,12 +424,14 @@ Statements like `if` do not require `{}` by syntax, but blocks are used when we 
 
 ---
 
-**Block Scope vs Function Scope**  
+**Block Scope vs Function Scope**
+
 - Variables declared with `let` and `const` inside `{}` are **block-scoped**.
 - They cannot be accessed outside the block.
 - `var` is **function-scoped**, not block-scoped.
 
 This means:
+
 - `var` declared inside a block still belongs to the enclosing function or global scope.
 - `let` and `const` declared in the global scope are stored in the **script scope**, not on the global object.
 
@@ -426,6 +441,7 @@ This means:
 Shadowing occurs when a variable declared in an inner scope has the same name as a variable in an outer scope.
 
 In such cases:
+
 - The inner variable **shadows** the outer one inside that block.
 - Outside the block, the original variable remains unchanged for let and const in block scope.
 
@@ -435,6 +451,7 @@ In such cases:
 Shadowing must respect scope rules.
 
 For example:
+
 - A `let` variable declared in an outer scope **cannot** be shadowed by a `var` in an inner scope.
 - This is called **illegal shadowing** and results in an error.
 
@@ -442,6 +459,7 @@ For example:
 
 **Scope Rules Still Apply**  
 Blocks follow the same rules of:
+
 - Scope
 - Lexical environment
 - Scope chain
@@ -509,6 +527,7 @@ These referenced values are **not garbage collected**, because they may be neede
 
 **Common Use Cases of Closures**  
 Closures are commonly used in:
+
 - Functions like `once`
 - Memoization
 - Data hiding and encapsulation
@@ -541,7 +560,6 @@ function x() {
 const z = x();
 console.log(z); // function y() {...}
 z(); // 10
-
 ```
 
 ## setTimeout + Closures in JavaScript
@@ -550,11 +568,12 @@ A common interview question that tricks up a lot of developers. Let's understand
 
 ---
 
-## The Problem
+**The Problem**
 
 **Question:** Print numbers 1 to 5, where each number appears 1 second after the previous one.
 
 So we want:
+
 - 1 (after 1 second)
 - 2 (after 2 seconds)
 - 3 (after 3 seconds)
@@ -563,10 +582,11 @@ So we want:
 
 ---
 
-## First Attempt (This Won't Work!)
+**First Attempt (This Won't Work!)**
+
 ```js
 function printNumber() {
-  for(var i = 1; i <= 5; i++) {
+  for (var i = 1; i <= 5; i++) {
     setTimeout(() => {
       console.log(i);
     }, i * 1000);
@@ -584,21 +604,24 @@ But, Why is it printing 6 five times?
 
 ---
 
-## Understanding Why This Happens
+**Understanding Why This Happens**
 
 Let's break it down:
 
 **Step 1: The loop runs really fast**
+
 - JavaScript doesn't wait for setTimeout to finish
 - It just registers the callback and moves on to the next iteration
 - So the loop completes almost instantly
 
 **Step 2: Loop finishes, i becomes 6**
+
 - The loop runs from i=1 to i=5
 - When i becomes 6, the condition `i <= 5` fails and loop stops
 - So now i = 6
 
 **Step 3: Callbacks start executing**
+
 - After 1 second, first callback runs and logs `i`
 - But i is now 6 (from step 2)
 - After 2 seconds, second callback runs and logs `i`
@@ -606,6 +629,7 @@ Let's break it down:
 - Same thing happens for all callbacks
 
 **The real problem:**
+
 - `var` is function-scoped, not block-scoped
 - There's only ONE variable `i` in the entire function
 - All 5 callbacks are looking at the same `i`
@@ -615,10 +639,11 @@ Think of it like this: You write down the address of a house (variable i), not t
 
 ---
 
-#### Solution 1: Just Use `let` (Easiest Fix)
+** Solution 1: Just Use `let` (Easiest Fix)**
+
 ```js
 function printNumber() {
-  for(let i = 1; i <= 5; i++) {
+  for (let i = 1; i <= 5; i++) {
     setTimeout(() => {
       console.log(i);
     }, i * 1000);
@@ -632,6 +657,7 @@ printNumber();
 **Why does this work?**
 
 `let` is block-scoped. This means:
+
 - Each loop iteration gets its own separate `i`
 - It's like having 5 different variables: i1, i2, i3, i4, i5
 - Each callback remembers its own `i`
@@ -640,12 +666,13 @@ This is the simplest solution. If you're writing new code, just use `let`.
 
 ---
 
-#### Solution 2: Using Closures (The Old Way with `var`)
+**Solution 2: Using Closures (The Old Way with `var`)**
 
 But what if the interviewer specifically asks you to solve it with `var`?
+
 ```js
 function printNumber() {
-  for(var i = 1; i <= 5; i++) {
+  for (var i = 1; i <= 5; i++) {
     function enclosed(x) {
       setTimeout(() => {
         console.log(x);
@@ -669,10 +696,220 @@ printNumber();
 We can think of it like taking a snapshot of `i` and storing it in `x` before moving to the next iteration.
 
 **Here's what happens:**
+
 - Loop iteration 1: enclosed(1) creates a scope with x=1
 - Loop iteration 2: enclosed(2) creates a scope with x=2
 - And so on...
 
 Each callback now has its own separate x to look at.
+
+---
+
+## Closures: Examples, Advantages & Disadvantages
+
+Understanding closures through practical examples:
+---
+
+**Example 1: Nested Closures**
+```javascript
+function outest() {
+  var b = 20;
+
+  function outer(c) {
+    return function inner() {
+      console.log(a, b, c);
+    };
+  }
+
+  let a = 10;
+
+  return outer;
+}
+
+outest()("Hello world")(); // 10 20 Hello world
+```
+
+**What's happening here?**
+
+**Key point:** The `inner` function has access to variables from THREE different scopes:
+- Its own scope (none in this case)
+- The `outer` function's scope (variable `c`)
+- The `outest` function's scope (variables `a` and `b`)
+
+This is closure in action - the function remembers where it came from.
+
+---
+
+**Example 2: Data Hiding & Encapsulation**
+
+This is one of the most practical uses of closures.
+```javascript
+function Counter() {
+  let count = 0;
+
+  this.increment = function() {
+    count++;
+    console.log(count);
+  };
+
+  this.decrement = function() {
+    count--;
+    console.log(count);
+  };
+}
+
+let counter1 = new Counter();
+counter1.increment(); // 1
+counter1.increment(); // 2
+counter1.increment(); // 3
+counter1.decrement(); // 2
+
+let counter2 = new Counter();
+counter2.increment(); // 1
+counter2.increment(); // 2
+counter2.decrement(); // 1
+```
+
+**Why is this useful?**
+
+The `count` variable is private. You can't do this:
+```javascript
+console.log(counter1.count); // undefined
+counter1.count = 100; // doesn't work!
+```
+
+The only way to change `count` is through the `increment` and `decrement` methods. This is called **data encapsulation** or **data hiding**.
+
+**Important observations:**
+
+1. Each counter instance has its own separate `count`
+2. `counter1` and `counter2` don't interfere with each other
+3. The `count` variable is completely protected from outside access
+4. Only the methods we provide can modify `count`
+
+This pattern is super useful when you want to protect data from being accidentally changed.
+
+---
+
+**Advantages of Closures**
+
+Closures are powerful because they let us access variables from outer scopes even when those outer functions have finished executing. Here's where we use them:
+
+**1. Maintaining State in Async Operations**
+```javascript
+function fetchUserData(userId) {
+  const timestamp = Date.now();
+  
+  setTimeout(() => {
+    console.log(`User ${userId} fetched at ${timestamp}`);
+    // closure remembers both userId and timestamp
+  }, 1000);
+}
+
+fetchUserData(123);
+```
+
+**2. Creating Functions Like `once`**
+```javascript
+function once(func) {
+  let ran = false;
+  let result;
+  
+  return function() {
+    if (!ran) {
+      result = func.apply(this, arguments);
+      ran = true;
+    }
+    return result;
+  };
+}
+
+const initialize = once(() => console.log("Initialized!"));
+initialize(); // Initialized!
+initialize(); // (nothing happens)
+```
+
+**3. Data Hiding & Encapsulation**
+
+As we saw in the Counter example - keeping variables private.
+
+**4. Module Pattern**
+```javascript
+const calculator = (function() {
+  let result = 0;
+  
+  return {
+    add: (x) => result += x,
+    subtract: (x) => result -= x,
+    getResult: () => result
+  };
+})();
+
+calculator.add(5);
+calculator.add(3);
+console.log(calculator.getResult()); // 8
+```
+
+---
+
+**Disadvantages of Closures**
+
+Everything has a cost. Here's what you need to watch out for:
+
+**Memory Issues**
+
+When you create a closure, JavaScript can't clean up (garbage collect) the variables that closure is holding onto. They stay in memory because they might be used later.
+
+**Example of potential memory leak:**
+```javascript
+function heavyOperation() {
+  const bigArray = new Array(1000000).fill('data');
+  
+  return function() {
+    console.log('I still hold reference to bigArray!');
+    // bigArray can't be garbage collected
+  };
+}
+
+const func = heavyOperation();
+// bigArray is stuck in memory even if we never use it
+```
+
+**What's garbage collection?**
+
+The garbage collector is like a cleanup crew in JavaScript. It removes variables and functions that are no longer needed to free up memory. But with closures, it can't clean up because those variables might be used later.
+
+---
+
+**Good News: Modern JavaScript Engines Are Smart**
+
+Modern browsers have smart garbage collectors. They can figure out which variables in a closure are actually being used.
+
+**Example:**
+```javascript
+function outer() {
+  let a = 10;
+  let b = 20; // This won't stay in memory!
+  let c = 30; // This won't stay in memory either!
+  
+  return function inner() {
+    console.log(a);
+    // Only using 'a', not 'b' or 'c'
+  };
+}
+
+const myFunc = outer();
+myFunc(); // 10
+```
+
+---
+
+**When to Be Careful**
+
+Even though modern engines are smart, you should still be careful when:
+
+1. Creating lots of closures in loops
+2. Holding references to large objects or arrays
+3. Creating closures that will live for a long time (like event listeners)
 
 ---
