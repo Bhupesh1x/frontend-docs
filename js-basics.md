@@ -708,7 +708,6 @@ Each callback now has its own separate x to look at.
 ## Closures: Examples, Advantages & Disadvantages
 
 Understanding closures through practical examples:
----
 
 **Example 1: Nested Closures**
 ```javascript
