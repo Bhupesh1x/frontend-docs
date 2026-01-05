@@ -912,3 +912,211 @@ Even though modern engines are smart, you should still be careful when:
 3. Creating closures that will live for a long time (like event listeners)
 
 ---
+
+## First Class Functions in JavaScript
+
+Functions in JavaScript are beautiful and flexible. Let's explore the different ways to declare and use them.
+
+**Function Statement (aka Function Declaration)**
+```javascript
+function a() {
+  console.log("a called");
+}
+
+a(); // a called
+```
+
+This is the most straightforward way to create a function. You give it a name and define what it does.
+
+---
+
+**Function Expression**
+
+Function expression is when you use a function as a value and assign it to a variable.
+```javascript
+var b = function() {
+  console.log("b called");
+};
+
+b(); // b called
+```
+
+**Difference between Function Statement and Function Expression:**
+
+The main difference shows up during hoisting:
+```javascript
+// Function Statement - This works!
+a(); // a called
+function a() {
+  console.log("a called");
+}
+
+// Function Expression - This breaks!
+b(); // Error: b is not a function
+var b = function() {
+  console.log("b called");
+};
+```
+
+**Why does this happen?**
+
+- Function declarations get fully hoisted - you can call them before they're declared
+- Function expressions act like variables - they get `undefined` during hoisting
+- So when you try calling `b()` before its line, JavaScript sees `undefined()` which gives an error
+
+---
+
+**Anonymous Function**
+
+Anonymous functions are functions without a name. They don't have their own identity.
+```javascript
+function() {
+  console.log("Anonymous function called");
+}
+```
+
+**But wait, if you try this directly, you'll get an error!**
+```javascript
+function() {
+  console.log("Anonymous function called");
+}
+// SyntaxError: Function statements require a function name
+```
+
+This happens because the syntax looks like a function statement without a name. And according to ECMAScript specification, function statements require a name.
+
+**So where do we use anonymous functions?**
+
+We use anonymous functions where we want to use functions as values:
+```javascript
+// As a callback in setTimeout
+setTimeout(function() {
+  console.log("This runs after 1 second");
+}, 1000);
+```
+
+Basically, anywhere you're passing a function as a value, you can use an anonymous function.
+
+---
+
+**Named Function Expression**
+
+Named function expression is a function expression, but instead of an anonymous function, it's a named function.
+```javascript
+var c = function xyz() {
+  console.log("c called");
+};
+
+c(); // c called
+```
+
+**Important thing to note:**
+
+The name `xyz` is local to the function and not globally accessible. You can only access it within the function itself.
+```javascript
+var c = function xyz() {
+  console.log("c called");
+  console.log(xyz); // This works - accessible inside
+};
+
+c(); // c called
+xyz(); // Error: xyz is not defined - not accessible outside
+```
+
+This is useful for recursion or when you want the function to reference itself:
+```javascript
+var factorial = function fact(n) {
+  if (n <= 1) return 1;
+  return n * fact(n - 1); // Can call itself using 'fact'
+};
+
+console.log(factorial(5)); // 120
+```
+
+---
+
+**First Class Functions**
+
+The ability to use functions as values is known as **first class functions** (or first class citizens) in JavaScript.
+
+This means you can:
+- Use functions as values in variables
+- Pass functions as arguments to other functions
+- Return functions from other functions
+
+This ability is what makes functions "first class" in JavaScript.
+
+**Example 1: Passing a function as an argument**
+```javascript
+function outer(param) {
+  console.log(param); // logs the function
+  param(); // calls the function
+}
+
+outer(function() {
+  console.log("I'm being passed as an argument!");
+});
+```
+
+**Example 2: Returning a function from another function**
+```javascript
+function outer() {
+  return function() {
+    console.log("I'm being returned!");
+  };
+}
+
+const returnedFunc = outer();
+returnedFunc(); // I'm being returned!
+```
+
+**Example 3: Storing functions in variables**
+```javascript
+var greet = function() {
+  console.log("Hello!");
+};
+
+var sayHi = greet; // assigning function to another variable
+sayHi(); // Hello!
+```
+
+**Why is this powerful?**
+
+First class functions enable:
+- Callbacks (like in setTimeout, event handlers)
+- Higher-order functions (functions that take or return functions)
+- Functional programming patterns
+- Closures and much more
+
+**Real example combining everything:**
+```javascript
+function createMultiplier(multiplier) {
+  return function(number) {
+    return number * multiplier;
+  };
+}
+
+const double = createMultiplier(2);
+const triple = createMultiplier(3);
+
+console.log(double(5)); // 10
+console.log(triple(5)); // 15
+```
+
+Here we're:
+- Returning a function from `createMultiplier`
+- Storing that returned function in variables (`double`, `triple`)
+- Using those functions as values
+
+---
+
+**Arrow Functions**
+
+Arrow functions are a shorter syntax for writing functions, introduced in ES6.
+```javascript
+var sum = (a, b) => a + b;
+
+console.log(sum(2, 3)); // 5
+```
+
+---
