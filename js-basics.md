@@ -16,6 +16,8 @@
   2. Code Component (Thread of Execution)
      - Executes the code line by line
 
+---     
+
 ## How JavaScript Code Is Executed
 
 Everything in JavaScript is executed inside an **execution context**.
@@ -69,13 +71,13 @@ Each execution context goes through **two phases**:
   - The Global Execution Context is popped off the call stack.
 - This marks the end of JavaScript program execution.
 
+---
+
 ## Hoisting in JavaScript
 
 **What is Hoisting?**  
 Hoisting refers to JavaScript’s ability to access variables and functions **even before they are declared**.  
 This happens because JavaScript allocates memory for them before execution starts.
-
----
 
 **How JavaScript Executes Code**  
 JavaScript runs code in two phases inside an Execution Context:
@@ -94,15 +96,11 @@ JavaScript runs code in two phases inside an Execution Context:
 
 Because memory is set up in advance, identifiers can be accessed earlier — that behavior is known as **hoisting**.
 
----
-
 **Variables vs Functions**
 
 - Function declarations are fully hoisted — you can call them before defining them.
 - Variables are hoisted but set to `undefined`.
 - Arrow functions and function expressions behave like variables, so they also start off as `undefined`.
-
----
 
 **Example**
 
@@ -122,11 +120,11 @@ var myFunc = function () {
 };
 ```
 
+---
+
 ## How Functions Work in JavaScript
 
 Functions are the heart of JavaScript. We can think of them as **mini programs** that run inside the main program and have their own execution flow.
-
----
 
 **Execution Context and Call Stack**  
 When a JavaScript program starts running, a **Global Execution Context (GEC)** is created and pushed onto the **call stack**.  
@@ -134,8 +132,6 @@ Just like any execution context, it goes through two phases:
 
 - Memory Creation Phase
 - Code Execution Phase
-
----
 
 **What Happens When a Function Is Called**  
 During the code execution phase, when JavaScript encounters a function call:
@@ -149,8 +145,6 @@ Inside this function execution context:
 - Memory is allocated for the function’s variables and parameters.
 - The function has access to its **own memory** and also to its **parent (outer) scope**.
 
----
-
 **Function Completion**  
 Once the function finishes executing:
 
@@ -159,12 +153,12 @@ Once the function finishes executing:
 
 This push-and-pop behavior of execution contexts is what allows JavaScript to manage multiple function calls efficiently.
 
+---
+
 ## Shortest Program in JavaScript
 
 **What is the Shortest Program?**  
 In JavaScript, the shortest program is an **empty file**. Even when there is nothing to execute, JavaScript still performs its internal setup.
-
----
 
 **What JavaScript Does Internally**  
 When an empty file runs:
@@ -174,23 +168,17 @@ When an empty file runs:
 - The **global object (`window` in browsers)** is created.
 - The `this` keyword is set to refer to the global object.
 
----
-
 **Execution Completion**  
 Since there is no code to execute:
 
 - The execution phase completes immediately.
 - The global execution context is popped out of the call stack.
 
----
-
 **Global Scope**
 
 - Any variables or functions declared in the global scope are attached to the global object.
 - The global scope includes everything that is **not inside any function**.
 - The variables and functions can be accessed using window.a or directly as a as it is in global scope.
-
----
 
 **Example**
 
@@ -201,6 +189,8 @@ console.log(window.x); // 10
 console.log(this.x); // 10
 ```
 
+---
+
 ## Undefined vs Not Defined in JavaScript
 
 **What does `undefined` mean?**  
@@ -208,13 +198,9 @@ In JavaScript, `undefined` is a **special value**. It acts as a placeholder for 
 
 When JavaScript allocates memory during the memory creation phase, variables are initialized with `undefined` until a value is assigned during execution.
 
----
-
 **What does `not defined` mean?**  
 `not defined` means that a variable or function **does not exist in the program at all**.  
 It was never declared, so no memory was allocated for it.
-
----
 
 **Key Difference**
 
@@ -222,8 +208,6 @@ It was never declared, so no memory was allocated for it.
 - `not defined` → variable is not declared and has no memory
 
 Although you _can_ manually assign `undefined` as a value, its main purpose is to indicate that a variable exists but hasn’t been assigned yet.
-
----
 
 **Example**
 
@@ -235,12 +219,12 @@ console.log(a); // 10
 console.log(x); // ReferenceError: x is not defined
 ```
 
+---
+
 ## The Scope Chain in JavaScript
 
 **What is Scope?**  
 Scope defines what variables and functions can be accessed at a particular place in the code.
-
----
 
 **Execution Context and Lexical Environment**  
 Whenever an execution context is created in JavaScript, it contains:
@@ -250,8 +234,6 @@ Whenever an execution context is created in JavaScript, it contains:
 
 The lexical environment is a reference to the local memory + lexical environment of it's **parent scope** — the place where the function is physically available in the code.
 
----
-
 **What is the Scope Chain?**  
 The whole chain of:
 
@@ -259,8 +241,6 @@ The whole chain of:
   forms the **scope chain**.
 
 This chain determines what variables and functions are accessible in the current scope.
-
----
 
 **How JavaScript Resolves Variables**  
 When JavaScript tries to access a variable or function:
@@ -271,8 +251,6 @@ When JavaScript tries to access a variable or function:
 4. If JavaScript cannot find the variable or function anywhere in the scope chain, it throws a `ReferenceError` saying the identifier is not defined.
 
 The global execution context’s lexical environment points to `null`, which marks the end of the scope chain.
-
----
 
 **Example**
 
@@ -287,9 +265,9 @@ let b = 10;
 a();
 ```
 
----
-
 - ![the-scope-chain](./js-basics-assets/the-scope-chain.png)
+
+---
 
 ## let, const vs var in JavaScript
 
@@ -300,16 +278,12 @@ a();
 - Strictness (redeclaration & initialization)
 - Scope
 
----
-
 **Hoisting Behavior**  
 All three keywords are hoisted, meaning memory is allocated before code execution starts.
 
 - Variables declared with `var` are initialized with `undefined` and attached to the global object.
 - `let` and `const` are also hoisted and initialized with `undefined`, but they are stored in a separate memory space (script scope).
 - Accessing `let` or `const` before initialization results in a `ReferenceError`. As they are in `Temporal dead zone` till they are initialized. They can be accessed only after initialized some value in it.
-
----
 
 **Temporal Dead Zone (TDZ)**  
 The time between hoisting and initialization of `let` and `const` variables is called the **Temporal Dead Zone**.
@@ -320,8 +294,6 @@ During this period:
 - But cannot be accessed
 
 Moving variable declarations to the top of the scope helps reduce the TDZ.
-
----
 
 **Example**
 
@@ -338,8 +310,6 @@ console.log(a); // 10
 console.log(b); // 10
 ```
 
----
-
 **Strictness Rules**
 
 - `var` allows redeclaration in the same scope.
@@ -350,8 +320,6 @@ console.log(b); // 10
 - It must be declared and initialized in the same statement.
 - Reassignment is not allowed.
 - `let` allows declaration first and initialization later.
-
----
 
 **Example**
 
@@ -376,8 +344,6 @@ b = 10;  // Syntax error: variable declared with const should be declared and in
 
 ```
 
----
-
 **Scope Differences**
 
 - `var` is **function-scoped**.
@@ -387,8 +353,6 @@ This means:
 
 - `let` and `const` variables are accessible only within the block `{}` they are declared in.
 - `var` variables can be accessed outside blocks (if not inside a function).
-
----
 
 **Example**
 
@@ -417,12 +381,8 @@ A block is defined using curly braces `{}` and is also known as a **compound sta
 
 JavaScript uses blocks to group multiple statements in places where it expects a single statement, for example in `if`, `else`, `for`, etc.
 
----
-
 **Why Blocks Are Needed**  
 Statements like `if` do not require `{}` by syntax, but blocks are used when we want to execute **multiple statements** instead of just one.
-
----
 
 **Block Scope vs Function Scope**
 
@@ -435,8 +395,6 @@ This means:
 - `var` declared inside a block still belongs to the enclosing function or global scope.
 - `let` and `const` declared in the global scope are stored in the **script scope**, not on the global object.
 
----
-
 **Shadowing**  
 Shadowing occurs when a variable declared in an inner scope has the same name as a variable in an outer scope.
 
@@ -444,8 +402,6 @@ In such cases:
 
 - The inner variable **shadows** the outer one inside that block.
 - Outside the block, the original variable remains unchanged for let and const in block scope.
-
----
 
 **Illegal Shadowing**  
 Shadowing must respect scope rules.
@@ -455,8 +411,6 @@ For example:
 - A `let` variable declared in an outer scope **cannot** be shadowed by a `var` in an inner scope.
 - This is called **illegal shadowing** and results in an error.
 
----
-
 **Scope Rules Still Apply**  
 Blocks follow the same rules of:
 
@@ -465,8 +419,6 @@ Blocks follow the same rules of:
 - Scope chain
 
 Arrow functions follow the same scoping rules as regular functions.
-
----
 
 **Example**
 
@@ -507,23 +459,17 @@ console.log(c); // 30
 **What is a Closure?**  
 A function bundled together with its **surrounding state (lexical environment)** forms a closure.
 
----
-
 **How Closures Work**  
 In JavaScript, every function has access to its **lexical environment** (outer scope).  
 Even if a function is returned and executed in a different scope, it still remembers the variables and functions from the scope where it was originally created.
 
 A function along with the reference to its outer scope forms a **closure**.
 
----
-
 **Why Closures Are Powerful**  
 Closures become more interesting when a function is returned or passed around and executed elsewhere.  
 Even then, the function continues to hold references to variables in its lexical environment.
 
 These referenced values are **not garbage collected**, because they may be needed later.
-
----
 
 **Common Use Cases of Closures**  
 Closures are commonly used in:
@@ -532,8 +478,6 @@ Closures are commonly used in:
 - Memoization
 - Data hiding and encapsulation
 - Asynchronous code (callbacks, timers, promises)
-
----
 
 **Examples**
 
@@ -562,11 +506,11 @@ console.log(z); // function y() {...}
 z(); // 10
 ```
 
+---
+
 ## setTimeout + Closures in JavaScript
 
 A common interview question that tricks up a lot of developers. Let's understand why and how to fix it.
-
----
 
 **The Problem**
 
@@ -579,8 +523,6 @@ So we want:
 - 3 (after 3 seconds)
 - 4 (after 4 seconds)
 - 5 (after 5 seconds)
-
----
 
 **First Attempt (This Won't Work!)**
 
@@ -601,8 +543,6 @@ printNumber();
 **What we actually get:** 6, 6, 6, 6, 6
 
 But, Why is it printing 6 five times?
-
----
 
 **Understanding Why This Happens**
 
@@ -637,8 +577,6 @@ Let's break it down:
 
 Think of it like this: You write down the address of a house (variable i), not the value inside the house. When you go back to check the house later, someone has changed what's inside to 6.
 
----
-
 ** Solution 1: Just Use `let` (Easiest Fix)**
 
 ```js
@@ -663,8 +601,6 @@ printNumber();
 - Each callback remembers its own `i`
 
 This is the simplest solution. If you're writing new code, just use `let`.
-
----
 
 **Solution 2: Using Closures (The Old Way with `var`)**
 
@@ -737,8 +673,6 @@ outest()("Hello world")(); // 10 20 Hello world
 
 This is closure in action - the function remembers where it came from.
 
----
-
 **Example 2: Data Hiding & Encapsulation**
 
 This is one of the most practical uses of closures.
@@ -787,8 +721,6 @@ The only way to change `count` is through the `increment` and `decrement` method
 4. Only the methods we provide can modify `count`
 
 This pattern is super useful when you want to protect data from being accidentally changed.
-
----
 
 **Advantages of Closures**
 
@@ -849,8 +781,6 @@ calculator.add(3);
 console.log(calculator.getResult()); // 8
 ```
 
----
-
 **Disadvantages of Closures**
 
 Everything has a cost. Here's what you need to watch out for:
@@ -878,8 +808,6 @@ const func = heavyOperation();
 
 The garbage collector is like a cleanup crew in JavaScript. It removes variables and functions that are no longer needed to free up memory. But with closures, it can't clean up because those variables might be used later.
 
----
-
 **Good News: Modern JavaScript Engines Are Smart**
 
 Modern browsers have smart garbage collectors. They can figure out which variables in a closure are actually being used.
@@ -900,8 +828,6 @@ function outer() {
 const myFunc = outer();
 myFunc(); // 10
 ```
-
----
 
 **When to Be Careful**
 
@@ -927,8 +853,6 @@ a(); // a called
 ```
 
 This is the most straightforward way to create a function. You give it a name and define what it does.
-
----
 
 **Function Expression**
 
@@ -964,8 +888,6 @@ var b = function() {
 - Function expressions act like variables - they get `undefined` during hoisting
 - So when you try calling `b()` before its line, JavaScript sees `undefined()` which gives an error
 
----
-
 **Anonymous Function**
 
 Anonymous functions are functions without a name. They don't have their own identity.
@@ -996,8 +918,6 @@ setTimeout(function() {
 ```
 
 Basically, anywhere you're passing a function as a value, you can use an anonymous function.
-
----
 
 **Named Function Expression**
 
@@ -1032,8 +952,6 @@ var factorial = function fact(n) {
 
 console.log(factorial(5)); // 120
 ```
-
----
 
 **First Class Functions**
 
@@ -1108,8 +1026,6 @@ Here we're:
 - Storing that returned function in variables (`double`, `triple`)
 - Using those functions as values
 
----
-
 **Arrow Functions**
 
 Arrow functions are a shorter syntax for writing functions, introduced in ES6.
@@ -1120,3 +1036,304 @@ console.log(sum(2, 3)); // 5
 ```
 
 ---
+
+## Callback Functions in JS ft. Event Listeners 
+
+- As function acts as first class functions javascript means it can be used like a value. It can be assigned to the variables and passed down as a argument to the functions and can be also return from another function. This makes function in js really powerful.
+
+- And with this ability the function we pass to the other function or event listeners known as the callback function. And the function which takes the function as argument is known as higher order function in javascript.
+
+- And with this callback functions we can access the whole async world in synchronous single threaded language.
+
+- The callback functions will be passed to another function and now the responsibility of calling this function is on the other function. And this function will be called sometime else in the program.
+
+- So with callback functions we can do things in async way means so javascript can be register the function and execute sometime else in the code, So we don't block the main thread. And js starts executing the next line of code. And once the condition satisfy the function is bring back to the call stack and then executed quickly.
+
+- So if there is some code which takes sometime so instead of blocking our main thread for that time. We can use callbacks.
+
+**Examples of callbacks**
+
+```js
+
+// Here with power of web apis (setTimeout) and callback function. We can execute the code in async way
+setTimeout(() => {
+  console.log("Set timeout called");
+}, 1000)
+
+console.log("Hello");
+console.log("World");
+
+// Hello | world | Set timeout called
+
+```
+
+```js
+
+// Example with event listener
+
+// How this executed is when the code executed the code first register the event listener callback and executes the next lines defined in the code.
+//  So the Hello and world will be printed in the console and when user clicks the button the callback function will get in the call stack and gets executed
+// With this behavior we don't get blocked and the code can be executed as expected.
+
+document.getElementIdById("btn-click")
+.addEventListener("click", () => {
+  console.log("btn clicked");
+});
+
+console.log("Hello");
+console.log("World");
+
+```
+
+## Async JavaScript and Event Loop
+
+Understanding how JavaScript handles asynchronous operations behind the scenes.
+
+**What is Event Loop?**
+
+Event loop is like a gatekeeper that constantly monitors two things:
+1. The callback queue (where async callbacks wait)
+2. The call stack (where code executes)
+
+Its job is simple: when the call stack is empty, pick callbacks from the queue and put them in the call stack so they can be executed.
+
+**JavaScript is Synchronous and Single-Threaded**
+
+Let's start with the basics:
+
+JavaScript executes whatever comes into the call stack quickly. It doesn't wait for anything.
+
+**The Problem: What About Timers?**
+```javascript
+console.log("Start");
+// Wait for 2 seconds somehow?
+console.log("End");
+```
+
+How do we make JavaScript wait? The call stack and JavaScript engine don't have access to timers!
+
+**The answer:** JavaScript gets help from the browser.
+
+**Browser Superpowers (Web APIs)**
+
+Browsers provide superpowers to JavaScript through **Web APIs**:
+
+- `setTimeout` and `setInterval` (timers)
+- `fetch` (network requests)
+- `console` (logging)
+- DOM APIs (document, getElementById, etc.)
+- `localStorage` (storage)
+- And many more...
+
+The browser attaches these to the global `window` object, so we can access them:
+```javascript
+window.setTimeout(() => {}, 1000);
+window.console.log("Hello");
+
+// Or just use them directly (they're global)
+setTimeout(() => {}, 1000);
+console.log("Hello");
+```
+
+**How Async Operations Work: Step by Step**
+
+Let's walk through an example to understand the complete flow:
+```javascript
+console.log("Start");
+
+setTimeout(() => {
+  console.log("Timer callback");
+}, 2000);
+
+console.log("End");
+```
+
+**Step 1: Code starts executing**
+- `console.log("Start")` goes to call stack → executes → "Start" is printed
+- Call stack is now empty
+
+**Step 2: setTimeout is encountered**
+- JavaScript sees `setTimeout` (a Web API)
+- It passes the callback function to the Web API environment
+- The browser starts a 2-second timer
+- JavaScript doesn't wait! It moves to the next line immediately
+
+**Step 3: Continue execution**
+- `console.log("End")` goes to call stack → executes → "End" is printed
+- Call stack is empty
+- Main code execution is complete
+
+**Step 4: Timer expires (after 2 seconds)**
+- Browser timer completes
+- The callback function is pushed to the **callback queue**
+- It waits there until the call stack is empty
+
+**Step 5: Event loop does its job**
+- Event loop constantly checks: "Is call stack empty?"
+- Call stack is empty (main code finished)
+- Event loop picks the callback from the queue
+- Puts it in the call stack
+
+**Step 6: Callback executes**
+- `console.log("Timer callback")` executes → "Timer callback" is printed
+
+**Final Output:**
+```
+Start
+End
+Timer callback
+```
+
+**Visual Flow**
+```
+Code Execution:
+┌─────────────────────────────────────────────────────────┐
+│ 1. console.log("Start") → Call Stack → Execute         │
+│ 2. setTimeout → Web API (timer starts)                 │
+│ 3. console.log("End") → Call Stack → Execute           │
+│ 4. Main code done, Call Stack empty                    │
+│ 5. Timer expires → Callback → Callback Queue           │
+│ 6. Event Loop → Move callback to Call Stack            │
+│ 7. console.log("Timer callback") → Execute             │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Another Example: fetch**
+```javascript
+console.log("Start");
+
+fetch("https://api.example.com/data")
+  .then(response => console.log("Got response"));
+
+console.log("End");
+```
+
+**What happens:**
+1. "Start" prints immediately
+2. `fetch` is called → request goes to Web API environment
+3. "End" prints immediately (JavaScript doesn't wait)
+4. When response arrives → callback goes to micro task queue as it is a callback from promises
+5. Event loop moves it to call stack when empty
+6. "Got response" prints
+
+**Output:**
+```
+Start
+End
+Got response
+```
+
+**Two Types of Queues**
+
+JavaScript actually has TWO queues for callbacks:
+
+**1. Microtask Queue (High Priority)**
+
+Callbacks from:
+- Promises (`.then`, `.catch`, `.finally`)
+- Mutation Observer
+- `queueMicrotask()`
+
+**2. Callback Queue / Task Queue (Normal Priority)**
+
+Callbacks from:
+- `setTimeout`
+- `setInterval`
+- `setImmediate`
+- DOM events (click, scroll, etc.)
+- Other async operations
+
+**Important:** Microtask queue has higher priority! Event loop always checks microtask queue first.
+
+**Priority Example**
+```javascript
+console.log("Start");
+
+setTimeout(() => {
+  console.log("setTimeout callback");
+}, 0);
+
+Promise.resolve().then(() => {
+  console.log("Promise callback");
+});
+
+console.log("End");
+```
+
+**What's the output?**
+```
+Start
+End
+Promise callback
+setTimeout callback
+```
+
+**Why this order?**
+
+1. "Start" → synchronous, executes immediately
+2. `setTimeout` → callback goes to **Callback Queue**
+3. Promise → callback goes to **Microtask Queue**
+4. "End" → synchronous, executes immediately
+5. Call stack empty, event loop checks queues
+6. **Microtask Queue has priority** → "Promise callback" executes first
+7. Then Callback Queue → "setTimeout callback" executes
+
+**"Starvation of the Callback Queue"** - when microtasks keep creating more microtasks, callbacks in the callback queue never get executed.
+
+**Real-world scenario:**
+```javascript
+setTimeout(() => {
+  console.log("Timeout");
+}, 0);
+
+function recursivePromise(count) {
+  if (count > 0) {
+    Promise.resolve().then(() => {
+      console.log(`Promise ${count}`);
+      recursivePromise(count - 1);
+    });
+  }
+}
+
+recursivePromise(1000); // Creates 1000 microtasks!
+// "Timeout" will only print after ALL 1000 promises complete
+```
+
+**Complete Flow Diagram**
+```
+JavaScript Code
+     ↓
+Call Stack (executes synchronously)
+     ↓
+Encounters async operation (setTimeout, fetch, etc.)
+     ↓
+Web API Environment (browser handles it)
+     ↓
+Operation completes
+     ↓
+  ┌─────────────────────────────┐
+  │                             │
+  ↓                             ↓
+Microtask Queue          Callback Queue
+(Promises)               (setTimeout, events)
+  │                             │
+  └──────────┬──────────────────┘
+             ↓
+       Event Loop
+    (checks if call stack empty)
+             ↓
+       Call Stack
+     (callback executes)
+```
+
+**Web Apis**
+- ![web-apis png](/js-basics-assets/web-apis.png)
+
+**Async SetTimeout example with event loop**
+- ![async-settimeout png](/js-basics-assets/async-settimeout.png)
+
+**Async DOM API's example with event loop**
+- ![async-dom-eventlistner](/js-basics-assets/async-dom-eventlistner.png)
+
+**Async Promise Event Loop example with event loop**
+- ![async-promise-event-loop](/js-basics-assets/async-promise-event-loop.png)
