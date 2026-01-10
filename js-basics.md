@@ -1337,3 +1337,236 @@ Microtask Queue          Callback Queue
 
 **Async Promise Event Loop example with event loop**
 - ![async-promise-event-loop](/js-basics-assets/async-promise-event-loop.png)
+
+--- 
+
+## JS Engine Architecture
+
+Understanding how JavaScript code gets executed under the hood.
+
+**What is a JS Engine?**
+
+JS engine is the heart of the JavaScript Runtime Environment (JRE). This is where your entire JavaScript code gets executed.
+
+**Where Can JavaScript Run?**
+
+JavaScript can run in different places nowadays. To run JavaScript code, you need a JRE (JavaScript Runtime Environment). A JRE consists of:
+- JS Engine (the core)
+- Web APIs
+- Callback Queue
+- Microtask Queue
+- Event Loop
+- And more...
+
+**Examples of JRE:**
+
+**Browsers** - Browsers can run JavaScript because they have a JRE built in. Different browsers have different JS engines:
+- Chrome uses V8
+- Firefox uses SpiderMonkey
+- Safari uses JavaScriptCore
+
+**Node.js** - Also has a JRE which allows JavaScript to run on servers. It uses the V8 engine (same as Chrome).
+
+**Hypothetical Example:**
+
+If we wanted to run JavaScript in a water cooler, we would need to create a JRE for it! The Web APIs would be different - maybe something like `getWaterLevel()` or `adjustTemperature()`. But some APIs would be the same, like `console` and `setTimeout` which are present in both browser and Node.js JRE.
+
+This shows that the JS engine can remain the same, but the environment and Web APIs can be different based on where JavaScript is running.
+
+**Three Main Phases of JS Execution**
+
+When the JS engine receives your high-level JavaScript code, it executes it in three main phases:
+
+1. Parsing
+2. Compilation
+3. Execution
+
+Let's understand each phase in detail.
+
+**Phase 1: Parsing**
+
+In the parsing phase, your JavaScript code gets converted into something the engine can understand.
+
+**Step 1: Tokenization**
+
+First, the code gets broken down into tokens. Think of tokens as the smallest meaningful pieces of code.
+
+Example:
+```javascript
+let x = 10;
+```
+
+Gets broken into tokens:
+```
+'let', 'x', '=', '10', ';'
+```
+
+**Step 2: Syntax Parser & AST**
+
+These tokens are then passed to the Syntax Parser, which checks if your code follows JavaScript's grammar rules and creates an **Abstract Syntax Tree (AST)**.
+
+Think of AST like a tree structure that represents your code:
+```javascript
+function add(a, b) {
+  return a + b;
+}
+```
+
+This AST is then passed to the next phase.
+
+**Phase 2: Compilation**
+
+Now comes the interesting part - how does the code actually run?
+
+**Two Types of Code Execution:**
+
+**1. Interpreter**
+- Runs code line by line
+- Translates and executes immediately
+- Produces bytecode (low-level code)
+- Fast to start but slower execution
+```javascript
+console.log("Line 1"); // Execute immediately
+console.log("Line 2"); // Then this
+console.log("Line 3"); // Then this
+```
+
+**2. Compiler**
+- Reads the entire code first
+- Optimizes and compiles it all
+- Produces highly optimized machine code
+- Slower to start but faster execution
+
+**Comparison:**
+```javascript
+// Large loop
+for(let i = 0; i < 1000000; i++) {
+  console.log(i);
+}
+```
+
+- **Interpreter**: Starts immediately, but slower overall
+- **Compiler**: Takes time to compile first, but runs much faster
+
+**Interpreter is fast**, **Compiler is efficient**.
+
+**JIT (Just In Time) Compilation - Best of Both Worlds**
+
+Most modern JS engines (like V8 in Chrome) use **JIT compilation** which combines both interpreter and compiler!
+
+**How JIT Works:**
+
+1. Start with interpreter for quick execution
+2. While running, identify "hot" code (code that runs frequently)
+3. Send hot code to compiler for optimization
+4. Replace interpreted code with optimized compiled code
+```javascript
+// This function gets called 10,000 times
+function calculate(x) {
+  return x * 2 + 5;
+}
+
+// First few calls: Interpreter handles it
+// After detecting it's "hot": Compiler optimizes it
+// Future calls: Use optimized version
+```
+
+**Popular Optimization Techniques:**
+
+1. **Inlining** - Replace function calls with actual function code
+```javascript
+// Before optimization
+function double(x) { return x * 2; }
+let result = double(5);
+
+// After inlining
+let result = 5 * 2; // Direct calculation
+```
+
+2. **Copy Elision** - Avoid unnecessary copying of data
+
+3. **Inline Caching** - Remember property lookup results
+```javascript
+// First time: Look up obj.name
+// Next times: Use cached location
+obj.name;
+```
+
+**What Happens in This Phase:**
+
+The JS engine takes the AST and:
+1. Starts interpreting the code line by line
+2. Works with the compiler to identify hot code
+3. Compiles frequently used parts
+4. Produces optimized bytecode
+
+**Phase 3: Execution**
+
+Now the bytecode is ready to run!
+
+The JS engine executes the bytecode using three main components:
+
+**1. Call Stack**
+- Keeps track of function calls
+- Manages execution context
+- Works in LIFO (Last In First Out) manner
+
+**2. Memory Heap**
+- Stores variables and objects
+- Unstructured memory storage
+- Where all your data lives
+
+**3. Garbage Collector**
+- Automatically frees up unused memory
+- Removes variables/objects that are no longer needed
+- Prevents memory leaks
+```javascript
+function createUser() {
+  let user = { name: "John" }; // Created in heap
+  return user.name;
+} // After function ends, 'user' object is garbage collected
+
+let result = createUser();
+```
+
+**Complete Flow Summary**
+```
+Your JavaScript Code
+       ↓
+┌──────────────────┐
+│   1. PARSING     │
+├──────────────────┤
+│ • Tokenization   │
+│ • Syntax Parser  │
+│ • Create AST     │
+└────────┬─────────┘
+         ↓
+┌──────────────────┐
+│  2. COMPILATION  │
+├──────────────────┤
+│ • JIT Compiler   │
+│ • Interpreter +  │
+│   Compiler       │
+│ • Optimization   │
+│ • Bytecode       │
+└────────┬─────────┘
+         ↓
+┌──────────────────┐
+│  3. EXECUTION    │
+├──────────────────┤
+│ • Call Stack     │
+│ • Memory Heap    │
+│ • Garbage        │
+│   Collector      │
+└──────────────────┘
+         ↓
+    Output/Result
+```
+
+**Generic JS Engine Architecture**
+
+- ![generic-js-engine](/js-basics-assets/generic-js-engine.png)
+
+**Google V8 Engine Architecture**
+
+- ![v8-js-engine](/js-basics-assets/v8-js-engine.png)
