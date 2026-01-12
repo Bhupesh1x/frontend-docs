@@ -16,7 +16,7 @@
   2. Code Component (Thread of Execution)
      - Executes the code line by line
 
----     
+---
 
 ## How JavaScript Code Is Executed
 
@@ -646,6 +646,7 @@ Each callback now has its own separate x to look at.
 Understanding closures through practical examples:
 
 **Example 1: Nested Closures**
+
 ```javascript
 function outest() {
   var b = 20;
@@ -667,6 +668,7 @@ outest()("Hello world")(); // 10 20 Hello world
 **What's happening here?**
 
 **Key point:** The `inner` function has access to variables from THREE different scopes:
+
 - Its own scope (none in this case)
 - The `outer` function's scope (variable `c`)
 - The `outest` function's scope (variables `a` and `b`)
@@ -676,16 +678,17 @@ This is closure in action - the function remembers where it came from.
 **Example 2: Data Hiding & Encapsulation**
 
 This is one of the most practical uses of closures.
+
 ```javascript
 function Counter() {
   let count = 0;
 
-  this.increment = function() {
+  this.increment = function () {
     count++;
     console.log(count);
   };
 
-  this.decrement = function() {
+  this.decrement = function () {
     count--;
     console.log(count);
   };
@@ -706,6 +709,7 @@ counter2.decrement(); // 1
 **Why is this useful?**
 
 The `count` variable is private. You can't do this:
+
 ```javascript
 console.log(counter1.count); // undefined
 counter1.count = 100; // doesn't work!
@@ -727,10 +731,11 @@ This pattern is super useful when you want to protect data from being accidental
 Closures are powerful because they let us access variables from outer scopes even when those outer functions have finished executing. Here's where we use them:
 
 **1. Maintaining State in Async Operations**
+
 ```javascript
 function fetchUserData(userId) {
   const timestamp = Date.now();
-  
+
   setTimeout(() => {
     console.log(`User ${userId} fetched at ${timestamp}`);
     // closure remembers both userId and timestamp
@@ -741,12 +746,13 @@ fetchUserData(123);
 ```
 
 **2. Creating Functions Like `once`**
+
 ```javascript
 function once(func) {
   let ran = false;
   let result;
-  
-  return function() {
+
+  return function () {
     if (!ran) {
       result = func.apply(this, arguments);
       ran = true;
@@ -765,14 +771,15 @@ initialize(); // (nothing happens)
 As we saw in the Counter example - keeping variables private.
 
 **4. Module Pattern**
+
 ```javascript
-const calculator = (function() {
+const calculator = (function () {
   let result = 0;
-  
+
   return {
-    add: (x) => result += x,
-    subtract: (x) => result -= x,
-    getResult: () => result
+    add: (x) => (result += x),
+    subtract: (x) => (result -= x),
+    getResult: () => result,
   };
 })();
 
@@ -790,12 +797,13 @@ Everything has a cost. Here's what you need to watch out for:
 When you create a closure, JavaScript can't clean up (garbage collect) the variables that closure is holding onto. They stay in memory because they might be used later.
 
 **Example of potential memory leak:**
+
 ```javascript
 function heavyOperation() {
-  const bigArray = new Array(1000000).fill('data');
-  
-  return function() {
-    console.log('I still hold reference to bigArray!');
+  const bigArray = new Array(1000000).fill("data");
+
+  return function () {
+    console.log("I still hold reference to bigArray!");
     // bigArray can't be garbage collected
   };
 }
@@ -813,12 +821,13 @@ The garbage collector is like a cleanup crew in JavaScript. It removes variables
 Modern browsers have smart garbage collectors. They can figure out which variables in a closure are actually being used.
 
 **Example:**
+
 ```javascript
 function outer() {
   let a = 10;
   let b = 20; // This won't stay in memory!
   let c = 30; // This won't stay in memory either!
-  
+
   return function inner() {
     console.log(a);
     // Only using 'a', not 'b' or 'c'
@@ -844,6 +853,7 @@ Even though modern engines are smart, you should still be careful when:
 Functions in JavaScript are beautiful and flexible. Let's explore the different ways to declare and use them.
 
 **Function Statement (aka Function Declaration)**
+
 ```javascript
 function a() {
   console.log("a called");
@@ -857,8 +867,9 @@ This is the most straightforward way to create a function. You give it a name an
 **Function Expression**
 
 Function expression is when you use a function as a value and assign it to a variable.
+
 ```javascript
-var b = function() {
+var b = function () {
   console.log("b called");
 };
 
@@ -868,6 +879,7 @@ b(); // b called
 **Difference between Function Statement and Function Expression:**
 
 The main difference shows up during hoisting:
+
 ```javascript
 // Function Statement - This works!
 a(); // a called
@@ -877,7 +889,7 @@ function a() {
 
 // Function Expression - This breaks!
 b(); // Error: b is not a function
-var b = function() {
+var b = function () {
   console.log("b called");
 };
 ```
@@ -891,6 +903,7 @@ var b = function() {
 **Anonymous Function**
 
 Anonymous functions are functions without a name. They don't have their own identity.
+
 ```javascript
 function() {
   console.log("Anonymous function called");
@@ -898,6 +911,7 @@ function() {
 ```
 
 **But wait, if you try this directly, you'll get an error!**
+
 ```javascript
 function() {
   console.log("Anonymous function called");
@@ -910,9 +924,10 @@ This happens because the syntax looks like a function statement without a name. 
 **So where do we use anonymous functions?**
 
 We use anonymous functions where we want to use functions as values:
+
 ```javascript
 // As a callback in setTimeout
-setTimeout(function() {
+setTimeout(function () {
   console.log("This runs after 1 second");
 }, 1000);
 ```
@@ -922,6 +937,7 @@ Basically, anywhere you're passing a function as a value, you can use an anonymo
 **Named Function Expression**
 
 Named function expression is a function expression, but instead of an anonymous function, it's a named function.
+
 ```javascript
 var c = function xyz() {
   console.log("c called");
@@ -933,6 +949,7 @@ c(); // c called
 **Important thing to note:**
 
 The name `xyz` is local to the function and not globally accessible. You can only access it within the function itself.
+
 ```javascript
 var c = function xyz() {
   console.log("c called");
@@ -944,6 +961,7 @@ xyz(); // Error: xyz is not defined - not accessible outside
 ```
 
 This is useful for recursion or when you want the function to reference itself:
+
 ```javascript
 var factorial = function fact(n) {
   if (n <= 1) return 1;
@@ -958,6 +976,7 @@ console.log(factorial(5)); // 120
 The ability to use functions as values is known as **first class functions** (or first class citizens) in JavaScript.
 
 This means you can:
+
 - Use functions as values in variables
 - Pass functions as arguments to other functions
 - Return functions from other functions
@@ -965,21 +984,23 @@ This means you can:
 This ability is what makes functions "first class" in JavaScript.
 
 **Example 1: Passing a function as an argument**
+
 ```javascript
 function outer(param) {
   console.log(param); // logs the function
   param(); // calls the function
 }
 
-outer(function() {
+outer(function () {
   console.log("I'm being passed as an argument!");
 });
 ```
 
 **Example 2: Returning a function from another function**
+
 ```javascript
 function outer() {
-  return function() {
+  return function () {
     console.log("I'm being returned!");
   };
 }
@@ -989,8 +1010,9 @@ returnedFunc(); // I'm being returned!
 ```
 
 **Example 3: Storing functions in variables**
+
 ```javascript
-var greet = function() {
+var greet = function () {
   console.log("Hello!");
 };
 
@@ -1001,15 +1023,17 @@ sayHi(); // Hello!
 **Why is this powerful?**
 
 First class functions enable:
+
 - Callbacks (like in setTimeout, event handlers)
 - Higher-order functions (functions that take or return functions)
 - Functional programming patterns
 - Closures and much more
 
 **Real example combining everything:**
+
 ```javascript
 function createMultiplier(multiplier) {
-  return function(number) {
+  return function (number) {
     return number * multiplier;
   };
 }
@@ -1022,6 +1046,7 @@ console.log(triple(5)); // 15
 ```
 
 Here we're:
+
 - Returning a function from `createMultiplier`
 - Storing that returned function in variables (`double`, `triple`)
 - Using those functions as values
@@ -1029,6 +1054,7 @@ Here we're:
 **Arrow Functions**
 
 Arrow functions are a shorter syntax for writing functions, introduced in ES6.
+
 ```javascript
 var sum = (a, b) => a + b;
 
@@ -1037,7 +1063,7 @@ console.log(sum(2, 3)); // 5
 
 ---
 
-## Callback Functions in JS ft. Event Listeners 
+## Callback Functions in JS ft. Event Listeners
 
 - As function acts as first class functions javascript means it can be used like a value. It can be assigned to the variables and passed down as a argument to the functions and can be also return from another function. This makes function in js really powerful.
 
@@ -1054,35 +1080,30 @@ console.log(sum(2, 3)); // 5
 **Examples of callbacks**
 
 ```js
-
 // Here with power of web apis (setTimeout) and callback function. We can execute the code in async way
 setTimeout(() => {
   console.log("Set timeout called");
-}, 1000)
+}, 1000);
 
 console.log("Hello");
 console.log("World");
 
 // Hello | world | Set timeout called
-
 ```
 
 ```js
-
 // Example with event listener
 
 // How this executed is when the code executed the code first register the event listener callback and executes the next lines defined in the code.
 //  So the Hello and world will be printed in the console and when user clicks the button the callback function will get in the call stack and gets executed
 // With this behavior we don't get blocked and the code can be executed as expected.
 
-document.getElementIdById("btn-click")
-.addEventListener("click", () => {
+document.getElementIdById("btn-click").addEventListener("click", () => {
   console.log("btn clicked");
 });
 
 console.log("Hello");
 console.log("World");
-
 ```
 
 ## Async JavaScript and Event Loop
@@ -1092,6 +1113,7 @@ Understanding how JavaScript handles asynchronous operations behind the scenes.
 **What is Event Loop?**
 
 Event loop is like a gatekeeper that constantly monitors two things:
+
 1. The callback queue (where async callbacks wait)
 2. The call stack (where code executes)
 
@@ -1104,6 +1126,7 @@ Let's start with the basics:
 JavaScript executes whatever comes into the call stack quickly. It doesn't wait for anything.
 
 **The Problem: What About Timers?**
+
 ```javascript
 console.log("Start");
 // Wait for 2 seconds somehow?
@@ -1126,6 +1149,7 @@ Browsers provide superpowers to JavaScript through **Web APIs**:
 - And many more...
 
 The browser attaches these to the global `window` object, so we can access them:
+
 ```javascript
 window.setTimeout(() => {}, 1000);
 window.console.log("Hello");
@@ -1138,6 +1162,7 @@ console.log("Hello");
 **How Async Operations Work: Step by Step**
 
 Let's walk through an example to understand the complete flow:
+
 ```javascript
 console.log("Start");
 
@@ -1149,35 +1174,42 @@ console.log("End");
 ```
 
 **Step 1: Code starts executing**
+
 - `console.log("Start")` goes to call stack → executes → "Start" is printed
 - Call stack is now empty
 
 **Step 2: setTimeout is encountered**
+
 - JavaScript sees `setTimeout` (a Web API)
 - It passes the callback function to the Web API environment
 - The browser starts a 2-second timer
 - JavaScript doesn't wait! It moves to the next line immediately
 
 **Step 3: Continue execution**
+
 - `console.log("End")` goes to call stack → executes → "End" is printed
 - Call stack is empty
 - Main code execution is complete
 
 **Step 4: Timer expires (after 2 seconds)**
+
 - Browser timer completes
 - The callback function is pushed to the **callback queue**
 - It waits there until the call stack is empty
 
 **Step 5: Event loop does its job**
+
 - Event loop constantly checks: "Is call stack empty?"
 - Call stack is empty (main code finished)
 - Event loop picks the callback from the queue
 - Puts it in the call stack
 
 **Step 6: Callback executes**
+
 - `console.log("Timer callback")` executes → "Timer callback" is printed
 
 **Final Output:**
+
 ```
 Start
 End
@@ -1185,6 +1217,7 @@ Timer callback
 ```
 
 **Visual Flow**
+
 ```
 Code Execution:
 ┌─────────────────────────────────────────────────────────┐
@@ -1199,16 +1232,19 @@ Code Execution:
 ```
 
 **Another Example: fetch**
+
 ```javascript
 console.log("Start");
 
-fetch("https://api.example.com/data")
-  .then(response => console.log("Got response"));
+fetch("https://api.example.com/data").then((response) =>
+  console.log("Got response")
+);
 
 console.log("End");
 ```
 
 **What happens:**
+
 1. "Start" prints immediately
 2. `fetch` is called → request goes to Web API environment
 3. "End" prints immediately (JavaScript doesn't wait)
@@ -1217,6 +1253,7 @@ console.log("End");
 6. "Got response" prints
 
 **Output:**
+
 ```
 Start
 End
@@ -1230,6 +1267,7 @@ JavaScript actually has TWO queues for callbacks:
 **1. Microtask Queue (High Priority)**
 
 Callbacks from:
+
 - Promises (`.then`, `.catch`, `.finally`)
 - Mutation Observer
 - `queueMicrotask()`
@@ -1237,6 +1275,7 @@ Callbacks from:
 **2. Callback Queue / Task Queue (Normal Priority)**
 
 Callbacks from:
+
 - `setTimeout`
 - `setInterval`
 - `setImmediate`
@@ -1246,6 +1285,7 @@ Callbacks from:
 **Important:** Microtask queue has higher priority! Event loop always checks microtask queue first.
 
 **Priority Example**
+
 ```javascript
 console.log("Start");
 
@@ -1261,6 +1301,7 @@ console.log("End");
 ```
 
 **What's the output?**
+
 ```
 Start
 End
@@ -1281,6 +1322,7 @@ setTimeout callback
 **"Starvation of the Callback Queue"** - when microtasks keep creating more microtasks, callbacks in the callback queue never get executed.
 
 **Real-world scenario:**
+
 ```javascript
 setTimeout(() => {
   console.log("Timeout");
@@ -1300,6 +1342,7 @@ recursivePromise(1000); // Creates 1000 microtasks!
 ```
 
 **Complete Flow Diagram**
+
 ```
 JavaScript Code
      ↓
@@ -1327,18 +1370,22 @@ Microtask Queue          Callback Queue
 ```
 
 **Web Apis**
+
 - ![web-apis png](/js-basics-assets/web-apis.png)
 
 **Async SetTimeout example with event loop**
+
 - ![async-settimeout png](/js-basics-assets/async-settimeout.png)
 
 **Async DOM API's example with event loop**
+
 - ![async-dom-eventlistner](/js-basics-assets/async-dom-eventlistner.png)
 
 **Async Promise Event Loop example with event loop**
+
 - ![async-promise-event-loop](/js-basics-assets/async-promise-event-loop.png)
 
---- 
+---
 
 ## JS Engine Architecture
 
@@ -1351,6 +1398,7 @@ JS engine is the heart of the JavaScript Runtime Environment (JRE). This is wher
 **Where Can JavaScript Run?**
 
 JavaScript can run in different places nowadays. To run JavaScript code, you need a JRE (JavaScript Runtime Environment). A JRE consists of:
+
 - JS Engine (the core)
 - Web APIs
 - Callback Queue
@@ -1361,6 +1409,7 @@ JavaScript can run in different places nowadays. To run JavaScript code, you nee
 **Examples of JRE:**
 
 **Browsers** - Browsers can run JavaScript because they have a JRE built in. Different browsers have different JS engines:
+
 - Chrome uses V8
 - Firefox uses SpiderMonkey
 - Safari uses JavaScriptCore
@@ -1392,11 +1441,13 @@ In the parsing phase, your JavaScript code gets converted into something the eng
 First, the code gets broken down into tokens. Think of tokens as the smallest meaningful pieces of code.
 
 Example:
+
 ```javascript
 let x = 10;
 ```
 
 Gets broken into tokens:
+
 ```
 'let', 'x', '=', '10', ';'
 ```
@@ -1406,6 +1457,7 @@ Gets broken into tokens:
 These tokens are then passed to the Syntax Parser, which checks if your code follows JavaScript's grammar rules and creates an **Abstract Syntax Tree (AST)**.
 
 Think of AST like a tree structure that represents your code:
+
 ```javascript
 function add(a, b) {
   return a + b;
@@ -1421,10 +1473,12 @@ Now comes the interesting part - how does the code actually run?
 **Two Types of Code Execution:**
 
 **1. Interpreter**
+
 - Runs code line by line
 - Translates and executes immediately
 - Produces bytecode (low-level code)
 - Fast to start but slower execution
+
 ```javascript
 console.log("Line 1"); // Execute immediately
 console.log("Line 2"); // Then this
@@ -1432,15 +1486,17 @@ console.log("Line 3"); // Then this
 ```
 
 **2. Compiler**
+
 - Reads the entire code first
 - Optimizes and compiles it all
 - Produces highly optimized machine code
 - Slower to start but faster execution
 
 **Comparison:**
+
 ```javascript
 // Large loop
-for(let i = 0; i < 1000000; i++) {
+for (let i = 0; i < 1000000; i++) {
   console.log(i);
 }
 ```
@@ -1460,6 +1516,7 @@ Most modern JS engines (like V8 in Chrome) use **JIT compilation** which combine
 2. While running, identify "hot" code (code that runs frequently)
 3. Send hot code to compiler for optimization
 4. Replace interpreted code with optimized compiled code
+
 ```javascript
 // This function gets called 10,000 times
 function calculate(x) {
@@ -1474,9 +1531,12 @@ function calculate(x) {
 **Popular Optimization Techniques:**
 
 1. **Inlining** - Replace function calls with actual function code
+
 ```javascript
 // Before optimization
-function double(x) { return x * 2; }
+function double(x) {
+  return x * 2;
+}
 let result = double(5);
 
 // After inlining
@@ -1486,6 +1546,7 @@ let result = 5 * 2; // Direct calculation
 2. **Copy Elision** - Avoid unnecessary copying of data
 
 3. **Inline Caching** - Remember property lookup results
+
 ```javascript
 // First time: Look up obj.name
 // Next times: Use cached location
@@ -1495,6 +1556,7 @@ obj.name;
 **What Happens in This Phase:**
 
 The JS engine takes the AST and:
+
 1. Starts interpreting the code line by line
 2. Works with the compiler to identify hot code
 3. Compiles frequently used parts
@@ -1507,19 +1569,23 @@ Now the bytecode is ready to run!
 The JS engine executes the bytecode using three main components:
 
 **1. Call Stack**
+
 - Keeps track of function calls
 - Manages execution context
 - Works in LIFO (Last In First Out) manner
 
 **2. Memory Heap**
+
 - Stores variables and objects
 - Unstructured memory storage
 - Where all your data lives
 
 **3. Garbage Collector**
+
 - Automatically frees up unused memory
 - Removes variables/objects that are no longer needed
 - Prevents memory leaks
+
 ```javascript
 function createUser() {
   let user = { name: "John" }; // Created in heap
@@ -1530,6 +1596,7 @@ let result = createUser();
 ```
 
 **Complete Flow Summary**
+
 ```
 Your JavaScript Code
        ↓
@@ -1570,3 +1637,91 @@ Your JavaScript Code
 **Google V8 Engine Architecture**
 
 - ![v8-js-engine](/js-basics-assets/v8-js-engine.png)
+
+## Understanding setTimeout and Async Timing Issues
+
+Async programming in JavaScript can be confusing at first because of how JavaScript's concurrency model works and how it executes synchronous and asynchronous code differently.
+
+The most common confusion happens when people expect async operations to work like they do in other languages. Let's understand why things don't always work as expected.
+
+**The setTimeout Guarantee Problem**
+
+One of the most common misconceptions about `setTimeout`:
+```javascript
+setTimeout(() => {
+  console.log("This runs after 5 seconds... right?");
+}, 5000);
+```
+
+**Important:** `setTimeout` with 5000 milliseconds doesn't GUARANTEE that it will run exactly after 5 seconds!
+
+**Why not?**
+
+Let's break down what actually happens when you use `setTimeout`:
+
+**Step 1:** JavaScript encounters `setTimeout`
+- The callback function is registered in the Web API environment
+- A timer starts counting (5000ms in this case)
+- JavaScript immediately moves to the next line (doesn't wait)
+
+**Step 2:** Timer completes after 5 seconds
+- The callback is pushed to the callback queue
+- It waits there
+
+**Step 3:** Event loop checks
+- Event loop asks: "Is the call stack empty?"
+- **If YES** → callback moves to call stack and executes
+- **If NO** → callback has to wait in the queue
+
+**The problem:** If the call stack is busy executing something else, the callback has to wait even if 5 seconds have already passed!
+
+**setTimeout is a MINIMUM delay, not an exact delay.**
+
+**Example 1: Blocking Code Delays setTimeout**
+```javascript
+console.log("Start");
+
+setTimeout(() => {
+  console.log("setTimeout called");
+}, 5000);
+
+const startDate = new Date().getTime();
+let endDate = startDate;
+
+// This loop blocks for 10 seconds!
+while (endDate < startDate + 10000) {
+  endDate = new Date().getTime();
+}
+
+console.log("While loop finished");
+
+// Output:
+// Start (immediately)
+// While loop finished (after 10 seconds)
+// setTimeout called (after 10 seconds, not 5!)
+```
+
+**Example 2: setTimeout with 0 Milliseconds**
+
+This is another tricky one:
+```javascript
+console.log("Hello");
+
+setTimeout(() => {
+  console.log("setTimeout called");
+}, 0);
+
+console.log("World");
+
+// Output:
+// Hello
+// World
+// setTimeout called
+```
+
+**Important:** Even `setTimeout(fn, 0)` is asynchronous! It doesn't execute immediately in line. It goes through the whole async process.
+
+
+**Key Takeaways**
+ 
+- we should avoid blocking the call stack. And if there is something which can take time then we should do that task in async way. So the thread is not blocked and all the code can get to execute. 
