@@ -1725,3 +1725,269 @@ console.log("World");
 **Key Takeaways**
  
 - we should avoid blocking the call stack. And if there is something which can take time then we should do that task in async way. So the thread is not blocked and all the code can get to execute. 
+
+---
+
+## Higher Order Functions
+
+Understanding one of JavaScript's most powerful features for writing clean, reusable code.
+
+**What are Higher Order Functions?**
+
+Higher order functions are functions that either:
+1. Take another function as a parameter, OR
+2. Return a function from itself
+
+Simple examples you already know:
+- `map()`
+- `filter()`
+- `reduce()`
+- `setTimeout()`
+- `addEventListener()`
+
+All of these take a function as a parameter!
+
+**What is a Callback Function?**
+
+The function that you pass as a parameter to a higher order function is called a **callback function**.
+```javascript
+function greet(name, callback) {
+  console.log("Hello " + name);
+  callback(); // This is the callback function being executed
+}
+
+greet("John", function() {
+  console.log("Callback executed!");
+});
+```
+
+The callback function will be executed somewhere else in the program (not immediately where it's defined).
+
+**Why are Higher Order Functions Useful?**
+
+They allow us to write:
+- More modular code
+- Reusable code
+- Cleaner code
+- Less repetitive code
+
+This is the foundation of **functional programming**.
+
+**What is Functional Programming?**
+
+Functional programming means thinking from the function point of view. The key principles are:
+
+1. Write modular code (small, focused functions)
+2. Write reusable code (functions that can be used in different contexts)
+3. Don't repeat yourself (DRY principle)
+4. Use pure functions when possible
+
+**Example: The Problem with Repetitive Code**
+
+Let's say we have an array of radius values and we want to calculate different things:
+```javascript
+const radius = [3, 1, 4, 10];
+```
+
+**Approach 1: Writing separate functions (repetitive)**
+```javascript
+function calculateArea(radius) {
+  const output = [];
+
+  for (let i = 0; i < radius.length; i++) {
+    output.push(Math.PI * radius[i] * radius[i]);
+  }
+
+  return output;
+}
+
+console.log(calculateArea(radius));
+
+function calculateCircumference(radius) {
+  const output = [];
+
+  for (let i = 0; i < radius.length; i++) {
+    output.push(2 * Math.PI * radius[i]);
+  }
+
+  return output;
+}
+
+console.log(calculateCircumference(radius));
+
+function calculateDiameter(radius) {
+  const output = [];
+
+  for (let i = 0; i < radius.length; i++) {
+    output.push(2 * radius[i]);
+  }
+
+  return output;
+}
+
+console.log(calculateDiameter(radius));
+```
+
+**What's wrong with this code?**
+
+Look closely at all three functions. Notice the pattern?
+```javascript
+// Same in all three functions:
+const output = [];           // ✓ Creating array
+for (let i = 0; i < radius.length; i++) {  // ✓ Looping
+  output.push(/* LOGIC */);  // ✓ Pushing to array
+}
+return output;               // ✓ Returning array
+```
+
+The only thing that changes is the LOGIC part:
+- Area: `Math.PI * radius[i] * radius[i]`
+- Circumference: `2 * Math.PI * radius[i]`
+- Diameter: `2 * radius[i]`
+
+We're repeating ourselves a lot! The structure is the same, only the calculation logic is different.
+
+**Approach 2: Using Functional Programming (better)**
+
+Let's separate the "what to do" (logic) from the "how to do it" (iteration):
+
+**Step 1: Extract the logic into separate functions**
+```javascript
+function area(radius) {
+  return Math.PI * radius * radius;
+}
+
+function circumference(radius) {
+  return 2 * Math.PI * radius;
+}
+
+function diameter(radius) {
+  return 2 * radius;
+}
+```
+
+These functions are simple and focused. Each does ONE thing.
+
+**Step 2: Create a reusable calculate function**
+```javascript
+function calculate(radiusArray, logic) {
+  const output = [];
+
+  for (let i = 0; i < radiusArray.length; i++) {
+    output.push(logic(radiusArray[i]));
+  }
+
+  return output;
+}
+```
+
+This function handles the iteration and array building. It doesn't care about WHAT calculation you do, it just applies whatever function (logic) you give it.
+
+**Step 3: Use it!**
+```javascript
+const radius = [3, 1, 4, 10];
+
+console.log(calculate(radius, area));
+// [28.27, 3.14, 50.26, 314.15]
+
+console.log(calculate(radius, circumference));
+// [18.84, 6.28, 25.13, 62.83]
+
+console.log(calculate(radius, diameter));
+// [6, 2, 8, 20]
+```
+
+**Benefits:**
+
+1. **Less code** - We wrote the loop logic once
+2. **More reusable** - `calculate` can work with ANY logic function
+3. **More readable** - Clear separation of concerns
+4. **Easy to test** - Each function is small and focused
+
+**Making it Even Better: Array.prototype**
+
+Notice how our `calculate` function is similar to `map`? Let's make it work exactly like `map`:
+```javascript
+Array.prototype.calculate = function(logic) {
+  const output = [];
+
+  for (let i = 0; i < this.length; i++) {
+    output.push(logic(this[i]));
+  }
+
+  return output;
+};
+```
+
+Now we can use it just like `map`:
+```javascript
+const radius = [3, 1, 4, 10];
+
+console.log(radius.map(area));
+// [28.27, 3.14, 50.26, 314.15]
+
+console.log(radius.calculate(area));
+// [28.27, 3.14, 50.26, 314.15]
+```
+
+**More Examples of Higher Order Functions**
+
+**Example 1: Function returning a function**
+```javascript
+function multiplyBy(factor) {
+  return function(number) {
+    return number * factor;
+  };
+}
+
+const double = multiplyBy(2);
+const triple = multiplyBy(3);
+
+console.log(double(5)); // 10
+console.log(triple(5)); // 15
+```
+
+`multiplyBy` is a higher order function because it returns a function.
+
+**Example 2: Custom filter function like implementation**
+```javascript
+function customFilter(array, testFunction) {
+  const result = [];
+  
+  for (let i = 0; i < array.length; i++) {
+    if (testFunction(array[i])) {
+      result.push(array[i]);
+    }
+  }
+  
+  return result;
+}
+
+const numbers = [1, 2, 3, 4, 5, 6];
+
+const evenNumbers = customFilter(numbers, function(num) {
+  return num % 2 === 0;
+});
+
+console.log(evenNumbers); // [2, 4, 6]
+```
+
+**Example 3: Custom forEach**
+```javascript
+function customForEach(array, callback) {
+  for (let i = 0; i < array.length; i++) {
+    callback(array[i], i, array);
+  }
+}
+
+const fruits = ["apple", "banana", "orange"];
+
+customForEach(fruits, function(fruit, index) {
+  console.log(`${index}: ${fruit}`);
+});
+// 0: apple
+// 1: banana
+// 2: orange
+```
+
+---
