@@ -1991,3 +1991,297 @@ customForEach(fruits, function(fruit, index) {
 ```
 
 ---
+
+# Map, Filter and Reduce
+
+Understanding the three most powerful array methods in JavaScript.
+
+**What are Map, Filter, and Reduce?**
+
+Map, filter, and reduce are higher order functions in JavaScript that are used for array transformation. They help you loop through arrays and transform them based on the logic you provide in a callback function.
+
+Instead of writing traditional for loops every time, these functions give you a cleaner, more readable way to work with arrays.
+
+**Map Function**
+
+Map is used when you want to transform each element in an array and get a new array back.
+
+**What it does:**
+- Loops through each element in the array
+- Applies the transformation logic from your callback function
+- Returns a NEW transformed array
+- Original array stays unchanged
+
+**Syntax:**
+```javascript
+array.map((element) => {
+  // return transformed element
+});
+```
+
+**Examples:**
+```javascript
+let array = [1, 2, 3, 6];
+
+// Double each number
+let double = array.map((item) => item * 2);
+console.log(double); // [2, 4, 6, 12]
+
+// Triple each number
+let triple = array.map((item) => item * 3);
+console.log(triple); // [3, 6, 9, 18]
+
+console.log(array); // [1, 2, 3, 6] - original unchanged
+```
+
+**Real-world example with objects:**
+```javascript
+let users = [
+  { name: "sachin", age: 29, place: "mumbai" },
+  { name: "virat", age: 21, place: "delhi" },
+  { name: "dhoni", age: 27, place: "rachi" }
+];
+
+// Get array of user names with their places
+let userNames = users.map((user) => user.name + " from " + user.place);
+console.log(userNames);
+// ["sachin from mumbai", "virat from delhi", "dhoni from rachi"]
+
+// Get array of just ages
+let ages = users.map((user) => user.age);
+console.log(ages); // [29, 21, 27]
+```
+
+**When to use map:**
+- When you need to transform every element
+- When you need the same number of elements in output as input
+- When you want to extract specific properties from objects
+
+**Filter Function**
+
+Filter is used when you want to select only certain elements from an array based on a condition.
+
+**What it does:**
+- Loops through each element in the array
+- Tests each element with your condition (callback function)
+- If condition returns `true`, element is included in new array
+- If condition returns `false`, element is skipped
+- Returns a NEW filtered array
+
+**Syntax:**
+```javascript
+array.filter((element) => {
+  // return true to keep, false to remove
+});
+```
+
+**Examples:**
+```javascript
+let array = [1, 2, 3, 6];
+
+// Get only even numbers
+let evenNumbers = array.filter((item) => item % 2 === 0);
+console.log(evenNumbers); // [2, 6]
+
+// Get numbers greater than 2
+let greaterThanTwo = array.filter((item) => item > 2);
+console.log(greaterThanTwo); // [3, 6]
+```
+
+**Real-world example with objects:**
+```javascript
+let users = [
+  { name: "sachin", age: 29, place: "mumbai" },
+  { name: "virat", age: 21, place: "delhi" },
+  { name: "dhoni", age: 27, place: "rachi" }
+];
+
+// Get users older than 21
+let filteredUsers = users.filter((user) => user.age > 21);
+console.log(filteredUsers);
+// [
+//   { name: "sachin", age: 29, place: "mumbai" },
+//   { name: "dhoni", age: 27, place: "rachi" }
+// ]
+
+// Get users from rachi
+let filteredUsersByPlace = users.filter((user) => user.place === "rachi");
+console.log(filteredUsersByPlace);
+// [{ name: "dhoni", age: 27, place: "rachi" }]
+
+// Get users whose name starts with 's'
+let usersStartingWithS = users.filter((user) => user.name.startsWith('s'));
+console.log(usersStartingWithS);
+// [{ name: "sachin", age: 29, place: "mumbai" }]
+```
+
+**When to use filter:**
+- When you need to select elements based on a condition
+- When output array might have fewer elements than input
+- When you want to remove unwanted elements
+
+**Reduce Function**
+
+Reduce is the most powerful and flexible of the three. It's used when you want to reduce an array to a single value.
+
+**What it does:**
+- Loops through each element in the array
+- Maintains an accumulator (the result you're building)
+- Updates the accumulator based on your logic
+- Returns a SINGLE value (can be number, string, object, or even array)
+
+**Syntax:**
+```javascript
+array.reduce((accumulator, currentElement) => {
+  // update and return accumulator
+}, initialValue);
+```
+
+**Important parameters:**
+- `accumulator` (acc): The result you're building up
+- `currentElement` (curr): The current array element being processed
+- `initialValue`: Starting value for the accumulator
+
+**Example 1: Sum of numbers**
+```javascript
+let array = [1, 2, 3, 6];
+
+let sum = array.reduce((acc, curr) => {
+  acc += curr;
+  return acc;
+}, 0);
+
+console.log(sum); // 12
+```
+
+**How it works step by step:**
+```
+Initial: acc = 0 (the initial value we provided)
+
+Step 1: curr = 1, acc = 0 + 1 = 1
+Step 2: curr = 2, acc = 1 + 2 = 3
+Step 3: curr = 3, acc = 3 + 3 = 6
+Step 4: curr = 6, acc = 6 + 6 = 12
+
+Final result: 12
+```
+
+**Shorter version:**
+```javascript
+let sum = array.reduce((acc, curr) => acc + curr, 0);
+```
+
+**Example 2: Find maximum number**
+```javascript
+let array = [1, 2, 3, 6];
+
+let max = array.reduce((acc, curr) => {
+  if (curr > acc) {
+    return curr;
+  }
+  return acc;
+}, array[0]);
+
+console.log(max); // 6
+```
+
+**Example 3: Transform array to object**
+```javascript
+let users = [
+  { name: "sachin", age: 29, place: "mumbai" },
+  { name: "virat", age: 21, place: "delhi" },
+  { name: "dhoni", age: 27, place: "rachi" },
+];
+
+// Group users by place
+let usersByPlace = users.reduce((acc, curr) => {
+  acc[curr.place] = curr;
+  return acc;
+}, {});
+
+console.log(usersByPlace);
+// {
+//   mumbai: { name: 'sachin', age: 29, place: 'mumbai' },
+//   delhi: { name: 'virat', age: 21, place: 'delhi' },
+//   rachi: { name: 'dhoni', age: 27, place: 'rachi' }
+// }
+```
+
+**How this works:**
+```
+Initial: acc = {} (empty object)
+
+Step 1: curr = {name: "sachin", ...}
+  acc["mumbai"] = {name: "sachin", ...}
+  acc = { mumbai: {...} }
+
+Step 2: curr = {name: "virat", ...}
+  acc["delhi"] = {name: "virat", ...}
+  acc = { mumbai: {...}, delhi: {...} }
+
+Step 3: curr = {name: "dhoni", ...}
+  acc["rachi"] = {name: "dhoni", ...}
+  acc = { mumbai: {...}, delhi: {...}, rachi: {...} }
+
+Final result: object with all three users grouped by place
+```
+
+**Example 4: Count occurrences**
+```javascript
+let fruits = ["apple", "banana", "apple", "orange", "banana", "apple"];
+
+let count = fruits.reduce((acc, curr) => {
+  if (acc[curr]) {
+    acc[curr]++;
+  } else {
+    acc[curr] = 1;
+  }
+  return acc;
+}, {});
+
+console.log(count);
+// { apple: 3, banana: 2, orange: 1 }
+```
+
+**When to use reduce:**
+- When you need a single value from an array
+- When you're calculating a sum, average, max, min
+- When you're transforming an array into an object
+- When you're flattening nested arrays
+- When you're grouping or counting data
+
+**Combining Map, Filter, and Reduce**
+
+The real power comes when you chain these methods together!
+```javascript
+let users = [
+  { name: "sachin", age: 29, place: "mumbai" },
+  { name: "virat", age: 21, place: "delhi" },
+  { name: "dhoni", age: 27, place: "rachi" },
+  { name: "rohit", age: 19, place: "mumbai" }
+];
+
+// Get total age of users older than 20
+let totalAge = users
+  .filter((user) => user.age > 20)           // Keep only age > 20
+  .map((user) => user.age)                   // Extract just the ages
+  .reduce((acc, age) => acc + age, 0);       // Sum them up
+
+console.log(totalAge); // 77 (29 + 21 + 27)
+```
+
+**Step by step:**
+```
+Step 1 (filter): Get users with age > 20
+  Result: [
+    { name: "sachin", age: 29, place: "mumbai" },
+    { name: "virat", age: 21, place: "delhi" },
+    { name: "dhoni", age: 27, place: "rachi" }
+  ]
+
+Step 2 (map): Extract just ages
+  Result: [29, 21, 27]
+
+Step 3 (reduce): Sum all ages
+  Result: 77
+```
