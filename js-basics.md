@@ -1992,7 +1992,7 @@ customForEach(fruits, function(fruit, index) {
 
 ---
 
-# Map, Filter and Reduce
+## Map, Filter and Reduce
 
 Understanding the three most powerful array methods in JavaScript.
 
@@ -2285,3 +2285,5 @@ Step 2 (map): Extract just ages
 Step 3 (reduce): Sum all ages
   Result: 77
 ```
+
+---
