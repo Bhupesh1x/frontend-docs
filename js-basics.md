@@ -2287,3 +2287,192 @@ Step 3 (reduce): Sum all ages
 ```
 
 ---
+
+## Callbacks and Callback Hell
+
+Understanding the foundation of async JavaScript and its problems with callbacks.
+
+**What are Callbacks?**
+
+Callbacks are the most important thing in JavaScript when it comes to async programming. In fact, async programming in JavaScript exists because of callback functions.
+
+**Why do we need callbacks?**
+
+Remember, JavaScript is a synchronous single-threaded language. It can do one task at a time in a particular order. Whatever you give to JavaScript, it executes immediately.
+
+But what if we need to wait for something? What if we want to execute a piece of code later, not right now?
+
+This is where callbacks help us!
+
+**Simple Callback Example**
+```javascript
+console.log("Hello world");
+
+setTimeout(() => {
+  console.log("callback called");
+}, 3000);
+
+console.log("End of the code");
+
+// Output:
+// Hello world
+// End of the code
+// callback called (after 3 seconds)
+```
+
+**Real-World Example: API Calls**
+
+Let's say you're building an e-commerce site. When a user clicks "Buy Now", you need to:
+
+1. Create an order
+2. Process payment
+3. Show order summary
+4. Update wallet balance
+
+Each step depends on the previous one completing. Here's how you might write it with callbacks:
+```javascript
+let cart = ["shirt", "pant", "kurta"];
+
+api.createOrder(cart, function() {
+  api.proceedToPayment(function() {
+    api.orderSummary(function() {
+      api.updateWalletBalance();
+    });
+  });
+});
+```
+
+This works, but notice how the code keeps going deeper and deeper? This leads to two major problems.
+
+**Problem 1: Callback Hell**
+
+Callback hell happens when you have multiple callbacks nested inside each other. The code starts to grow horizontally instead of vertically, making it extremely hard to read and maintain.
+
+**Example of Callback Hell:**
+```javascript
+let cart = ["shirt", "pant", "kurta"];
+
+api.createOrder(cart, function(orderId) {
+  
+  api.proceedToPayment(orderId, function(paymentInfo) {
+    
+    api.orderSummary(paymentInfo, function(summary) {
+      
+      api.updateWalletBalance(summary, function(balance) {
+        
+        console.log("Order completed! New balance: " + balance);
+        
+      });
+    });
+  });
+});
+```
+
+See how it keeps going deeper? This is called the **"Pyramid of Doom"** or **"Callback Hell"**.
+
+**Even worse with conditions:**
+
+This is a nightmare to:
+- Read
+- Understand
+- Debug
+- Maintain
+- Modify
+
+**Why is Callback Hell bad?**
+
+1. **Hard to read** - Code grows horizontally, not vertically
+2. **Hard to maintain** - Making changes becomes risky
+3. **Hard to debug** - Finding errors is difficult
+4. **Hard to understand flow** - Logic is buried in nested functions
+5. **Error handling is messy** - Need to handle errors at each level
+
+**Problem 2: Inversion of Control**
+
+This is an even bigger problem than callback hell!
+
+**What is Inversion of Control?**
+
+When you pass your callback function to another function, you're giving away control of your code.
+```javascript
+api.createOrder(cart, function() {
+  // This is YOUR code
+  // But YOU don't control when it runs
+  // api.createOrder controls it!
+});
+```
+
+You're trusting that `api.createOrder` will:
+- Call your callback exactly once
+- Call it at the right time
+- Pass the correct data
+- Not call it if there's an error
+
+But what if the API has bugs?
+
+**What could go wrong:**
+
+**Issue 1: Callback never called**
+```javascript
+api.createOrder(cart, function() {
+  console.log("This might never run!");
+});
+// API has a bug and never calls the callback
+// Your code just waits forever
+```
+
+**Issue 2: Callback called multiple times**
+```javascript
+api.proceedToPayment(orderId, function(paymentInfo) {
+  chargeCustomer(paymentInfo.amount);
+  // What if this API calls the callback twice?
+  // Customer gets charged twice!
+});
+```
+
+**Issue 3: Callback called too early**
+```javascript
+api.fetchUserData(userId, function(userData) {
+  // API calls this before data is ready
+  // userData is undefined or incomplete
+});
+```
+
+**Issue 4: Callback called with wrong data**
+```javascript
+api.getOrderDetails(orderId, function(orderDetails) {
+  // API passes null or incorrect data
+  // Your code breaks
+});
+```
+
+**Real-world disaster scenario:**
+```javascript
+let cart = ["iPhone", "MacBook"];
+
+api.createOrder(cart, function(orderId) {
+  
+  // What if createOrder calls this twice?
+  api.proceedToPayment(orderId, function(paymentInfo) {
+    
+    // Payment happens twice!
+    // Customer charged $3000 instead of $1500
+    
+    api.sendConfirmationEmail(paymentInfo, function() {
+      // Customer gets two emails
+    });
+    
+  });
+  
+});
+```
+
+You have no control over:
+- Whether the callback is called
+- How many times it's called
+- When it's called
+- What data is passed to it
+
+This is **Inversion of Control** - you've inverted (given away) the control of your code execution to someone else's code.
+
+You wrote good code, but the API you're using has a bug. Your users get duplicate emails, and you have no way to prevent it without changing the API itself.
