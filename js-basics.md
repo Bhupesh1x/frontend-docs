@@ -2476,3 +2476,247 @@ You have no control over:
 This is **Inversion of Control** - you've inverted (given away) the control of your code execution to someone else's code.
 
 You wrote good code, but the API you're using has a bug. Your users get duplicate emails, and you have no way to prevent it without changing the API itself.
+
+## Promises
+
+A Promise is a JavaScript object that represents the eventual completion or failure of an asynchronous operation.
+
+**Promise Object Structure**
+
+A Promise is a special object in JavaScript that has two main properties:
+
+1. **PromiseState** - The current status of the promise
+2. **PromiseResult** - The data or error from the async operation
+
+**When a Promise is created:**
+```javascript
+const promise = fetch("https://api.example.com/data");
+
+// Initial state:
+// PromiseState: "pending"
+// PromiseResult: undefined
+```
+
+**When the async operation completes successfully:**
+```javascript
+// After successful completion:
+// PromiseState: "fulfilled"
+// PromiseResult: {the data returned}
+```
+
+**When the async operation fails:**
+```javascript
+// After failure:
+// PromiseState: "rejected"
+// PromiseResult: {error object}
+```
+
+**The Three States of a Promise**
+```
+                    ┌──────────┐
+                    │ PENDING  │ ← Initial state
+                    └─────┬────┘
+                          │
+                ┌─────────┴──────────┐
+                │                    │
+           ┌────▼────┐          ┌───▼────┐
+           │FULFILLED│          │REJECTED│
+           └─────────┘          └────────┘
+         (success)              (failure)
+```
+
+**Using Promises**
+
+You can attach callback functions to a promise using `.then()` for success and `.catch()` for errors:
+```javascript
+const promise = fetch("https://api.example.com/data");
+
+promise
+  .then((data) => {
+    // This runs when promise is fulfilled
+    console.log("Success!", data);
+  })
+  .catch((error) => {
+    // This runs when promise is rejected
+    console.log("Error!", error);
+  });
+```
+
+The callback attached to `.then()` or `.catch()` will be executed automatically once the promise state becomes 'fulfilled' or 'rejected'.
+
+**Important:** The callback is called automatically by JavaScript when the promise resolves - you don't control when it runs, but you're guaranteed it will run by javascript.
+
+**Advantages of Promises**
+
+Promises help us solve the two main problems we faced when handling async operations with just callback functions:
+
+1. Callback Hell
+2. Inversion of Control
+
+Let's understand how promises solve each problem.
+
+**Advantage 1: Solving Inversion of Control**
+
+Remember the problem with callbacks? When we pass our callback function to some API, we lose control:
+```javascript
+// With callbacks - WE LOST CONTROL
+api.createOrder(cart, function(orderId) {
+  // This is OUR code
+  // But the API controls when/if it runs
+  // What if API never calls this?
+  // What if it calls it twice?
+});
+```
+
+We're trusting that the API will:
+- Call our callback
+- Call it only once
+- Call it with correct data
+
+But we have no guarantees!
+
+**How Promises solve this:**
+```javascript
+// With promises - WE HAVE CONTROL AS THE API'S ONLY JOB IS TO RETURN THE PROMISE
+const promise = api.createOrder(cart);
+
+promise.then((orderId) => {
+  // JavaScript GUARANTEES:
+  // 1. This will be called definitely when data arrives
+  // 2. This will be called ONLY ONCE
+  // 3. Promise object is immutable
+});
+```
+
+**Advantage 2: Solving Callback Hell with Promise Chaining**
+
+Remember callback hell? The pyramid of doom?
+
+**With Callbacks (Callback Hell):**
+```javascript
+let cart = ["shirt", "pants", "kurta"];
+
+api.createOrder(cart, function(orderId) {
+  
+  api.proceedToPayment(orderId, function(paymentInfo) {
+    
+    api.orderSummary(paymentInfo, function(summary) {
+      
+      api.updateWalletBalance(summary, function() {
+        console.log("Order complete!");
+      });
+      
+    });
+  });
+});
+```
+
+Code grows horizontally → hard to read and maintain.
+
+**With Promises (Promise Chaining):**
+```javascript
+let cart = ["shirt", "pants", "kurta"];
+
+api.createOrder(cart)
+  .then((orderId) => api.proceedToPayment(orderId))
+  .then((paymentInfo) => api.orderSummary(paymentInfo))
+  .then((summary) => api.updateWalletBalance(summary))
+  .then(() => console.log("Order complete!"));
+```
+
+Code grows vertically → much easier to read!
+
+**How Promise Chaining Works**
+
+Each `.then()` can return a new promise, which allows you to chain them:
+```javascript
+api.createOrder(cart)           // Returns Promise<orderId>
+  .then((orderId) => {
+    console.log("Order created:", orderId);
+    return api.proceedToPayment(orderId);  // Returns Promise<paymentInfo>
+  })
+  .then((paymentInfo) => {
+    console.log("Payment done:", paymentInfo);
+    return api.orderSummary(paymentInfo);  // Returns Promise<summary>
+  })
+  .then((summary) => {
+    console.log("Summary:", summary);
+    return api.updateWalletBalance(summary);  // Returns Promise<balance>
+  })
+  .then((balance) => {
+    console.log("New balance:", balance);
+  });
+```
+
+**Flow of Promise Chain:**
+```
+Step 1: createOrder runs
+   ↓
+Returns promise with orderId
+   ↓
+Step 2: First .then() receives orderId
+   ↓
+Calls proceedToPayment
+   ↓
+Returns promise with paymentInfo
+   ↓
+Step 3: Second .then() receives paymentInfo
+   ↓
+Calls orderSummary
+   ↓
+Returns promise with summary
+   ↓
+Step 4: Third .then() receives summary
+   ↓
+Calls updateWalletBalance
+   ↓
+Done!
+```
+
+**Advantage 3: Promise Immutability**
+
+Once a promise is resolved (fulfilled or rejected), its value cannot be changed:
+```javascript
+const promise = api.getData();
+
+promise.then((data) => {
+  console.log(data); // "Hello"
+});
+
+// Later, somewhere else in code
+promise.then((data) => {
+  console.log(data); // Still "Hello" - same value!
+});
+
+// You cannot modify the promise result
+// It's safe to pass around
+```
+
+This means you can:
+- Pass promises to different parts of your code
+- Attach multiple `.then()` handlers
+- Be confident the value won't change
+
+---
+
+**Key differences/Summary:**
+
+1. **We're not passing our code to the API** - We're attaching our callback to the promise object that the API returns
+
+2. **JavaScript gives us guarantees:**
+   - Callback will be called when promise resolves
+   - Callback will be called exactly once
+   - Promise state can only change once (pending → fulfilled or pending → rejected)
+
+3. **Promise object is immutable** - Once a promise is resolved, its value cannot be changed. You can pass it around safely.
+```javascript
+const orderPromise = api.createOrder(cart);
+
+// You can pass this promise around
+handleOrder(orderPromise);
+logOrder(orderPromise);
+trackOrder(orderPromise);
+
+// No one can change the promise result. orderResponse.data = "something" is not allowed
+// Everyone gets the same data when promise resolves
+```
