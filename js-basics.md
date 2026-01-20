@@ -2720,3 +2720,293 @@ trackOrder(orderPromise);
 // No one can change the promise result. orderResponse.data = "something" is not allowed
 // Everyone gets the same data when promise resolves
 ```
+
+## Promise Chaining and Creating Promises
+
+Understanding how to create your own promises and chain them together.
+
+**Real-World Example: E-commerce Order Flow**
+
+Let's build a complete order processing system with promises. When a user places an order, we need to:
+
+1. Create the order
+2. Process payment
+3. Generate order summary
+4. Update wallet balance
+
+Each step depends on the previous one, so we'll use promise chaining.
+
+Now let's understand each part step by step.
+
+**Creating a Promise**
+
+To create a promise, use the `new Promise()` constructor:
+```javascript
+const myPromise = new Promise((resolve, reject) => {
+  // Your async code here
+});
+```
+
+The Promise constructor takes a function with two parameters:
+- `resolve` - Call this when operation succeeds
+- `reject` - Call this when operation fails
+
+```javascript
+const cart = ["kurta", "pants", "shoes"];
+let walletBalance = 500;
+```
+
+**Example 1: Creating the Order**
+```javascript
+function createOrder() {
+  return new Promise((resolve, reject) => {
+    // Step 1: Validate the cart
+    if (!validateCart(cart)) {
+      const error = new Error("Cart is not valid");
+      reject(error);  // Reject if cart is invalid
+      return;
+    }
+
+    // Step 2: Create order ID
+    let orderId = "12345";
+    
+    // Step 3: Simulate async operation (like API call)
+    setTimeout(() => {
+      resolve(orderId);  // Resolve with order ID after 3 seconds
+    }, 3000);
+  });
+}
+
+function validateCart(cart) {
+  if (!cart?.length) return false;
+  return true;
+}
+```
+
+**Understanding resolve and reject:**
+```javascript
+new Promise((resolve, reject) => {
+  
+  // If everything is good:
+  resolve(data);  // Promise becomes "fulfilled"
+  
+  // If something goes wrong:
+  reject(error);  // Promise becomes "rejected"
+  
+});
+```
+
+**Example 2: Processing Payment**
+```javascript
+function proceedToPayment(orderId) {
+  return new Promise((resolve, reject) => {
+    // Validate order ID
+    if (!orderId) {
+      const error = new Error("Order ID is not valid");
+      reject(error);
+      return;
+    }
+
+    // Process payment
+    let paymentInfo = { 
+      paymentStatus: "success", 
+      paymentAmount: 100 
+    };
+    
+    // Simulate payment processing (2 seconds)
+    setTimeout(() => {
+      resolve(paymentInfo);
+    }, 2000);
+  });
+}
+```
+
+**Example 3: Generating Order Summary**
+```javascript
+function orderSummary(paymentInfo) {
+  return new Promise((resolve, reject) => {
+    // Check if payment was successful
+    if (paymentInfo?.paymentStatus !== "success") {
+      const error = new Error("Invalid payment status");
+      reject(error);
+      return;
+    }
+
+    // Create summary
+    let summary = { cart, paymentInfo };
+    
+    // Simulate summary generation (3 seconds)
+    setTimeout(() => {
+      resolve(summary);
+    }, 3000);
+  });
+}
+```
+
+**Example 4: Updating Wallet Balance**
+```javascript
+function updateWalletBalance(summary) {
+  return new Promise((resolve, reject) => {
+    // Validate summary data
+    if (!summary?.cart || !summary?.paymentInfo) {
+      const error = new Error("Invalid data");
+      reject(error);
+      return;
+    }
+
+    // Calculate new balance
+    let remainingBalance = walletBalance - summary?.paymentInfo?.paymentAmount;
+    
+    // Simulate wallet update (1 second)
+    setTimeout(() => {
+      resolve(remainingBalance);
+    }, 1000);
+  });
+}
+```
+
+**Understanding the Promise Chain**
+
+Now let's trace through the entire flow:
+```javascript
+createOrder()                           // Step 1: Start here
+  .then((orderId) => {                  // Step 2: Receives orderId
+    console.log("Order ID:", orderId);  // Logs: "12345"
+    return orderId;                     // Pass to next .then()
+  })
+  .then((orderId) => {                  // Step 3: Receives orderId
+    return proceedToPayment(orderId);   // Returns a promise
+  })
+  .then((paymentInfo) => {              // Step 4: Receives paymentInfo
+    console.log("Payment Info:", paymentInfo);
+    return paymentInfo;                 // Pass to next .then()
+  })
+  .then((paymentInfo) => {              // Step 5: Receives paymentInfo
+    return orderSummary(paymentInfo);   // Returns a promise
+  })
+  .then((summary) => {                  // Step 6: Receives summary
+    console.log("Order Summary:", summary);
+    return summary;                     // Pass to next .then()
+  })
+  .then((summary) => {                  // Step 7: Receives summary
+    return updateWalletBalance(summary);// Returns a promise
+  })
+  .then((remainingBalance) => {         // Step 8: Receives balance
+    console.log("Remaining Balance:", remainingBalance);
+  })
+  .catch((error) => {                   // Catches ANY error above
+    console.error("Error:", error?.message);
+  });
+```
+
+**Important Rule: Always Return**
+
+In promise chains, you need to return values to pass them to the next `.then()`:
+```javascript
+// ✓ Correct - returning the value
+.then((orderId) => {
+  return proceedToPayment(orderId);
+})
+
+// ✗ Wrong - not returning
+.then((orderId) => {
+  proceedToPayment(orderId);  // Next .then() gets undefined!
+})
+```
+
+**Error Handling in Promise Chains**
+
+What happens if the cart is empty?
+```javascript
+const cart = [];  // Empty cart!
+
+createOrder()
+  .then((orderId) => {
+    console.log("Order ID:", orderId);  // Never runs
+    return orderId;
+  })
+  .then((orderId) => {
+    return proceedToPayment(orderId);   // Never runs
+  })
+  // ... all other .then() are skipped
+  .catch((error) => {
+    console.error("Error:", error?.message);  // Runs here!
+    // Logs: "Error: Cart is not valid"
+  });
+```
+
+**Important:** When any promise rejects, it skips all `.then()` blocks and jumps directly to `.catch()`! And .catch covers all the .then above it.
+
+**Visual Flow with Error:**
+```
+createOrder()
+   ↓
+Cart invalid!
+   ↓
+reject(error)
+   ↓
+Skip all .then()
+   ↓
+.catch() receives error
+   ↓
+Log error message
+```
+
+**Handling Errors at Different Levels**
+
+You can have multiple `.catch()` blocks:
+```javascript
+createOrder()
+  .then((orderId) => proceedToPayment(orderId))
+  .catch((error) => {
+    console.log("Order creation failed:", error.message);
+    throw error;  // Re-throw to continue error chain
+  })
+  .then((paymentInfo) => orderSummary(paymentInfo))
+  .catch((error) => {
+    console.log("Payment failed:", error.message);
+    throw error;
+  })
+  .then((summary) => updateWalletBalance(summary))
+  .catch((error) => {
+    console.log("Final error handler:", error.message);
+  });
+```
+
+**Key Points About Promise Chains**
+
+**1. Each .then() returns a new promise:**
+```javascript
+const promise1 = createOrder();           // Promise
+const promise2 = promise1.then(...);      // New Promise
+const promise3 = promise2.then(...);      // Another new Promise
+```
+
+**2. Data flows down the chain:**
+```javascript
+createOrder()          // Returns orderId
+  .then((orderId) => { // Receives orderId
+    return "modified";  // Returns "modified"
+  })
+  .then((data) => {     // Receives "modified", not orderId
+    console.log(data);  // "modified"
+  });
+```
+
+**3. Errors propagate down until caught:**
+```javascript
+step1()
+  .then(step2)
+  .then(step3)  // Error happens here
+  .then(step4)  // Skipped
+  .then(step5)  // Skipped
+  .catch(handleError);  // Catches error from step3
+```
+
+**Best Practices**
+
+1. **Always return** in `.then()` if you need the value in next step
+2. **Add `.catch()`** at the end to handle errors
+3. **Keep chains readable** - one operation per `.then()`
+4. **Validate inputs** before doing async operations
+5. **Create descriptive error messages**
