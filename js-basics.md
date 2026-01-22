@@ -3010,3 +3010,527 @@ step1()
 3. **Keep chains readable** - one operation per `.then()`
 4. **Validate inputs** before doing async operations
 5. **Create descriptive error messages**
+
+## Async/Await in JavaScript
+
+Async/await is a modern way to handle promises in JavaScript. It makes async code easier to read and understand.
+
+**The `async` Keyword**
+
+`async` is a keyword used before a function to make it an async function.
+```javascript
+async function fetchData() {
+  // This is an async function
+}
+```
+
+**Key difference from normal functions:**
+
+An async function ALWAYS returns a promise, even if you return a regular value.
+```javascript
+// Normal function
+function regularFunction() {
+  return "Hello";
+}
+
+console.log(regularFunction()); // "Hello"
+
+// Async function
+async function asyncFunction() {
+  return "Hello";
+}
+
+console.log(asyncFunction()); // Promise {<fulfilled>: "Hello"}
+```
+
+Even though we returned a string, the async function automatically wraps it in a promise! And if we return a promise directly then that promise will be the returned value.
+
+**Using the returned promise:**
+```javascript
+async function greet() {
+  return "Hello World";
+}
+
+greet().then((message) => {
+  console.log(message); // "Hello World"
+});
+```
+
+**The `await` Keyword**
+
+`await` is used before a promise to wait for it to resolve.
+
+**Important rules:**
+1. `await` can ONLY be used inside an `async` function
+2. `await` pauses the function execution until the promise resolves
+3. `await` returns the resolved value of the promise
+```javascript
+async function fetchData() {
+  const result = await somePromise;
+  console.log(result); // The resolved value
+}
+```
+
+**Simple Example:**
+```javascript
+function getData() {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve("Data received!");
+    }, 2000);
+  });
+}
+
+async function fetchData() {
+  console.log("Fetching data...");
+  
+  const data = await getData(); // Wait for promise to resolve
+  
+  console.log(data); // "Data received!" (after 2 seconds)
+}
+
+fetchData();
+// Output:
+// Fetching data...
+// (wait 2 seconds)
+// Data received!
+```
+
+**Async/Await is Syntactic Sugar**
+
+Behind the scenes, async/await is just a cleaner way to write `.then()` and `.catch()`. JavaScript still uses promises underneath.
+```javascript
+// Using .then()
+function fetchData() {
+  getData()
+    .then((data) => {
+      console.log(data);
+    });
+}
+
+// Using async/await (same thing, cleaner syntax)
+async function fetchData() {
+  const data = await getData();
+  console.log(data);
+}
+```
+
+Both do the same thing, but async/await is more readable!
+
+**Key Difference: Function Suspension**
+
+This is where async/await behaves differently from `.then()`.
+
+**With `.then()` - code below executes immediately:**
+```javascript
+function fetchData() {
+  p1.then((res) => {
+    console.log(res); // Printed after 5s
+  });
+  
+  console.log("Hello world"); // Printed IMMEDIATELY
+}
+
+// Output:
+// Hello world (immediately)
+// (promise result after 5s)
+```
+
+**With `await` - function gets suspended:**
+```javascript
+async function fetchData() {
+  const res = await p1; // Function PAUSES here
+  
+  console.log(res); // Printed after 5s
+  console.log("Hello world"); // Also printed after 5s
+}
+
+// Output:
+// (wait 5 seconds)
+// (promise result)
+// Hello world
+```
+
+**What happens when function is suspended?**
+
+1. When `await` is encountered, the function is paused
+2. The function is removed from the call stack
+3. Other code continues to execute
+4. When promise resolves, event loop puts the function back in call stack
+5. Function resumes from where it left off
+
+**Important:** Only the FUNCTION is suspended, not the entire JavaScript execution!
+```javascript
+async function fetchData() {
+  console.log("Start");
+  
+  const data = await getData(); // Function pauses HERE
+  
+  console.log("Data:", data);
+  console.log("End");
+}
+
+fetchData();
+console.log("Outside function"); // This runs while fetchData is waiting!
+
+// Output:
+// Start
+// Outside function (runs while fetchData is paused!)
+// Data: ... (after promise resolves)
+// End
+```
+
+**Real-World Example: E-commerce Order**
+
+Let's rewrite our order flow using async/await:
+
+**With Promises (.then chain):**
+```javascript
+createOrder(cart)
+  .then((orderId) => {
+    console.log("Order ID:", orderId);
+    return proceedToPayment(orderId);
+  })
+  .then((paymentInfo) => {
+    console.log("Payment Info:", paymentInfo);
+    return orderSummary(paymentInfo);
+  })
+  .then((summary) => {
+    console.log("Order Summary:", summary);
+    return updateWalletBalance(summary);
+  })
+  .then((balance) => {
+    console.log("Remaining Balance:", balance);
+  })
+  .catch((error) => {
+    console.error("Error:", error.message);
+  });
+```
+
+**With Async/Await (cleaner!):**
+```javascript
+async function processOrder() {
+  try {
+    const orderId = await createOrder(cart);
+    console.log("Order ID:", orderId);
+    
+    const paymentInfo = await proceedToPayment(orderId);
+    console.log("Payment Info:", paymentInfo);
+    
+    const summary = await orderSummary(paymentInfo);
+    console.log("Order Summary:", summary);
+    
+    const balance = await updateWalletBalance(summary);
+    console.log("Remaining Balance:", balance);
+    
+  } catch (error) {
+    console.error("Error:", error.message);
+  }
+}
+
+processOrder();
+```
+
+Much cleaner and easier to read! It looks like synchronous code.
+
+**Error Handling with Try/Catch**
+
+With async/await, we use `try/catch` to handle errors instead of `.catch()`.
+```javascript
+async function fetchUserData() {
+  try {
+    const user = await getUser();
+    const orders = await getOrders(user.id);
+    console.log(orders);
+  } catch (error) {
+    console.error("Something went wrong:", error.message);
+  }
+}
+```
+
+If ANY await inside the `try` block rejects, it jumps to the `catch` block.
+
+**Multiple Awaits - Sequential Execution**
+
+When you have multiple `await` statements, they execute one after another (sequentially).
+
+**Example 1: p1 takes longest (5 seconds)**
+```javascript
+// p1 - 5s, p2 - 3s, p3 - 1s
+
+async function getData() {
+  const result1 = await p1;
+  console.log("P1 result", result1); // After 5 seconds
+  
+  const result2 = await p2;
+  console.log("P2 result", result2); // After 5 seconds (not 8!)
+  
+  const result3 = await p3;
+  console.log("P3 result", result3); // After 5 seconds (not 9!)
+}
+```
+
+**Why all after 5 seconds?**
+
+**Timeline:**
+```
+Time 0s:
+  - await p1 encountered
+  - p1 starts (5s timer)
+  - p2 starts in background (3s timer)
+  - p3 starts in background (1s timer)
+  - Function suspended
+
+Time 1s:
+  - p3 completes (but we're not awaiting it yet)
+
+Time 3s:
+  - p2 completes (but we're not awaiting it yet)
+
+Time 5s:
+  - p1 completes
+  - Function resumes
+  - Logs "P1 result"
+  - Encounters await p2
+  - p2 ALREADY resolved! (at 3s)
+  - Immediately gets p2 result
+  - Logs "P2 result"
+  - Encounters await p3
+  - p3 ALREADY resolved! (at 1s)
+  - Immediately gets p3 result
+  - Logs "P3 result"
+```
+
+All three are logged at 5 seconds because p2 and p3 finished earlier while waiting for p1!
+
+**Example 2: p3 takes longest (6 seconds)**
+```javascript
+// p1 - 1s, p2 - 4s, p3 - 6s
+
+async function getData() {
+  const result1 = await p1;
+  console.log("P1 result", result1); // After 1 second
+  
+  const result2 = await p2;
+  console.log("P2 result", result2); // After 4 seconds
+  
+  const result3 = await p3;
+  console.log("P3 result", result3); // After 6 seconds
+}
+```
+
+**Timeline:**
+```
+Time 0s:
+  - await p1 encountered
+  - All promises start because they are directly called
+  - Function suspended
+
+Time 1s:
+  - p1 completes
+  - Function resumes
+  - Logs "P1 result"
+  - Encounters await p2
+  - p2 still running (needs 3 more seconds)
+  - Function suspended again
+
+Time 4s:
+  - p2 completes
+  - Function resumes
+  - Logs "P2 result"
+  - Encounters await p3
+  - p3 still running (needs 2 more seconds)
+  - Function suspended again
+
+Time 6s:
+  - p3 completes
+  - Function resumes
+  - Logs "P3 result"
+```
+
+**Understanding Promise Registration**
+
+Important concept: When you create a promise or call a function that returns a promise, it starts executing IMMEDIATELY, even before you `await` it.
+```javascript
+async function example() {
+  // These promises START executing immediately
+  const p1 = slowOperation1(); // Starts now!
+  const p2 = slowOperation2(); // Starts now!
+  const p3 = slowOperation3(); // Starts now!
+  
+  // Now we wait for them
+  const result1 = await p1;
+  const result2 = await p2;
+  const result3 = await p3;
+}
+```
+
+All three operations run concurrently! But we wait for them sequentially.
+
+**Parallel vs Sequential Execution**
+
+**Sequential (slower):**
+```javascript
+async function sequential() {
+  const result1 = await slowOperation1(); // Wait 3s
+  const result2 = await slowOperation2(); // Wait 3s
+  const result3 = await slowOperation3(); // Wait 3s
+  // Total: 9 seconds
+}
+```
+
+**Parallel (faster):**
+```javascript
+async function parallel() {
+  // Start all at once
+  const p1 = slowOperation1();
+  const p2 = slowOperation2();
+  const p3 = slowOperation3();
+  
+  // Wait for all
+  const result1 = await p1;
+  const result2 = await p2;
+  const result3 = await p3;
+  // Total: 3 seconds (they run together!)
+}
+```
+
+**Or use Promise.all:**
+```javascript
+async function parallel() {
+  const results = await Promise.all([
+    slowOperation1(),
+    slowOperation2(),
+    slowOperation3()
+  ]);
+  // Total: 3 seconds
+}
+```
+
+**How Function Suspension Works**
+
+Let's trace through execution step by step:
+```javascript
+const p1 = new Promise((resolve) => {
+  setTimeout(() => resolve("P1 done"), 5000);
+});
+
+async function handleData() {
+  console.log("Before await");
+  
+  const result = await p1; // Function pauses here
+  
+  console.log("After await:", result);
+  console.log("Function complete");
+}
+
+console.log("Start");
+handleData();
+console.log("End");
+```
+
+**Execution flow:**
+```
+1. "Start" prints
+2. handleData() called
+3. "Before await" prints
+4. await p1 encountered
+5. Function SUSPENDED and removed from call stack
+6. "End" prints (code outside continues!)
+7. ... wait 5 seconds ...
+8. p1 resolves
+9. handleData() back to call stack via microtask queue
+10. "After await: P1 done" prints
+11. "Function complete" prints
+```
+
+**Output:**
+```
+Start
+Before await
+End
+(wait 5 seconds)
+After await: P1 done
+Function complete
+```
+
+**Common Mistakes**
+
+**Mistake 1: Forgetting `async` keyword**
+```javascript
+// ✗ Wrong
+function getData() {
+  const data = await fetchData(); // Error! await only in async
+}
+
+// ✓ Correct
+async function getData() {
+  const data = await fetchData();
+}
+```
+
+**Mistake 2: Not using `await`**
+```javascript
+// ✗ Wrong
+async function getData() {
+  const data = fetchData(); // Returns promise, not data!
+  console.log(data); // Promise object
+}
+
+// ✓ Correct
+async function getData() {
+  const data = await fetchData(); // Returns actual data
+  console.log(data); // The data
+}
+```
+
+**Mistake 3: Sequential when parallel would be better**
+```javascript
+// ✗ Slower (6 seconds total)
+async function getUsers() {
+  const user1 = await fetchUser(1); // 3s
+  const user2 = await fetchUser(2); // 3s
+}
+
+// ✓ Faster (3 seconds total)
+async function getUsers() {
+  const [user1, user2] = await Promise.all([
+    fetchUser(1),
+    fetchUser(2)
+  ]);
+}
+```
+
+**When to Use What?**
+
+**Use async/await when:**
+- You want cleaner, more readable code
+- You have sequential operations
+- You need to use values from previous operations
+- You want easier debugging
+
+**Use .then() when:**
+- You need code below to execute immediately
+- You're working with older codebases
+- You have simple promise chains
+
+**Key Takeaways**
+
+1. **`async` makes function always return a promise**
+
+2. **`await` pauses function until promise resolves**
+
+3. **Only function is suspended**, not entire JavaScript execution
+
+4. **Async/await is syntactic sugar** over promises
+
+5. **Use try/catch** for error handling
+
+6. **Multiple awaits execute sequentially** but promises can resolve in parallel
+
+7. **Function suspension:**
+   - Function removed from call stack
+   - Goes to microtask queue when promise resolves
+   - Event loop brings it back to call stack
+
+8. **Code after await doesn't execute** until promise resolves (unlike .then)
