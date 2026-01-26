@@ -3534,3 +3534,437 @@ async function getUsers() {
    - Event loop brings it back to call stack
 
 8. **Code after await doesn't execute** until promise resolves (unlike .then)
+
+## Promise APIs
+
+JavaScript provides several built-in methods to work with multiple promises at once. Let's understand each one.
+
+**Overview**
+
+All these methods:
+- Take an iterable (usually an array) of promises
+- Make concurrent requests (all promises run together)
+- Return different results based on their behavior
+
+The four main Promise APIs are:
+1. `Promise.all()`
+2. `Promise.allSettled()`
+3. `Promise.race()`
+4. `Promise.any()`
+
+**Promise.all()**
+
+`Promise.all()` waits for ALL promises to succeed. If any promise fails, it immediately returns that error.
+
+**Use case:** When you need ALL operations to succeed.
+
+**Syntax:**
+```javascript
+const result = await Promise.all([p1, p2, p3]);
+```
+
+**Success Case: All promises succeed**
+```javascript
+const p1 = new Promise((resolve) => setTimeout(() => resolve("P1 success"), 2000));
+const p2 = new Promise((resolve) => setTimeout(() => resolve("P2 success"), 3000));
+const p3 = new Promise((resolve) => setTimeout(() => resolve("P3 success"), 1000));
+
+const result = await Promise.all([p1, p2, p3]);
+console.log(result);
+// ["P1 success", "P2 success", "P3 success"]
+// After 3 seconds (waits for slowest promise)
+```
+
+**Timeline:**
+```
+Time 0s:  All promises start
+Time 1s:  p3 completes ✓
+Time 2s:  p1 completes ✓
+Time 3s:  p2 completes ✓ → Promise.all resolves
+Result: ["P1 success", "P2 success", "P3 success"]
+```
+
+**Error Case: Any promise fails**
+```javascript
+const p1 = new Promise((resolve, reject) => setTimeout(() => reject("P1 error"), 2000));
+const p2 = new Promise((resolve) => setTimeout(() => resolve("P2 success"), 3000));
+const p3 = new Promise((resolve) => setTimeout(() => resolve("P3 success"), 1000));
+
+try {
+  const result = await Promise.all([p1, p2, p3]);
+} catch (error) {
+  console.log(error);
+  // "P1 error"
+  // After 2 seconds (fails immediately when first promise rejects)
+}
+```
+
+**Timeline:**
+```
+Time 0s:  All promises start
+Time 1s:  p3 completes ✓
+Time 2s:  p1 FAILS ✗ → Promise.all immediately rejects
+Time 3s:  p2 completes ✓ (but Promise.all already failed)
+Result: "P1 error" (after 2 seconds)
+```
+
+**Key points about Promise.all():**
+
+1. **Waits for ALL** promises to resolve
+2. **Fails fast** - returns error as soon as ANY promise rejects
+3. **Returns array** of results in same order as input
+4. **Total time** = time of slowest promise
+5. **Use when** you need all operations to succeed
+
+**Real-world example:**
+```javascript
+async function loadUserDashboard(userId) {
+  try {
+    // Need ALL data before showing dashboard
+    const [user, orders, notifications] = await Promise.all([
+      fetchUser(userId),
+      fetchOrders(userId),
+      fetchNotifications(userId)
+    ]);
+    
+    displayDashboard(user, orders, notifications);
+  } catch (error) {
+    console.error("Failed to load dashboard:", error);
+  }
+}
+```
+
+**Promise.allSettled()**
+
+`Promise.allSettled()` waits for ALL promises to complete (either resolve or reject). It never fails - it always returns results for all promises.
+
+**Use case:** When you want to know the outcome of ALL promises, regardless of success or failure.
+
+**Syntax:**
+```javascript
+const result = await Promise.allSettled([p1, p2, p3]);
+```
+
+**Success Case: All promises succeed**
+```javascript
+const p1 = new Promise((resolve) => setTimeout(() => resolve("P1 success"), 2000));
+const p2 = new Promise((resolve) => setTimeout(() => resolve("P2 success"), 3000));
+const p3 = new Promise((resolve) => setTimeout(() => resolve("P3 success"), 1000));
+
+const result = await Promise.allSettled([p1, p2, p3]);
+console.log(result);
+// [
+//   { status: "fulfilled", value: "P1 success" },
+//   { status: "fulfilled", value: "P2 success" },
+//   { status: "fulfilled", value: "P3 success" }
+// ]
+// After 3 seconds (waits for all to complete)
+```
+
+**Mixed Case: Some succeed, some fail**
+```javascript
+const p1 = new Promise((resolve, reject) => setTimeout(() => reject("P1 error"), 2000));
+const p2 = new Promise((resolve) => setTimeout(() => resolve("P2 success"), 3000));
+const p3 = new Promise((resolve) => setTimeout(() => resolve("P3 success"), 1000));
+
+const result = await Promise.allSettled([p1, p2, p3]);
+console.log(result);
+// [
+//   { status: "rejected", reason: "P1 error" },
+//   { status: "fulfilled", value: "P2 success" },
+//   { status: "fulfilled", value: "P3 success" }
+// ]
+// After 3 seconds (waits for ALL to complete)
+```
+
+**Timeline:**
+```
+Time 0s:  All promises start
+Time 1s:  p3 completes ✓
+Time 2s:  p1 FAILS ✗ (but continues waiting)
+Time 3s:  p2 completes ✓ → Promise.allSettled resolves
+Result: Array with all outcomes (after 3 seconds)
+```
+
+**Key points about Promise.allSettled():**
+
+1. **Waits for ALL** promises to complete (success or failure)
+2. **Never rejects** - always returns an array of results
+3. **Returns objects** with `status` and `value`/`reason`
+4. **Total time** = time of slowest promise
+5. **Use when** you want results from all promises regardless of failures
+
+**Real-world example:**
+```javascript
+async function uploadMultipleFiles(files) {
+  const uploadPromises = files.map(file => uploadFile(file));
+  
+  const results = await Promise.allSettled(uploadPromises);
+  
+  const successful = results.filter(r => r.status === "fulfilled");
+  const failed = results.filter(r => r.status === "rejected");
+  
+  console.log(`${successful.length} uploaded, ${failed.length} failed`);
+  
+  // Show which files failed
+  failed.forEach((result, index) => {
+    console.log(`File ${index} failed:`, result.reason);
+  });
+}
+```
+
+**Promise.race()**
+
+`Promise.race()` returns the result of the FIRST promise that settles (either resolves or rejects).
+
+**Use case:** When you only care about the fastest response, or want to set timeouts.
+
+**Syntax:**
+```javascript
+const result = await Promise.race([p1, p2, p3]);
+```
+
+**Success Case: Fastest promise succeeds**
+```javascript
+const p1 = new Promise((resolve) => setTimeout(() => resolve("P1 success"), 2000));
+const p2 = new Promise((resolve) => setTimeout(() => resolve("P2 success"), 3000));
+const p3 = new Promise((resolve) => setTimeout(() => resolve("P3 success"), 1000));
+
+const result = await Promise.race([p1, p2, p3]);
+console.log(result);
+// "P3 success"
+// After 1 second (first to complete)
+```
+
+**Timeline:**
+```
+Time 0s:  All promises start
+Time 1s:  p3 completes ✓ → Promise.race resolves immediately
+Time 2s:  p1 completes ✓ (ignored)
+Time 3s:  p2 completes ✓ (ignored)
+Result: "P3 success" (after 1 second)
+```
+
+**Error Case: Fastest promise fails**
+```javascript
+const p1 = new Promise((resolve) => setTimeout(() => resolve("P1 success"), 2000));
+const p2 = new Promise((resolve) => setTimeout(() => resolve("P2 success"), 3000));
+const p3 = new Promise((resolve, reject) => setTimeout(() => reject("P3 error"), 1000));
+
+try {
+  const result = await Promise.race([p1, p2, p3]);
+} catch (error) {
+  console.log(error);
+  // "P3 error"
+  // After 1 second (first to settle, even though it failed)
+}
+```
+
+**Timeline:**
+```
+Time 0s:  All promises start
+Time 1s:  p3 FAILS ✗ → Promise.race rejects immediately
+Time 2s:  p1 completes ✓ (ignored)
+Time 3s:  p2 completes ✓ (ignored)
+Result: "P3 error" (after 1 second)
+```
+
+**Key points about Promise.race():**
+
+1. **Returns FIRST** settled promise (success or failure)
+2. **Can succeed or fail** depending on which finishes first
+3. **Ignores** all other promises after first one settles
+4. **Total time** = time of fastest promise
+5. **Use when** you want the fastest result or need timeouts
+
+**Real-world example: Multiple API servers**
+```javascript
+async function fetchFromFastestServer(data) {
+  // Try multiple servers, use whichever responds first
+  const result = await Promise.race([
+    fetch("https://server1.com/api", { body: data }),
+    fetch("https://server2.com/api", { body: data }),
+    fetch("https://server3.com/api", { body: data })
+  ]);
+  return result;
+}
+```
+
+**Promise.any()**
+
+`Promise.any()` returns the FIRST promise that successfully resolves. It ignores rejections until all promises fail.
+
+**Use case:** When you need at least one successful result, and don't care which one.
+
+**Syntax:**
+```javascript
+const result = await Promise.any([p1, p2, p3]);
+```
+
+**Success Case: At least one promise succeeds**
+```javascript
+const p1 = new Promise((resolve) => setTimeout(() => resolve("P1 success"), 2000));
+const p2 = new Promise((resolve) => setTimeout(() => resolve("P2 success"), 3000));
+const p3 = new Promise((resolve) => setTimeout(() => resolve("P3 success"), 1000));
+
+const result = await Promise.any([p1, p2, p3]);
+console.log(result);
+// "P3 success"
+// After 1 second (first successful promise)
+```
+
+**Timeline:**
+```
+Time 0s:  All promises start
+Time 1s:  p3 succeeds ✓ → Promise.any resolves immediately
+Time 2s:  p1 succeeds ✓ (ignored)
+Time 3s:  p2 succeeds ✓ (ignored)
+Result: "P3 success" (after 1 second)
+```
+
+**Mixed Case: Some fail, but at least one succeeds**
+```javascript
+const p1 = new Promise((resolve) => setTimeout(() => resolve("P1 success"), 2000));
+const p2 = new Promise((resolve) => setTimeout(() => resolve("P2 success"), 3000));
+const p3 = new Promise((resolve, reject) => setTimeout(() => reject("P3 error"), 1000));
+
+const result = await Promise.any([p1, p2, p3]);
+console.log(result);
+// "P1 success"
+// After 2 seconds (first successful promise, ignores p3 failure)
+```
+
+**Timeline:**
+```
+Time 0s:  All promises start
+Time 1s:  p3 FAILS ✗ (ignored, waiting for success)
+Time 2s:  p1 succeeds ✓ → Promise.any resolves
+Time 3s:  p2 succeeds ✓ (ignored)
+Result: "P1 success" (after 2 seconds)
+```
+
+**All Fail Case: Every promise rejects**
+```javascript
+const p1 = new Promise((resolve, reject) => setTimeout(() => reject("P1 error"), 2000));
+const p2 = new Promise((resolve, reject) => setTimeout(() => reject("P2 error"), 3000));
+const p3 = new Promise((resolve, reject) => setTimeout(() => reject("P3 error"), 1000));
+
+try {
+  const result = await Promise.any([p1, p2, p3]);
+} catch (error) {
+  console.log(error.errors);
+  // ["P1 error", "P2 error", "P3 error"]
+  // After 3 seconds (waits for all to fail)
+  console.log(error.constructor.name);
+  // "AggregateError"
+}
+```
+
+**Timeline:**
+```
+Time 0s:  All promises start
+Time 1s:  p3 FAILS ✗ (ignored, still hoping for success)
+Time 2s:  p1 FAILS ✗ (ignored, still hoping for success)
+Time 3s:  p2 FAILS ✗ → All failed, Promise.any rejects with AggregateError
+Result: AggregateError with all errors (after 3 seconds)
+```
+
+**Key points about Promise.any():**
+
+1. **Returns FIRST** successful promise
+2. **Ignores failures** until all promises fail
+3. **Only rejects** if ALL promises fail (AggregateError)
+4. **Total time** = time of first success (or all failures)
+5. **Use when** you need at least one success
+
+**Real-world example:**
+```javascript
+async function loadImage(urls) {
+  try {
+    // Try to load image from multiple CDNs
+    // Use whichever succeeds first
+    const imageData = await Promise.any([
+      fetch(urls.cdn1),
+      fetch(urls.cdn2),
+      fetch(urls.cdn3)
+    ]);
+    return imageData;
+  } catch (error) {
+    console.error("All CDNs failed:", error.errors);
+  }
+}
+```
+
+**Comparison Table**
+
+| Method | Resolves When | Rejects When | Use Case |
+|--------|---------------|--------------|----------|
+| `Promise.all()` | ALL succeed | ANY fails (immediately) | Need all results |
+| `Promise.allSettled()` | ALL complete | Never (always returns results) | Want all outcomes |
+| `Promise.race()` | FIRST settles | FIRST settles (if it's a rejection) | Need fastest response |
+| `Promise.any()` | FIRST succeeds | ALL fail | Need at least one success |
+
+**Quick Reference with Examples**
+```javascript
+// Promise.all - Need ALL to succeed
+const all = await Promise.all([p1, p2, p3]);
+// Result: ["result1", "result2", "result3"]
+// Fails: If any promise fails
+
+// Promise.allSettled - Want ALL outcomes
+const settled = await Promise.allSettled([p1, p2, p3]);
+// Result: [
+//   { status: "fulfilled", value: "result1" },
+//   { status: "rejected", reason: "error2" },
+//   { status: "fulfilled", value: "result3" }
+// ]
+// Never fails
+
+// Promise.race - Need FASTEST (success or failure)
+const race = await Promise.race([p1, p2, p3]);
+// Result: "fastest result" or Error (whichever comes first)
+
+// Promise.any - Need FIRST SUCCESS
+const any = await Promise.any([p1, p2, p3]);
+// Result: "first successful result"
+// Fails: Only if ALL promises fail (AggregateError)
+```
+
+**Practical Decision Guide**
+
+**Use `Promise.all()` when:**
+- All operations are critical
+- You can't proceed if any fails
+- Example: Loading all required data for a page
+
+**Use `Promise.allSettled()` when:**
+- You want to attempt all operations
+- Some failures are acceptable
+- Example: Batch operations where you want to know which succeeded
+
+**Use `Promise.race()` when:**
+- You want the fastest result
+- First response wins
+- Example: Timeouts, racing multiple servers
+
+**Use `Promise.any()` when:**
+- You need at least one success
+- Don't care which one succeeds
+- Example: Multiple fallback options
+
+**Key Takeaways**
+
+1. **All methods run promises concurrently** - promises execute in parallel
+
+2. **Promise.all()** - "All or nothing" approach
+
+3. **Promise.allSettled()** - "I want to know everything"
+
+4. **Promise.race()** - "First one wins (success or failure)"
+
+5. **Promise.any()** - "First success wins, ignore failures"
+
+6. **Timing depends on use case:**
+   - Promise.all/allSettled: Wait for all
+   - Promise.race: Wait for first to settle
+   - Promise.any: Wait for first success (or all failures)
