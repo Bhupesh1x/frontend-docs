@@ -3968,3 +3968,480 @@ const any = await Promise.any([p1, p2, p3]);
    - Promise.all/allSettled: Wait for all
    - Promise.race: Wait for first to settle
    - Promise.any: Wait for first success (or all failures)
+
+## The `this` Keyword in JavaScript
+
+The `this` keyword in JavaScript refers to an object. But WHICH object it refers to depends on HOW and WHERE it's used.
+
+Think of `this` as a special variable that points to different objects in different situations. It's context-dependent.
+
+**The Golden Rule:**
+
+The value of `this` is determined by **how a function is called**, not where it's defined (except for arrow functions).
+
+**1. `this` in Global Scope**
+
+When you use `this` in the global scope (outside any function), it refers to the global object.
+```javascript
+console.log(this); // window (in browser) or global (in Node.js)
+```
+
+**What's the global object?**
+
+It depends on where JavaScript is running:
+- **Browser**: `window`
+- **Node.js**: `global`
+```javascript
+// In browser
+console.log(this === window); // true
+
+// In Node.js
+console.log(this === global); // true
+```
+
+**2. `this` in Regular Functions**
+
+This is where it gets tricky. The value depends on whether you're in strict mode or not.
+
+**Non-Strict Mode:**
+```javascript
+function printThis() {
+  console.log(this);
+}
+
+printThis(); // window (in browser)
+```
+
+**Why `window`?**
+
+In non-strict mode, JavaScript does something called **"this substitution"**. When `this` would be `undefined`, JavaScript automatically replaces it with the global object.
+```
+Function called without reference
+→ this should be undefined
+→ JavaScript substitutes it with window
+→ Result: this = window
+```
+
+**Strict Mode:**
+```javascript
+"use strict";
+
+function printThis() {
+  console.log(this);
+}
+
+printThis(); // undefined
+```
+
+In strict mode, there's no "this substitution". If `this` has no value, it remains `undefined`.
+
+**Which is better?**
+
+Strict mode is better because it makes errors more obvious. Use `"use strict"` at the top of your files or functions.
+
+**3. `this` with Function Reference**
+
+When you call a function using a reference (like `object.method()`), `this` refers to that object.
+```javascript
+function printThis() {
+  console.log(this);
+}
+
+// Called without reference
+printThis(); // undefined (strict mode) or window (non-strict)
+
+// Called with reference
+window.printThis(); // window (the reference used)
+```
+
+The reference before the dot (`.`) becomes the value of `this`.
+
+**4. `this` in Object Methods**
+
+When a function is a method of an object (function inside an object), `this` refers to that object.
+```javascript
+let student = {
+  name: "Bhupesh",
+  age: 24,
+  printName: function() {
+    console.log(this.name);
+  }
+};
+
+student.printName(); // "Bhupesh"
+```
+
+**Why?**
+
+Because we called the method using `student.printName()`. The object before the dot (`student`) becomes `this`.
+```
+student.printName()
+   ↑
+   └─ this
+```
+
+**Important:** It's about HOW you call it, not WHERE it's defined!
+```javascript
+let student = {
+  name: "Bhupesh",
+  printName: function() {
+    console.log(this.name);
+  }
+};
+
+let printFunc = student.printName;
+printFunc(); // undefined (this is not student anymore!)
+```
+
+When we store the method in a variable and call it without the object reference, `this` loses its context.
+
+**5. Changing `this` with call, apply, bind**
+
+JavaScript provides three methods to explicitly set the value of `this`:
+
+**Using `call()`:**
+```javascript
+let student = {
+  name: "John",
+  printName: function() {
+    console.log(this.name);
+  }
+};
+
+let student2 = {
+  name: "Matt"
+};
+
+// Call printName but set this to student2
+student.printName.call(student2); // "Matt"
+```
+
+**How it works:**
+```
+student.printName.call(student2)
+                       ↑
+                       └─ this will be student2
+```
+
+**Using `apply()`:**
+
+Similar to `call()`, but arguments are passed as an array:
+```javascript
+function introduce(age, city) {
+  console.log(`I'm ${this.name}, ${age} years old, from ${city}`);
+}
+
+let person = { name: "John" };
+
+introduce.call(person, 25, "Mumbai");
+// I'm John, 25 years old, from Mumbai
+
+introduce.apply(person, [25, "Mumbai"]); // Same result
+// apply takes arguments as array
+```
+
+**Using `bind()`:**
+
+Creates a new function with `this` permanently set:
+```javascript
+let student = {
+  name: "Bhupesh",
+  printName: function() {
+    console.log(this.name);
+  }
+};
+
+let student2 = { name: "Mohit" };
+
+// Create a new function with this bound to student2
+let boundFunction = student.printName.bind(student2);
+boundFunction(); // "Mohit"
+```
+
+**Difference between call/apply and bind:**
+
+- `call()` and `apply()` - Execute the function immediately
+- `bind()` - Returns a new function with `this` set
+
+**Real-world example:**
+```javascript
+let user = {
+  name: "Alice",
+  greet: function() {
+    console.log(`Hello, ${this.name}`);
+  }
+};
+
+// Problem: setTimeout loses context
+setTimeout(user.greet, 1000); // Hello, undefined
+
+// Solution 1: Use bind
+setTimeout(user.greet.bind(user), 1000); // Hello, Alice
+
+// Solution 2: Use arrow function
+setTimeout(() => user.greet(), 1000); // Hello, Alice
+```
+
+**6. `this` in Arrow Functions**
+
+Arrow functions are special - they DON'T have their own `this` binding!
+
+Instead, they inherit `this` from their surrounding (lexical) scope - where the code is physically written in your file.
+```javascript
+const arrowFunction = () => {
+  console.log(this);
+};
+
+arrowFunction(); // window (in global scope)
+```
+
+Even if you try to change it with `call()`, it won't work:
+```javascript
+const arrowFunction = () => {
+  console.log(this);
+};
+
+let obj = { name: "Test" };
+arrowFunction.call(obj); // Still window! (can't change arrow function's this)
+```
+
+**Arrow Functions in Objects:**
+```javascript
+let obj = {
+  name: "Bhupesh",
+  print: () => {
+    console.log(this); // window (NOT obj!)
+  }
+};
+
+obj.print(); // window
+```
+
+**Why `window` and not `obj`?**
+
+Because arrow functions look at where they're physically written (lexical scope). The arrow function is written in the global scope (inside the object literal, but not inside another function), so it takes `this` from the global scope.
+
+Think of it like this:
+```javascript
+// The arrow function "sees" this scope
+const obj = {  // ← We're in global scope here
+  name: "John",
+  print: () => {
+    console.log(this); // Inherits from global scope
+  }
+};
+```
+
+**Arrow Function Inside a Method:**
+```javascript
+let obj = {
+  name: "John",
+  print: function() {
+    // Regular function - this = obj
+    
+    let innerArrow = () => {
+      // Arrow function - inherits this from print method
+      console.log(this.name); // "John"
+    };
+    
+    innerArrow();
+  }
+};
+
+obj.print(); // "John"
+```
+
+**Why does this work?**
+```
+obj.print() is called
+  ↓
+Regular function - this = obj
+  ↓
+Arrow function inherits this from parent scope
+  ↓
+this = obj (same as parent function)
+```
+
+**Visual comparison:**
+```javascript
+let obj = {
+  a: 1,
+  
+  // Regular function - this = obj
+  regularMethod: function() {
+    console.log(this); // obj
+  },
+  
+  // Arrow function - this = window (global scope)
+  arrowMethod: () => {
+    console.log(this); // window
+  },
+  
+  // Regular function with arrow inside
+  methodWithArrow: function() {
+    // this = obj (regular function)
+    
+    let arrow = () => {
+      console.log(this); // obj (inherited from parent)
+    };
+    
+    arrow();
+  }
+};
+
+obj.regularMethod();    // obj
+obj.arrowMethod();      // window
+obj.methodWithArrow();  // obj
+```
+
+**When to use arrow functions:**
+
+✅ **Use arrow functions:**
+- For callbacks where you want to preserve `this`
+- Inside methods when you need to inherit parent's `this`
+
+❌ **Don't use arrow functions:**
+- As object methods (you'll lose the object reference)
+- When you need `this` to be dynamic
+
+**7. `this` in Event Listeners (DOM Elements)**
+
+When `this` is used inside an event handler, it refers to the HTML element that triggered the event.
+```html
+<button id="myButton" onclick="onButtonClick(this)">Click Me</button>
+```
+```javascript
+function onButtonClick(element) {
+  console.log("Button clicked!");
+  console.log(element);        // <button id="myButton">...
+  console.log(element.id);     // "myButton"
+  console.log(element.tagName);// "BUTTON"
+}
+```
+
+**Or using addEventListener:**
+```javascript
+document.getElementById("myButton").addEventListener("click", function() {
+  console.log(this);        // <button id="myButton">...
+  console.log(this.id);     // "myButton"
+  console.log(this.tagName);// "BUTTON"
+});
+```
+
+**Important:** This only works with regular functions, not arrow functions!
+```javascript
+// Regular function - this = button element
+button.addEventListener("click", function() {
+  console.log(this); // <button>
+});
+
+// Arrow function - this = window (or surrounding scope)
+button.addEventListener("click", () => {
+  console.log(this); // window (NOT the button!)
+});
+```
+
+**Summary Table**
+
+| Context | Value of `this` | Example |
+|---------|----------------|---------|
+| Global scope | Global object (window/global) | `console.log(this)` |
+| Regular function (non-strict) | Global object | `function f() { this }` |
+| Regular function (strict) | undefined | `"use strict"; function f() { this }` |
+| Object method | The object | `obj.method()` |
+| Arrow function | Lexical (inherited from parent) | `() => { this }` |
+| Event listener | DOM element | `button.onclick = function() { this }` |
+| call/apply/bind | The specified object | `func.call(obj)` |
+
+**Quick Decision Guide**
+
+**To determine `this` value, ask:**
+
+1. **Is it an arrow function?**
+   - YES → Inherited from surrounding scope
+   - NO → Continue...
+
+2. **Is it called with call/apply/bind?**
+   - YES → `this` is what you specified
+   - NO → Continue...
+
+3. **Is it called as a method (obj.method())?**
+   - YES → `this` is the object before the dot
+   - NO → Continue...
+
+4. **Is it a regular function call?**
+   - Strict mode → `undefined`
+   - Non-strict → Global object
+
+**Common Mistakes**
+
+**Mistake 1: Losing context when passing methods**
+```javascript
+let user = {
+  name: "Alice",
+  greet() {
+    console.log(`Hello, ${this.name}`);
+  }
+};
+
+let greetFunc = user.greet;
+greetFunc(); // Hello, undefined (lost context!)
+
+// Fix: Use bind
+let boundGreet = user.greet.bind(user);
+boundGreet(); // Hello, Alice
+```
+
+**Mistake 2: Using arrow functions as methods**
+```javascript
+// ✗ Wrong
+let obj = {
+  name: "Bob",
+  greet: () => {
+    console.log(this.name); // undefined (this = window)
+  }
+};
+
+// ✓ Correct
+let obj = {
+  name: "Bob",
+  greet: function() {
+    console.log(this.name); // "Bob"
+  }
+};
+```
+
+**Mistake 3: Not understanding arrow function inheritance**
+```javascript
+function Timer() {
+  this.seconds = 0;
+  
+  // ✗ Wrong - regular function loses context
+  setInterval(function() {
+    this.seconds++; // this = window, not Timer!
+  }, 1000);
+  
+  // ✓ Correct - arrow function inherits context
+  setInterval(() => {
+    this.seconds++; // this = Timer instance
+  }, 1000);
+}
+```
+
+**Key Takeaways**
+
+1. **`this` is context-dependent** - depends on how function is called
+
+2. **Global scope** → global object (window/global)
+
+3. **Regular function** → undefined (strict) or global object (non-strict)
+
+4. **Object method** → the object itself
+
+5. **Arrow function** → inherited from surrounding scope (lexical)
+
+6. **Event listener** → DOM element (regular functions only)
+
+7. **call/apply/bind** → manually set `this` value
+
+8. **Arrow functions can't have `this` changed** - they always inherit from parent scope
