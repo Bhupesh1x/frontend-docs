@@ -4445,3 +4445,379 @@ function Timer() {
 7. **call/apply/bind** → manually set `this` value
 
 8. **Arrow functions can't have `this` changed** - they always inherit from parent scope
+
+---
+
+## Function Currying in JavaScript
+
+Understanding how to transform functions to make them more reusable and flexible.
+
+**What is Function Currying?**
+
+Function currying is a technique where you transform a function that takes multiple arguments into a series of functions that each take a single argument.
+
+Instead of calling a function like this:
+```javascript
+function(a, b, c)
+```
+
+You transform it to:
+```javascript
+function(a)(b)(c)
+```
+
+**Simple Example:**
+
+**Before Currying (Normal Function):**
+```javascript
+function sum(a, b) {
+  return a + b;
+}
+
+console.log(sum(2, 3)); // 5
+```
+
+**After Currying:**
+```javascript
+function sum(a) {
+  return function(b) {
+    return a + b;
+  };
+}
+
+console.log(sum(2)(3)); // 5
+```
+
+Notice the difference:
+- Normal: `sum(2, 3)` - takes both arguments at once
+- Curried: `sum(2)(3)` - takes arguments one at a time
+
+**How Does It Work?**
+
+When you call `sum(2)`, it returns a function. That returned function is waiting for the second argument `b`.
+```javascript
+function sum(a) {
+  return function(b) {
+    return a + b;
+  };
+}
+
+const addTwo = sum(2); // Returns a function
+console.log(addTwo);   // function(b) { return 2 + b }
+
+console.log(addTwo(3)); // 5
+console.log(addTwo(5)); // 7
+console.log(addTwo(10)); // 12
+```
+
+**Step by step execution:**
+```
+sum(2) 
+  ↓
+Returns: function(b) { return 2 + b }
+  ↓
+Store in addTwo
+  ↓
+addTwo(3)
+  ↓
+Returns: 2 + 3 = 5
+```
+
+**Why Use Currying?**
+
+The main advantage of currying is **reusability**. You can create specialized functions from generic ones.
+
+**Advantage 1: Reusability**
+
+Create multiple specialized functions from one generic function:
+```javascript
+function multiply(a) {
+  return function(b) {
+    return a * b;
+  };
+}
+
+// Create specialized functions
+let multiplyByTwo = multiply(2);
+let multiplyByThree = multiply(3);
+let multiplyByTen = multiply(10);
+
+// Reuse them multiple times
+console.log(multiplyByTwo(12));   // 24
+console.log(multiplyByTwo(3));    // 6
+console.log(multiplyByTwo(5));    // 10
+
+console.log(multiplyByThree(3));  // 9
+console.log(multiplyByThree(12)); // 36
+
+console.log(multiplyByTen(5));    // 50
+console.log(multiplyByTen(7));    // 70
+```
+
+**Benefits:**
+- Create `multiplyByTwo` once, use it everywhere
+- No need to remember the first argument repeatedly
+- More readable code
+- Easier to test and maintain
+
+**Advantage 2: Partial Application**
+
+Partial application means you can fix some arguments early and provide the rest later.
+```javascript
+function greet(greeting) {
+  return function(name) {
+    return `${greeting}, ${name}!`;
+  };
+}
+
+// Fix the greeting early
+let sayHi = greet("Hi");
+let sayHello = greet("Hello");
+let sayGoodMorning = greet("Good Morning");
+
+// Use them later with different names
+console.log(sayHi("Alice"));        // "Hi, Alice!"
+console.log(sayHi("Bob"));          // "Hi, Bob!"
+
+console.log(sayHello("John"));      // "Hello, John!"
+console.log(sayHello("Sarah"));     // "Hello, Sarah!"
+
+console.log(sayGoodMorning("Team")); // "Good Morning, Team!"
+```
+
+**Why is this useful?**
+
+Instead of writing this repeatedly:
+```javascript
+console.log("Hi, Alice!");
+console.log("Hi, Bob!");
+console.log("Hi, Charlie!");
+```
+
+You create a function once and reuse it:
+```javascript
+let sayHi = greet("Hi");
+console.log(sayHi("Alice"));
+console.log(sayHi("Bob"));
+console.log(sayHi("Charlie"));
+```
+
+**Real-World Example 1: Discount Calculator**
+```javascript
+function discount(discountPercent) {
+  return function(price) {
+    return price - (price * discountPercent / 100);
+  };
+}
+
+// Create discount functions for different customer types
+let studentDiscount = discount(20);  // 20% off
+let seniorDiscount = discount(30);   // 30% off
+let memberDiscount = discount(10);   // 10% off
+
+// Calculate prices
+console.log(studentDiscount(100)); // 80
+console.log(studentDiscount(50));  // 40
+
+console.log(seniorDiscount(100));  // 70
+console.log(seniorDiscount(200));  // 140
+
+console.log(memberDiscount(100));  // 90
+```
+
+**Real-World Example 2: Logger with Levels**
+```javascript
+function createLogger(level) {
+  return function(module) {
+    return function(message) {
+      return `[${level}] [${module}] ${message}`;
+    };
+  };
+}
+
+// Create loggers for different levels
+let errorLogger = createLogger("ERROR");
+let warningLogger = createLogger("WARNING");
+let infoLogger = createLogger("INFO");
+
+// Create module-specific loggers
+let authErrors = errorLogger("Auth");
+let dbErrors = errorLogger("Database");
+let authWarnings = warningLogger("Auth");
+
+// Log messages
+console.log(authErrors("Login failed"));
+// "[ERROR] [Auth] Login failed"
+
+console.log(dbErrors("Connection timeout"));
+// "[ERROR] [Database] Connection timeout"
+
+console.log(authWarnings("Session expiring soon"));
+// "[WARNING] [Auth] Session expiring soon"
+```
+
+**Currying with Arrow Functions**
+
+Arrow functions make currying syntax even cleaner:
+```javascript
+// Regular function syntax
+function multiply(a) {
+  return function(b) {
+    return a * b;
+  };
+}
+
+// Arrow function syntax (cleaner!)
+const multiply = (a) => (b) => a * b;
+
+// Usage is the same
+let double = multiply(2);
+console.log(double(5)); // 10
+```
+
+**Currying vs Partial Application**
+
+People often confuse these two concepts:
+
+**Currying:**
+- Transforms a function to take arguments one at a time
+- Always returns a function until all arguments are provided
+- `f(a, b, c)` becomes `f(a)(b)(c)`
+
+**Practical Currying Pattern: Configuration**
+```javascript
+function fetchData(config) {
+  return function(endpoint) {
+    return function(params) {
+      return {
+        url: `${config.baseURL}${endpoint}`,
+        method: config.method,
+        headers: config.headers,
+        params: params
+      };
+    };
+  };
+}
+
+// Configure once
+let apiConfig = {
+  baseURL: "https://api.example.com",
+  method: "GET",
+  headers: { "Authorization": "Bearer token123" }
+};
+
+let api = fetchData(apiConfig);
+
+// Create endpoint-specific functions
+let getUsers = api("/users");
+let getPosts = api("/posts");
+
+// Make requests
+console.log(getUsers({ page: 1 }));
+console.log(getPosts({ limit: 10 }));
+```
+
+**Advantages of Currying**
+
+1. **Code Reusability**
+   - Create specialized functions from generic ones
+   - Avoid repetition
+
+2. **Function Composition**
+   - Easier to combine small functions into bigger ones
+   - More modular code
+
+3. **Delayed Execution**
+   - Fix some arguments now, provide others later
+   - Useful for callbacks and event handlers
+
+4. **Better Testing**
+   - Easier to test small, focused functions
+   - Can mock partial functions
+
+**When to Use Currying**
+
+✅ **Use currying when:**
+- You need to reuse a function with some fixed arguments
+- Creating configuration-based functions
+- Building utility libraries
+- Working with higher-order functions
+- Need delayed execution with partial data
+
+❌ **Don't use currying when:**
+- Function is only called once
+- All arguments are always available together
+- It makes code harder to understand
+- Performance is critical (extra function calls add overhead)
+
+**Common Patterns**
+
+**Pattern 1: Event Handlers**
+```javascript
+const handleClick = (action) => (event) => {
+  console.log(`Action: ${action}, Element: ${event.target.id}`);
+};
+
+// Create specific handlers
+let saveHandler = handleClick("save");
+let deleteHandler = handleClick("delete");
+
+// Use in event listeners
+button1.addEventListener("click", saveHandler);
+button2.addEventListener("click", deleteHandler);
+```
+
+**Pattern 2: Form Validation**
+```javascript
+const validate = (rule) => (value) => {
+  switch(rule) {
+    case "email":
+      return value.includes("@");
+    case "minLength":
+      return value.length >= 8;
+    case "required":
+      return value.length > 0;
+    default:
+      return true;
+  }
+};
+
+let validateEmail = validate("email");
+let validatePassword = validate("minLength");
+let validateRequired = validate("required");
+
+console.log(validateEmail("test@example.com")); // true
+console.log(validatePassword("pass123"));       // false
+console.log(validateRequired(""));              // false
+```
+
+**Pattern 3: Composing Functions**
+```javascript
+const add = (a) => (b) => a + b;
+const multiply = (a) => (b) => a * b;
+
+// Create reusable operations
+let addTen = add(10);
+let double = multiply(2);
+let triple = multiply(3);
+
+// Compose them
+let result = triple(addTen(5)); // (5 + 10) * 3 = 45
+console.log(result); // 45
+```
+
+**Key Takeaways**
+
+1. **Currying transforms** `f(a, b, c)` into `f(a)(b)(c)`
+
+2. **Returns a function** for each argument until all are provided
+
+3. **Main benefit is reusability** - create specialized functions
+
+4. **Partial application** fixes some arguments early
+
+5. **Arrow functions** make currying syntax cleaner
+
+6. **Use for configuration**, repeated patterns, and composition
+
+7. **Don't overuse** - use when it actually improves code clarity
