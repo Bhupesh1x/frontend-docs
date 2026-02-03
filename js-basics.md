@@ -5594,3 +5594,336 @@ newFunc(); // Execute later
 7. **Modern alternative**: Arrow functions for preserving `this`
 
 ---
+
+## Async and Defer Attributes in JavaScript
+
+Understanding how to optimally load external scripts in the browser.
+
+**Note:** The correct spelling of the attribute is **`defer`**, not `differ`. So it should be written as:
+```html
+<script defer src="./script.js"></script>
+```
+
+**What are Async and Defer?**ḥ
+
+Async and defer are **boolean attributes** used with the `<script>` tag. They help us control how external scripts are loaded and executed in the browser.
+
+Their main job is to make sure loading scripts doesn't slow down your webpage.
+
+**Why Do We Need Them?**
+
+When a browser loads an HTML page, it reads the code from top to bottom (this is called **HTML parsing**). If it encounters a script tag, it might have to stop everything just to load and run that script. Async and defer help us avoid that.
+
+**How HTML Parsing Works**
+
+Think of HTML parsing like reading a book. The browser reads your HTML line by line, building the page as it goes. When it hits a script tag, different things happen depending on whether you use async, defer, or neither.
+
+**Without Async or Defer (Default Behavior)**
+```html
+<html>
+  <head>
+    <script src="./script.js"></script>
+  </head>
+  <body>
+    <h1>Hello World</h1>
+  </body>
+</html>
+```
+
+**What happens step by step:**
+
+1. Browser starts parsing HTML
+2. Encounters `<script>` tag
+3. **HTML parsing STOPS completely**
+4. Browser fetches `script.js` from the source
+5. Browser executes `script.js`
+6. Only THEN does HTML parsing continue
+7. Rest of the page builds
+
+**Visual Flow:**
+```
+HTML Parsing → STOP → Fetch script.js → Execute script.js → Resume HTML Parsing
+```
+
+**Why is this bad?**
+
+If the script takes a long time to fetch (slow server, big file), the user sees a blank page until everything is done. This makes the page feel slow.
+
+**With the `async` Attribute**
+```html
+<html>
+  <head>
+    <script async src="./script.js"></script>
+  </head>
+  <body>
+    <h1>Hello World</h1>
+  </body>
+</html>
+```
+
+**What happens step by step:**
+
+1. Browser starts parsing HTML
+2. Encounters `<script async>` tag
+3. HTML parsing **continues** while fetching the script in parallel
+4. Once the script is fetched, **HTML parsing stops temporarily**
+5. Script gets executed
+6. HTML parsing resumes again
+
+**Visual Flow:**
+```
+HTML Parsing ──────────────────→ STOP → Execute script.js → Resume
+                ↕
+         Fetching script.js (in parallel)
+```
+
+**Simple analogy:**
+
+Think of it like cooking:
+- HTML parsing = cooking rice
+- Script fetching = ordering pizza
+
+Without async: You stop cooking rice, go order pizza, wait for it to arrive, eat it, then continue cooking rice.
+
+With async: You keep cooking rice while pizza is being delivered. When pizza arrives, you stop cooking rice briefly to eat it, then continue.
+
+**With the `defer` Attribute**
+```html
+<html>
+  <head>
+    <script defer src="./script.js"></script>
+  </head>
+  <body>
+    <h1>Hello World</h1>
+  </body>
+</html>
+```
+
+**What happens step by step:**
+
+1. Browser starts parsing HTML
+2. Encounters `<script defer>` tag
+3. HTML parsing **continues** while fetching the script in parallel
+4. HTML parsing finishes completely
+5. **Only then** the fetched script gets executed
+
+**Visual Flow:**
+```
+HTML Parsing ──────────────────→ Done! → Execute script.js
+                ↕
+         Fetching script.js (in parallel)
+```
+
+**Simple analogy:**
+
+Think of it like a meeting:
+- HTML parsing = your main work
+- Script = a presentation you need to prepare
+
+With defer: You keep doing your main work while the presentation downloads. Once your main work is completely done, you sit down and do the presentation.
+
+**Comparison: All Three Together**
+```html
+<!-- No attribute: Blocks everything -->
+<script src="./script1.js"></script>
+
+<!-- Async: Fetches in parallel, executes as soon as fetched -->
+<script async src="./script2.js"></script>
+
+<!-- Defer: Fetches in parallel, executes after HTML is done -->
+<script defer src="./script3.js"></script>
+```
+
+**Visual Comparison:**
+```
+Normal (no attribute):
+HTML ──→ STOP → Fetch → Execute → Resume HTML ──→
+
+Async:
+HTML ──────────────────→ STOP → Execute → Resume HTML
+         Fetch ────→ Done
+
+Defer:
+HTML ──────────────────────────────→ Done → Execute
+         Fetch ────→ Done
+```
+
+**Multiple Scripts: Order of Execution**
+
+This is where the difference between async and defer becomes really important.
+
+**Multiple Scripts with Defer:**
+```html
+<script defer src="./script1.js"></script>
+<script defer src="./script2.js"></script>
+<script defer src="./script3.js"></script>
+```
+
+**What happens:**
+
+1. All three scripts start fetching in parallel
+2. HTML parsing continues
+3. HTML parsing completes
+4. Scripts execute **in order**: script1 → script2 → script3
+
+**Defer maintains the order!** Even if script3 finishes fetching first, it will wait until script1 and script2 have executed.
+```
+Fetching:
+script1 ─────────────→ Done
+script2 ──────────→ Done
+script3 ────→ Done (fetched first!)
+
+Execution (after HTML done):
+script1 → script2 → script3 (order maintained!)
+```
+
+**Multiple Scripts with Async:**
+```html
+<script async src="./script1.js"></script>
+<script async src="./script2.js"></script>
+<script async src="./script3.js"></script>
+```
+
+**What happens:**
+
+1. All three scripts start fetching in parallel
+2. HTML parsing continues
+3. Whichever script finishes fetching first, executes first
+4. **Order is NOT guaranteed!**
+```
+Fetching:
+script1 ─────────────→ Done
+script2 ──────────→ Done
+script3 ────→ Done (fetched first!)
+
+Execution (as soon as each one is fetched):
+script3 → script2 → script1 (order NOT maintained!)
+```
+
+**Why does order matter?**
+
+If script2 depends on script1 (uses something defined in script1), and script2 runs first, it will break!
+```javascript
+// script1.js
+const config = { apiURL: "https://api.example.com" };
+
+// script2.js (depends on script1)
+fetch(config.apiURL); // Error if script2 runs before script1!
+```
+
+**When to Use What?**
+
+**Use `defer` when:**
+- Scripts depend on each other (order matters)
+- Scripts need the DOM to be fully loaded
+- You want predictable execution order
+- Most common use case for general scripts
+```html
+<!-- These run in order after HTML is done -->
+<script defer src="./utils.js"></script>
+<script defer src="./app.js"></script>
+<script defer src="./main.js"></script>
+```
+
+**Use `async` when:**
+- Script is completely independent
+- Script doesn't depend on other scripts
+- Script doesn't need the DOM
+- You want it to run as soon as possible
+```html
+<!-- Independent scripts, order doesn't matter -->
+<script async src="./analytics.js"></script>
+<script async src="./chat-widget.js"></script>
+```
+
+**Use neither (default) when:**
+- Script must run before the rest of the page loads
+- Script modifies the `<head>` section
+- Very rare cases
+
+**Real-World Example**
+```html
+<html>
+  <head>
+    <!-- Analytics: Independent, run ASAP -->
+    <script async src="./analytics.js"></script>
+    
+    <!-- These depend on each other, run in order -->
+    <script defer src="./utils.js"></script>
+    <script defer src="./framework.js"></script>
+    <script defer src="./app.js"></script>
+  </head>
+  <body>
+    <h1>My Website</h1>
+    <div id="app"></div>
+  </body>
+</html>
+```
+
+**Why this works:**
+- `analytics.js` is independent, so async is fine
+- `utils.js`, `framework.js`, and `app.js` depend on each other
+- Defer makes sure they run in order after HTML is done
+
+**Quick Summary Table**
+
+| Feature | Default | Async | Defer |
+|---------|---------|-------|-------|
+| Blocks HTML Parsing | ✓ Yes | ✓ Briefly (on execution) | ✗ No |
+| Fetches in Parallel | ✗ No | ✓ Yes | ✓ Yes |
+| Maintains Order | ✓ Yes | ✗ No | ✓ Yes |
+| Executes After HTML Done | ✗ No | ✗ No | ✓ Yes |
+| Best For | Critical scripts | Independent scripts | Most scripts |
+
+**Common Mistakes**
+
+**Mistake 1: Using async when scripts depend on each other**
+```html
+<!-- ✗ Wrong - app.js might run before utils.js! -->
+<script async src="./utils.js"></script>
+<script async src="./app.js"></script>
+
+<!-- ✓ Correct - guaranteed order -->
+<script defer src="./utils.js"></script>
+<script defer src="./app.js"></script>
+```
+
+**Mistake 2: Using both async and defer together**
+```html
+<!-- ✗ Wrong - async takes priority, defer is ignored -->
+<script async defer src="./script.js"></script>
+
+<!-- ✓ Just use one -->
+<script defer src="./script.js"></script>
+```
+
+**Mistake 3: Using async/defer with inline scripts**
+```html
+<!-- ✗ Wrong - async/defer only works with external scripts -->
+<script async>
+  console.log("This is inline");
+</script>
+
+<!-- ✓ Correct - use with src attribute -->
+<script async src="./script.js"></script>
+```
+
+**Key Takeaways**
+
+1. **Default (no attribute)** - Stops HTML parsing to fetch and execute script
+
+2. **Async** - Fetches in parallel, executes as soon as fetched, doesn't guarantee order
+
+3. **Defer** - Fetches in parallel, executes after HTML is fully parsed, maintains order
+
+4. **Defer is better for most cases** - Especially when scripts depend on each other
+
+5. **Async is for independent scripts** - Like analytics or chat widgets
+
+6. **Both async and defer** only work with external scripts (with `src` attribute)
+
+7. **Use defer by default** - Switch to async only when you're sure the script is independent
+
+- ![async-differ](/js-basics-assets/async-differ.png)
+
+---
