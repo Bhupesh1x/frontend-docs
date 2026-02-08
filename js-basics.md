@@ -5927,3 +5927,422 @@ fetch(config.apiURL); // Error if script2 runs before script1!
 - ![async-differ](/js-basics-assets/async-differ.png)
 
 ---
+
+## Debounce vs Throttling
+
+This is the key difference you need to understand:
+
+**Debounce:** Waits until events STOP for a certain time, then executes once
+```
+Events:    |||||||||         (user stops)
+Debounce:                |--delay--|Execute!
+                                    ↑
+                         (only after stopping)
+```
+
+**Throttle:** Executes at regular intervals while events are happening
+```
+Events:    ||||||||||||||||||||||||||||||||||||
+Throttle:  |Execute|     |Execute|     |Execute|
+           ←delay→       ←delay→       ←delay→
+           ↑             ↑             ↑
+    (executes periodically while events continue)
+```
+
+**Simple analogy:**
+
+**Debounce = Elevator door**
+- Door waits for people to stop entering
+- Only closes after no one has entered for a few seconds
+- If someone enters, timer resets
+
+**Throttle = Traffic light**
+- Lets cars through at fixed intervals
+- Every 30 seconds, regardless of how many cars are waiting
+- Doesn't wait for cars to stop coming
+
+**How Throttling Works**
+
+Let's trace through a throttle with 300ms delay:
+```
+Time 0ms:
+  User triggers event
+  → flag = true
+  → Function EXECUTES
+  → flag = false
+  → Timer starts (300ms)
+
+Time 50ms:
+  User triggers event
+  → flag = false
+  → Function IGNORED (not executed)
+
+Time 100ms:
+  User triggers event
+  → flag = false
+  → Function IGNORED
+
+Time 200ms:
+  User triggers event
+  → flag = false
+  → Function IGNORED
+
+Time 300ms:
+  Timer completes
+  → flag = true (ready for next execution)
+
+Time 350ms:
+  User triggers event
+  → flag = true
+  → Function EXECUTES
+  → flag = false
+  → Timer starts again (300ms)
+```
+
+**Visual Flow:**
+```
+Events:     |  |  |  |  |  |  |  |  |  |  |  |  |
+            ↓     ↓     ↓     ↓     ↓     ↓
+Executed:   ✓     ✗     ✗     ✓     ✗     ✓
+            |←--300ms-->|     |←--300ms-->|
+```
+
+Only the events at the start of each 300ms window execute. All others are ignored.
+
+**JavaScript Implementation throttle**
+```javascript
+function throttle(fn, delay = 300) {
+  let flag = true;
+
+  return function(...args) {
+    // If flag is false, we're in cooldown period
+    if (!flag) {
+      return; // Ignore this call
+    }
+
+    // Execute the function
+    fn.apply(this, args);
+    
+    // Enter cooldown period
+    flag = false;
+
+    // After delay, exit cooldown period
+    setTimeout(() => {
+      flag = true;
+    }, delay);
+  };
+}
+```
+
+**JavaScript Implementation Debounce**
+```javascript
+function getData() {
+  let inputValue = document.getElementById("input").value;
+
+  console.log("Fetching data...", inputValue);
+}
+
+function debounce(fn, delay = 300) {
+  let timeout;
+  return function () {
+    clearTimeout(timeout);
+
+    timeout = setTimeout(() => {
+      fn.apply(this, arguments);
+    }, delay);
+  };
+}
+
+let debouncedFn = debounce(getData, 300);
+```
+
+**Breaking down the throttle code:**
+
+**1. `let flag = true`:**
+- Acts like a gate
+- `true` = gate open (function can execute)
+- `false` = gate closed (function calls ignored)
+
+**2. `if (!flag) return`:**
+- If we're in cooldown period (flag is false)
+- Ignore this function call
+- This is what makes it "throttle"
+
+**3. `fn.apply(this, args)`:**
+- Execute the actual function
+- Pass through the correct context and arguments
+
+**4. `flag = false`:**
+- Close the gate
+- Start cooldown period
+- Ignore all calls until timer completes
+
+**5. `setTimeout(() => { flag = true }, delay)`:**
+- After the delay, open the gate again
+- Allow the next function call to execute
+
+**Using the Throttle Function**
+```javascript
+let count = 0;
+
+function handleResize() {
+  console.log(`Resize event occurred: ${count++}`);
+}
+
+// Create throttled version
+let throttledResize = throttle(handleResize, 300);
+
+// Use throttled version in event listener
+window.addEventListener("resize", throttledResize);
+```
+
+**What happens when you resize the window:**
+```
+Without throttle:
+  Resize event occurred: 0
+  Resize event occurred: 1
+  Resize event occurred: 2
+  ... (hundreds of times)
+  Resize event occurred: 347
+
+With throttle (300ms):
+  Resize event occurred: 0
+  (300ms passes)
+  Resize event occurred: 1
+  (300ms passes)
+  Resize event occurred: 2
+  ... (only a few times)
+```
+
+**Real-World Examples**
+
+**Example 1: Window Resize**
+```javascript
+function updateLayout() {
+  console.log("Recalculating layout...");
+  // Expensive layout calculations
+  document.getElementById("width").textContent = window.innerWidth;
+  document.getElementById("height").textContent = window.innerHeight;
+}
+
+let throttledLayout = throttle(updateLayout, 200);
+window.addEventListener("resize", throttledLayout);
+```
+
+**Why throttle here?**
+- Resize fires hundreds of times
+- Layout calculations are expensive
+- We don't need to update every single millisecond
+- Once every 200ms is enough for smooth updates
+
+**Example 2: Scroll Event**
+```javascript
+function checkScrollPosition() {
+  const scrollPercent = (window.scrollY / document.body.scrollHeight) * 100;
+  console.log(`Scrolled: ${scrollPercent.toFixed(1)}%`);
+  
+  // Update progress bar
+  document.getElementById("progress").style.width = scrollPercent + "%";
+}
+
+let throttledScroll = throttle(checkScrollPosition, 100);
+window.addEventListener("scroll", throttledScroll);
+```
+
+**Why throttle here?**
+- Scroll events fire constantly while scrolling
+- Updating progress bar every time is overkill
+- Once every 100ms gives smooth visual feedback
+- Saves CPU and prevents jank
+
+**Example 3: Shooting Game**
+```javascript
+function shoot() {
+  console.log("Bang! Bullet fired");
+  // Create bullet element
+  // Play sound effect
+  // Handle game logic
+}
+
+// Limit shooting to once every 500ms (fire rate)
+let throttledShoot = throttle(shoot, 500);
+
+document.addEventListener("click", throttledShoot);
+```
+
+**Why throttle here?**
+- Player might click rapidly
+- We want to limit fire rate
+- Creates game balance
+- Prevents spam clicking
+
+**Example 4: API Rate Limiting**
+```javascript
+function saveData(data) {
+  console.log("Saving:", data);
+  fetch("/api/save", {
+    method: "POST",
+    body: JSON.stringify(data)
+  });
+}
+
+// Limit to one save per 2 seconds
+let throttledSave = throttle(saveData, 2000);
+
+// Auto-save on every change
+document.getElementById("editor").addEventListener("input", function() {
+  throttledSave(this.value);
+});
+```
+
+**Why throttle here?**
+- User might type constantly
+- Don't want to spam the server
+- API might have rate limits
+- Saves bandwidth
+
+**When to Use Debounce vs Throttle**
+
+**Use Debounce when:**
+- You want to wait until the user is DONE
+- Execute only after activity stops
+- Examples:
+  - Search input (wait until done typing)
+  - Form validation (validate after done typing)
+  - Autosave (save after done editing)
+
+**Use Throttle when:**
+- You want to limit execution rate DURING activity
+- Execute periodically while activity continues
+- Examples:
+  - Window resize (update layout while resizing)
+  - Scroll events (update position while scrolling)
+  - Mouse movement (track cursor while moving)
+  - Game controls (limit action rate)
+
+**Visual Comparison**
+
+**Debounce - Search Input:**
+```
+User types: H e l l o
+Events:     | | | | |        (user stops)
+Debounce:               |--300ms--|Execute "Hello"
+                                  ↑
+                        (only after stopping)
+```
+
+**Throttle - Scroll Event:**
+```
+User scrolls: ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+Events:       |||||||||||||||||||
+Throttle:     |Execute|  |Execute|  |Execute|
+              ←200ms→    ←200ms→    ←200ms→
+              ↑          ↑          ↑
+     (executes periodically while scrolling)
+```
+
+**Different Throttle Intervals**
+
+The delay value changes how often the function executes:
+```javascript
+// Very frequent updates (smooth but more CPU)
+let throttled = throttle(fn, 50);   // Every 50ms
+
+// Balanced (good for most cases)
+let throttled = throttle(fn, 100);  // Every 100ms
+let throttled = throttle(fn, 200);  // Every 200ms
+
+// Less frequent updates (less CPU, might feel choppy)
+let throttled = throttle(fn, 500);  // Every 500ms
+let throttled = throttle(fn, 1000); // Every 1 second
+```
+
+**Common Mistakes**
+
+**Mistake 1: Creating throttle inside event handler**
+```javascript
+// ✗ Wrong - creates new throttle every time!
+window.addEventListener("resize", function() {
+  throttle(handleResize, 300)(); // New throttle each time!
+});
+
+// ✓ Correct - create throttle ONCE
+let throttledResize = throttle(handleResize, 300);
+window.addEventListener("resize", throttledResize);
+```
+
+**Mistake 2: Using debounce when throttle is needed**
+```javascript
+// ✗ Wrong - won't update until user STOPS scrolling
+let debouncedScroll = debounce(updateScrollPosition, 300);
+window.addEventListener("scroll", debouncedScroll);
+
+// ✓ Correct - updates WHILE scrolling (periodically)
+let throttledScroll = throttle(updateScrollPosition, 300);
+window.addEventListener("scroll", throttledScroll);
+```
+
+**Mistake 3: Using throttle when debounce is needed**
+```javascript
+// ✗ Wrong - will make API calls every 300ms while typing
+let throttledSearch = throttle(searchAPI, 300);
+input.addEventListener("input", throttledSearch);
+
+// ✓ Correct - waits until user stops typing
+let debouncedSearch = debounce(searchAPI, 300);
+input.addEventListener("input", debouncedSearch);
+```
+
+**Quick Decision Guide**
+
+Ask yourself: "Do I want the function to execute..."
+
+**WHILE the event is happening?** → Use **Throttle**
+- Window resize
+- Scrolling
+- Mouse movement
+- Game controls
+
+**AFTER the event stops?** → Use **Debounce**
+- Search input
+- Form validation
+- Text editor autosave
+- Window resize (if you only care about final size)
+
+**Summary Table**
+
+| Feature | Debounce | Throttle |
+|---------|----------|----------|
+| Executes | After events stop | During events (periodically) |
+| Timing | Resets on each event | Fixed intervals |
+| Use case | Wait for completion | Limit rate |
+| Example | Search input | Scroll handler |
+| Mental model | "Wait until done" | "Once per interval" |
+
+**Key Takeaways**
+
+1. **Throttling limits execution rate** to once per interval
+
+2. **Key difference from debounce:**
+   - Throttle: Executes periodically WHILE events happen
+   - Debounce: Executes AFTER events stop
+
+3. **Implementation uses a flag:**
+   - `flag = true` → function can execute
+   - `flag = false` → ignore calls (cooldown)
+   - Timer resets flag after delay
+
+4. **Common use cases:**
+   - Window resize
+   - Scroll events
+   - Mouse movement
+   - Game controls (fire rate)
+
+5. **Choose the right interval:**
+   - 50-100ms for smooth updates
+   - 200-300ms for balanced performance
+   - 500ms+ for less critical updates
+
+6. **Both are useful** - choose based on your specific needs
+
+---
