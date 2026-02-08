@@ -5600,6 +5600,7 @@ newFunc(); // Execute later
 Understanding how to optimally load external scripts in the browser.
 
 **Note:** The correct spelling of the attribute is **`defer`**, not `differ`. So it should be written as:
+
 ```html
 <script defer src="./script.js"></script>
 ```
@@ -5619,6 +5620,7 @@ When a browser loads an HTML page, it reads the code from top to bottom (this is
 Think of HTML parsing like reading a book. The browser reads your HTML line by line, building the page as it goes. When it hits a script tag, different things happen depending on whether you use async, defer, or neither.
 
 **Without Async or Defer (Default Behavior)**
+
 ```html
 <html>
   <head>
@@ -5641,6 +5643,7 @@ Think of HTML parsing like reading a book. The browser reads your HTML line by l
 7. Rest of the page builds
 
 **Visual Flow:**
+
 ```
 HTML Parsing → STOP → Fetch script.js → Execute script.js → Resume HTML Parsing
 ```
@@ -5650,6 +5653,7 @@ HTML Parsing → STOP → Fetch script.js → Execute script.js → Resume HTML 
 If the script takes a long time to fetch (slow server, big file), the user sees a blank page until everything is done. This makes the page feel slow.
 
 **With the `async` Attribute**
+
 ```html
 <html>
   <head>
@@ -5671,6 +5675,7 @@ If the script takes a long time to fetch (slow server, big file), the user sees 
 6. HTML parsing resumes again
 
 **Visual Flow:**
+
 ```
 HTML Parsing ──────────────────→ STOP → Execute script.js → Resume
                 ↕
@@ -5680,6 +5685,7 @@ HTML Parsing ──────────────────→ STOP → 
 **Simple analogy:**
 
 Think of it like cooking:
+
 - HTML parsing = cooking rice
 - Script fetching = ordering pizza
 
@@ -5688,6 +5694,7 @@ Without async: You stop cooking rice, go order pizza, wait for it to arrive, eat
 With async: You keep cooking rice while pizza is being delivered. When pizza arrives, you stop cooking rice briefly to eat it, then continue.
 
 **With the `defer` Attribute**
+
 ```html
 <html>
   <head>
@@ -5708,6 +5715,7 @@ With async: You keep cooking rice while pizza is being delivered. When pizza arr
 5. **Only then** the fetched script gets executed
 
 **Visual Flow:**
+
 ```
 HTML Parsing ──────────────────→ Done! → Execute script.js
                 ↕
@@ -5717,12 +5725,14 @@ HTML Parsing ──────────────────→ Done! →
 **Simple analogy:**
 
 Think of it like a meeting:
+
 - HTML parsing = your main work
 - Script = a presentation you need to prepare
 
 With defer: You keep doing your main work while the presentation downloads. Once your main work is completely done, you sit down and do the presentation.
 
 **Comparison: All Three Together**
+
 ```html
 <!-- No attribute: Blocks everything -->
 <script src="./script1.js"></script>
@@ -5735,6 +5745,7 @@ With defer: You keep doing your main work while the presentation downloads. Once
 ```
 
 **Visual Comparison:**
+
 ```
 Normal (no attribute):
 HTML ──→ STOP → Fetch → Execute → Resume HTML ──→
@@ -5753,6 +5764,7 @@ HTML ─────────────────────────
 This is where the difference between async and defer becomes really important.
 
 **Multiple Scripts with Defer:**
+
 ```html
 <script defer src="./script1.js"></script>
 <script defer src="./script2.js"></script>
@@ -5767,6 +5779,7 @@ This is where the difference between async and defer becomes really important.
 4. Scripts execute **in order**: script1 → script2 → script3
 
 **Defer maintains the order!** Even if script3 finishes fetching first, it will wait until script1 and script2 have executed.
+
 ```
 Fetching:
 script1 ─────────────→ Done
@@ -5778,6 +5791,7 @@ script1 → script2 → script3 (order maintained!)
 ```
 
 **Multiple Scripts with Async:**
+
 ```html
 <script async src="./script1.js"></script>
 <script async src="./script2.js"></script>
@@ -5790,6 +5804,7 @@ script1 → script2 → script3 (order maintained!)
 2. HTML parsing continues
 3. Whichever script finishes fetching first, executes first
 4. **Order is NOT guaranteed!**
+
 ```
 Fetching:
 script1 ─────────────→ Done
@@ -5803,6 +5818,7 @@ script3 → script2 → script1 (order NOT maintained!)
 **Why does order matter?**
 
 If script2 depends on script1 (uses something defined in script1), and script2 runs first, it will break!
+
 ```javascript
 // script1.js
 const config = { apiURL: "https://api.example.com" };
@@ -5814,10 +5830,12 @@ fetch(config.apiURL); // Error if script2 runs before script1!
 **When to Use What?**
 
 **Use `defer` when:**
+
 - Scripts depend on each other (order matters)
 - Scripts need the DOM to be fully loaded
 - You want predictable execution order
 - Most common use case for general scripts
+
 ```html
 <!-- These run in order after HTML is done -->
 <script defer src="./utils.js"></script>
@@ -5826,10 +5844,12 @@ fetch(config.apiURL); // Error if script2 runs before script1!
 ```
 
 **Use `async` when:**
+
 - Script is completely independent
 - Script doesn't depend on other scripts
 - Script doesn't need the DOM
 - You want it to run as soon as possible
+
 ```html
 <!-- Independent scripts, order doesn't matter -->
 <script async src="./analytics.js"></script>
@@ -5837,17 +5857,19 @@ fetch(config.apiURL); // Error if script2 runs before script1!
 ```
 
 **Use neither (default) when:**
+
 - Script must run before the rest of the page loads
 - Script modifies the `<head>` section
 - Very rare cases
 
 **Real-World Example**
+
 ```html
 <html>
   <head>
     <!-- Analytics: Independent, run ASAP -->
     <script async src="./analytics.js"></script>
-    
+
     <!-- These depend on each other, run in order -->
     <script defer src="./utils.js"></script>
     <script defer src="./framework.js"></script>
@@ -5861,23 +5883,25 @@ fetch(config.apiURL); // Error if script2 runs before script1!
 ```
 
 **Why this works:**
+
 - `analytics.js` is independent, so async is fine
 - `utils.js`, `framework.js`, and `app.js` depend on each other
 - Defer makes sure they run in order after HTML is done
 
 **Quick Summary Table**
 
-| Feature | Default | Async | Defer |
-|---------|---------|-------|-------|
-| Blocks HTML Parsing | ✓ Yes | ✓ Briefly (on execution) | ✗ No |
-| Fetches in Parallel | ✗ No | ✓ Yes | ✓ Yes |
-| Maintains Order | ✓ Yes | ✗ No | ✓ Yes |
-| Executes After HTML Done | ✗ No | ✗ No | ✓ Yes |
-| Best For | Critical scripts | Independent scripts | Most scripts |
+| Feature                  | Default          | Async                    | Defer        |
+| ------------------------ | ---------------- | ------------------------ | ------------ |
+| Blocks HTML Parsing      | ✓ Yes            | ✓ Briefly (on execution) | ✗ No         |
+| Fetches in Parallel      | ✗ No             | ✓ Yes                    | ✓ Yes        |
+| Maintains Order          | ✓ Yes            | ✗ No                     | ✓ Yes        |
+| Executes After HTML Done | ✗ No             | ✗ No                     | ✓ Yes        |
+| Best For                 | Critical scripts | Independent scripts      | Most scripts |
 
 **Common Mistakes**
 
 **Mistake 1: Using async when scripts depend on each other**
+
 ```html
 <!-- ✗ Wrong - app.js might run before utils.js! -->
 <script async src="./utils.js"></script>
@@ -5889,6 +5913,7 @@ fetch(config.apiURL); // Error if script2 runs before script1!
 ```
 
 **Mistake 2: Using both async and defer together**
+
 ```html
 <!-- ✗ Wrong - async takes priority, defer is ignored -->
 <script async defer src="./script.js"></script>
@@ -5898,6 +5923,7 @@ fetch(config.apiURL); // Error if script2 runs before script1!
 ```
 
 **Mistake 3: Using async/defer with inline scripts**
+
 ```html
 <!-- ✗ Wrong - async/defer only works with external scripts -->
 <script async>
@@ -5933,6 +5959,7 @@ fetch(config.apiURL); // Error if script2 runs before script1!
 This is the key difference you need to understand:
 
 **Debounce:** Waits until events STOP for a certain time, then executes once
+
 ```
 Events:    |||||||||         (user stops)
 Debounce:                |--delay--|Execute!
@@ -5941,6 +5968,7 @@ Debounce:                |--delay--|Execute!
 ```
 
 **Throttle:** Executes at regular intervals while events are happening
+
 ```
 Events:    ||||||||||||||||||||||||||||||||||||
 Throttle:  |Execute|     |Execute|     |Execute|
@@ -5952,11 +5980,13 @@ Throttle:  |Execute|     |Execute|     |Execute|
 **Simple analogy:**
 
 **Debounce = Elevator door**
+
 - Door waits for people to stop entering
 - Only closes after no one has entered for a few seconds
 - If someone enters, timer resets
 
 **Throttle = Traffic light**
+
 - Lets cars through at fixed intervals
 - Every 30 seconds, regardless of how many cars are waiting
 - Doesn't wait for cars to stop coming
@@ -5964,6 +5994,7 @@ Throttle:  |Execute|     |Execute|     |Execute|
 **How Throttling Works**
 
 Let's trace through a throttle with 300ms delay:
+
 ```
 Time 0ms:
   User triggers event
@@ -6000,6 +6031,7 @@ Time 350ms:
 ```
 
 **Visual Flow:**
+
 ```
 Events:     |  |  |  |  |  |  |  |  |  |  |  |  |
             ↓     ↓     ↓     ↓     ↓     ↓
@@ -6010,11 +6042,12 @@ Executed:   ✓     ✗     ✗     ✓     ✗     ✓
 Only the events at the start of each 300ms window execute. All others are ignored.
 
 **JavaScript Implementation throttle**
+
 ```javascript
 function throttle(fn, delay = 300) {
   let flag = true;
 
-  return function(...args) {
+  return function (...args) {
     // If flag is false, we're in cooldown period
     if (!flag) {
       return; // Ignore this call
@@ -6022,7 +6055,7 @@ function throttle(fn, delay = 300) {
 
     // Execute the function
     fn.apply(this, args);
-    
+
     // Enter cooldown period
     flag = false;
 
@@ -6035,6 +6068,7 @@ function throttle(fn, delay = 300) {
 ```
 
 **JavaScript Implementation Debounce**
+
 ```javascript
 function getData() {
   let inputValue = document.getElementById("input").value;
@@ -6059,29 +6093,35 @@ let debouncedFn = debounce(getData, 300);
 **Breaking down the throttle code:**
 
 **1. `let flag = true`:**
+
 - Acts like a gate
 - `true` = gate open (function can execute)
 - `false` = gate closed (function calls ignored)
 
 **2. `if (!flag) return`:**
+
 - If we're in cooldown period (flag is false)
 - Ignore this function call
 - This is what makes it "throttle"
 
 **3. `fn.apply(this, args)`:**
+
 - Execute the actual function
 - Pass through the correct context and arguments
 
 **4. `flag = false`:**
+
 - Close the gate
 - Start cooldown period
 - Ignore all calls until timer completes
 
 **5. `setTimeout(() => { flag = true }, delay)`:**
+
 - After the delay, open the gate again
 - Allow the next function call to execute
 
 **Using the Throttle Function**
+
 ```javascript
 let count = 0;
 
@@ -6097,6 +6137,7 @@ window.addEventListener("resize", throttledResize);
 ```
 
 **What happens when you resize the window:**
+
 ```
 Without throttle:
   Resize event occurred: 0
@@ -6117,6 +6158,7 @@ With throttle (300ms):
 **Real-World Examples**
 
 **Example 1: Window Resize**
+
 ```javascript
 function updateLayout() {
   console.log("Recalculating layout...");
@@ -6130,17 +6172,19 @@ window.addEventListener("resize", throttledLayout);
 ```
 
 **Why throttle here?**
+
 - Resize fires hundreds of times
 - Layout calculations are expensive
 - We don't need to update every single millisecond
 - Once every 200ms is enough for smooth updates
 
 **Example 2: Scroll Event**
+
 ```javascript
 function checkScrollPosition() {
   const scrollPercent = (window.scrollY / document.body.scrollHeight) * 100;
   console.log(`Scrolled: ${scrollPercent.toFixed(1)}%`);
-  
+
   // Update progress bar
   document.getElementById("progress").style.width = scrollPercent + "%";
 }
@@ -6150,12 +6194,14 @@ window.addEventListener("scroll", throttledScroll);
 ```
 
 **Why throttle here?**
+
 - Scroll events fire constantly while scrolling
 - Updating progress bar every time is overkill
 - Once every 100ms gives smooth visual feedback
 - Saves CPU and prevents jank
 
 **Example 3: Shooting Game**
+
 ```javascript
 function shoot() {
   console.log("Bang! Bullet fired");
@@ -6171,18 +6217,20 @@ document.addEventListener("click", throttledShoot);
 ```
 
 **Why throttle here?**
+
 - Player might click rapidly
 - We want to limit fire rate
 - Creates game balance
 - Prevents spam clicking
 
 **Example 4: API Rate Limiting**
+
 ```javascript
 function saveData(data) {
   console.log("Saving:", data);
   fetch("/api/save", {
     method: "POST",
-    body: JSON.stringify(data)
+    body: JSON.stringify(data),
   });
 }
 
@@ -6190,12 +6238,13 @@ function saveData(data) {
 let throttledSave = throttle(saveData, 2000);
 
 // Auto-save on every change
-document.getElementById("editor").addEventListener("input", function() {
+document.getElementById("editor").addEventListener("input", function () {
   throttledSave(this.value);
 });
 ```
 
 **Why throttle here?**
+
 - User might type constantly
 - Don't want to spam the server
 - API might have rate limits
@@ -6204,6 +6253,7 @@ document.getElementById("editor").addEventListener("input", function() {
 **When to Use Debounce vs Throttle**
 
 **Use Debounce when:**
+
 - You want to wait until the user is DONE
 - Execute only after activity stops
 - Examples:
@@ -6212,6 +6262,7 @@ document.getElementById("editor").addEventListener("input", function() {
   - Autosave (save after done editing)
 
 **Use Throttle when:**
+
 - You want to limit execution rate DURING activity
 - Execute periodically while activity continues
 - Examples:
@@ -6223,6 +6274,7 @@ document.getElementById("editor").addEventListener("input", function() {
 **Visual Comparison**
 
 **Debounce - Search Input:**
+
 ```
 User types: H e l l o
 Events:     | | | | |        (user stops)
@@ -6232,6 +6284,7 @@ Debounce:               |--300ms--|Execute "Hello"
 ```
 
 **Throttle - Scroll Event:**
+
 ```
 User scrolls: ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 Events:       |||||||||||||||||||
@@ -6244,25 +6297,27 @@ Throttle:     |Execute|  |Execute|  |Execute|
 **Different Throttle Intervals**
 
 The delay value changes how often the function executes:
+
 ```javascript
 // Very frequent updates (smooth but more CPU)
-let throttled = throttle(fn, 50);   // Every 50ms
+let throttled = throttle(fn, 50); // Every 50ms
 
 // Balanced (good for most cases)
-let throttled = throttle(fn, 100);  // Every 100ms
-let throttled = throttle(fn, 200);  // Every 200ms
+let throttled = throttle(fn, 100); // Every 100ms
+let throttled = throttle(fn, 200); // Every 200ms
 
 // Less frequent updates (less CPU, might feel choppy)
-let throttled = throttle(fn, 500);  // Every 500ms
+let throttled = throttle(fn, 500); // Every 500ms
 let throttled = throttle(fn, 1000); // Every 1 second
 ```
 
 **Common Mistakes**
 
 **Mistake 1: Creating throttle inside event handler**
+
 ```javascript
 // ✗ Wrong - creates new throttle every time!
-window.addEventListener("resize", function() {
+window.addEventListener("resize", function () {
   throttle(handleResize, 300)(); // New throttle each time!
 });
 
@@ -6272,6 +6327,7 @@ window.addEventListener("resize", throttledResize);
 ```
 
 **Mistake 2: Using debounce when throttle is needed**
+
 ```javascript
 // ✗ Wrong - won't update until user STOPS scrolling
 let debouncedScroll = debounce(updateScrollPosition, 300);
@@ -6283,6 +6339,7 @@ window.addEventListener("scroll", throttledScroll);
 ```
 
 **Mistake 3: Using throttle when debounce is needed**
+
 ```javascript
 // ✗ Wrong - will make API calls every 300ms while typing
 let throttledSearch = throttle(searchAPI, 300);
@@ -6298,12 +6355,14 @@ input.addEventListener("input", debouncedSearch);
 Ask yourself: "Do I want the function to execute..."
 
 **WHILE the event is happening?** → Use **Throttle**
+
 - Window resize
 - Scrolling
 - Mouse movement
 - Game controls
 
 **AFTER the event stops?** → Use **Debounce**
+
 - Search input
 - Form validation
 - Text editor autosave
@@ -6311,13 +6370,13 @@ Ask yourself: "Do I want the function to execute..."
 
 **Summary Table**
 
-| Feature | Debounce | Throttle |
-|---------|----------|----------|
-| Executes | After events stop | During events (periodically) |
-| Timing | Resets on each event | Fixed intervals |
-| Use case | Wait for completion | Limit rate |
-| Example | Search input | Scroll handler |
-| Mental model | "Wait until done" | "Once per interval" |
+| Feature      | Debounce             | Throttle                     |
+| ------------ | -------------------- | ---------------------------- |
+| Executes     | After events stop    | During events (periodically) |
+| Timing       | Resets on each event | Fixed intervals              |
+| Use case     | Wait for completion  | Limit rate                   |
+| Example      | Search input         | Scroll handler               |
+| Mental model | "Wait until done"    | "Once per interval"          |
 
 **Key Takeaways**
 
@@ -6344,5 +6403,442 @@ Ask yourself: "Do I want the function to execute..."
    - 500ms+ for less critical updates
 
 6. **Both are useful** - choose based on your specific needs
+
+---
+
+## Event Delegation in JavaScript
+
+Understanding a powerful technique for improving performance when working with multiple elements.
+
+**What is Event Delegation?**
+
+Event delegation is a technique where instead of adding event listeners to multiple child elements, you add a single event listener to their parent element. The parent then handles events from all its children.
+
+**The Problem Without Event Delegation**
+
+Imagine you have a long list of items, and you want to add click handlers to each one:
+```html
+<ul>
+  <li>React.js</li>
+  <li>Next.js</li>
+  <li>Node.js</li>
+  <li>Angular</li>
+  <li>jQuery</li>
+  <!-- ... 100 more items ... -->
+</ul>
+```
+
+**Bad approach (without delegation):**
+```javascript
+// ✗ Bad - Adding listener to each item individually
+const items = document.querySelectorAll("li");
+
+items.forEach(item => {
+  item.addEventListener("click", function() {
+    console.log("Clicked:", this.textContent);
+  });
+});
+
+// Problems:
+// 1. 100+ event listeners = high memory usage
+// 2. Slow performance for large lists
+// 3. New items added later won't have listeners
+```
+
+**Why is this bad?**
+
+If you have 100 list items:
+- 100 separate event listeners are created
+- Each listener takes up memory
+- If you add new items dynamically, you need to attach listeners again
+- More listeners = slower performance
+
+**The Solution: Event Delegation**
+
+Instead of adding listeners to all children, add ONE listener to the parent:
+```javascript
+// ✓ Good - Single listener on parent
+const list = document.querySelector("ul");
+
+list.addEventListener("click", function(event) {
+  if (event.target.tagName === "LI") {
+    console.log("Clicked:", event.target.textContent);
+  }
+});
+
+// Benefits:
+// 1. Only 1 event listener = less memory
+// 2. Better performance
+// 3. Automatically works with new items added later!
+```
+
+**How Does Event Delegation Work?**
+
+It works because of **event bubbling**. When you click a child element, the event doesn't just happen on that element - it "bubbles up" through all parent elements.
+
+**Visual representation:**
+```html
+<ul> ← Event bubbles up here (parent)
+  <li> ← You click here (child)
+    Text
+  </li>
+</ul>
+```
+
+**Bubbling flow:**
+```
+User clicks <li>
+    ↓
+Event fires on <li>
+    ↓
+Event bubbles to <ul>
+    ↓
+<ul>'s listener catches it
+    ↓
+We check what was clicked using event.target
+```
+
+**Understanding event.target vs event.currentTarget**
+
+These two properties are often confused. Here's the difference:
+
+- **event.target** - The element that was actually clicked (child)
+- **event.currentTarget** - The element that has the event listener (parent)
+```html
+<ul id="list">
+  <li>Item 1</li>
+  <li>Item 2</li>
+</ul>
+```
+```javascript
+document.getElementById("list").addEventListener("click", function(event) {
+  console.log("target:", event.target);           // <li>Item 1</li>
+  console.log("currentTarget:", event.currentTarget); // <ul id="list">
+});
+```
+
+**Visual explanation:**
+```
+Click happens here → <li>Item 1</li> ← event.target (what you clicked)
+                            ↓
+                     Bubbles up to
+                            ↓
+Listener is here → <ul> ← event.currentTarget (where listener is attached)
+```
+
+**Complete Example**
+```html
+<ul onclick="handleClick(event)">
+  <li data-id="react">React.js</li>
+  <li data-id="next">Next.js</li>
+  <li data-id="node">Node.js</li>
+  <li data-id="angular">Angular</li>
+  <li data-id="jquery">jQuery</li>
+  <li data-id="vue">Vue.js</li>
+  <li data-id="preact">Preact</li>
+  <li data-id="svelte">Svelte</li>
+  <li data-id="nuxt">Nuxt.js</li>
+  <li data-id="remix">Remix</li>
+</ul>
+```
+```javascript
+function handleClick(event) {
+  console.log("Clicked element:", event.target);
+  // <li data-id="react">React.js</li>
+  
+  console.log("Parent element:", event.currentTarget);
+  // <ul>...</ul>
+  
+  // Common use case: Get data from clicked element
+  console.log("ID:", event.target.dataset.id);
+  // "react"
+  
+  // Alternative way to get data attribute
+  console.log("ID:", event.target.getAttribute("data-id"));
+  // "react"
+}
+```
+
+**Breaking down the example:**
+
+**1. Single event listener on parent:**
+```html
+<ul onclick="handleClick(event)">
+```
+Only ONE listener for the entire list!
+
+**2. event.target - What was clicked:**
+```javascript
+console.log(event.target);
+// The specific <li> element that was clicked
+```
+
+**3. event.currentTarget - Where the listener is:**
+```javascript
+console.log(event.currentTarget);
+// The <ul> element (parent with the listener)
+```
+
+**4. Accessing data attributes:**
+```javascript
+// Method 1: Using dataset property
+event.target.dataset.id    // "react"
+
+// Method 2: Using getAttribute
+event.target.getAttribute("data-id")  // "react"
+```
+
+**Real-World Example 1: Todo List**
+```html
+<ul id="todoList">
+  <li data-id="1">
+    <span>Buy groceries</span>
+    <button class="delete">Delete</button>
+  </li>
+  <li data-id="2">
+    <span>Walk dog</span>
+    <button class="delete">Delete</button>
+  </li>
+  <li data-id="3">
+    <span>Study JavaScript</span>
+    <button class="delete">Delete</button>
+  </li>
+</ul>
+```
+```javascript
+document.getElementById("todoList").addEventListener("click", function(event) {
+  // Check if delete button was clicked
+  if (event.target.classList.contains("delete")) {
+    const listItem = event.target.closest("li");
+    const todoId = listItem.dataset.id;
+    
+    console.log("Deleting todo:", todoId);
+    listItem.remove();
+  }
+  
+  // Check if the todo text was clicked
+  if (event.target.tagName === "SPAN") {
+    console.log("You clicked:", event.target.textContent);
+  }
+});
+```
+
+**Why this is powerful:**
+- ONE event listener handles all todos and buttons
+- Works automatically with new todos added later
+- No need to attach/detach listeners when adding/removing items
+
+**Real-World Example 2: Image Gallery**
+```html
+<div id="gallery">
+  <img src="cat1.jpg" data-full="cat1-large.jpg" alt="Cat 1">
+  <img src="cat2.jpg" data-full="cat2-large.jpg" alt="Cat 2">
+  <img src="cat3.jpg" data-full="cat3-large.jpg" alt="Cat 3">
+  <!-- 100 more images... -->
+</div>
+```
+```javascript
+document.getElementById("gallery").addEventListener("click", function(event) {
+  if (event.target.tagName === "IMG") {
+    const fullSizeUrl = event.target.dataset.full;
+    openLightbox(fullSizeUrl);
+  }
+});
+
+function openLightbox(url) {
+  console.log("Opening image:", url);
+  // Show full-size image in lightbox
+}
+```
+
+**Benefits:**
+- Only 1 listener for 100+ images
+- Much better performance
+- New images work automatically
+
+**Real-World Example 3: Dynamic Content**
+```html
+<div id="container">
+  <button class="action" data-action="save">Save</button>
+  <button class="action" data-action="delete">Delete</button>
+</div>
+
+<button id="addButton">Add New Button</button>
+```
+```javascript
+// Event delegation on container
+document.getElementById("container").addEventListener("click", function(event) {
+  if (event.target.classList.contains("action")) {
+    const action = event.target.dataset.action;
+    console.log("Action:", action);
+  }
+});
+
+// Add new buttons dynamically
+document.getElementById("addButton").addEventListener("click", function() {
+  const newButton = document.createElement("button");
+  newButton.className = "action";
+  newButton.dataset.action = "share";
+  newButton.textContent = "Share";
+  
+  document.getElementById("container").appendChild(newButton);
+  // New button automatically works with event delegation!
+});
+```
+
+**Why this is amazing:**
+- Dynamically added buttons work without extra setup
+- No need to attach listeners to new elements
+- Clean and maintainable code
+
+**Checking Which Element Was Clicked**
+
+You often need to verify what specific element was clicked:
+```javascript
+list.addEventListener("click", function(event) {
+  const clicked = event.target;
+  
+  // Method 1: Check tag name
+  if (clicked.tagName === "LI") {
+    console.log("A list item was clicked");
+  }
+  
+  // Method 2: Check class
+  if (clicked.classList.contains("special")) {
+    console.log("A special item was clicked");
+  }
+  
+  // Method 3: Check data attribute
+  if (clicked.dataset.type === "product") {
+    console.log("A product was clicked");
+  }
+  
+  // Method 4: Use closest() to find parent
+  const listItem = clicked.closest("li");
+  if (listItem) {
+    console.log("Clicked something inside an LI");
+  }
+});
+```
+
+**Using closest() for Complex Structures**
+
+Sometimes you click on a child element inside your target:
+```html
+<ul id="list">
+  <li>
+    <img src="icon.png">
+    <span>Item text</span>
+    <button>Delete</button>
+  </li>
+</ul>
+```
+
+If you click the `<img>`, `event.target` is the `<img>`, not the `<li>`. Use `closest()` to find the parent:
+```javascript
+document.getElementById("list").addEventListener("click", function(event) {
+  // Find the closest <li> parent
+  const listItem = event.target.closest("li");
+  
+  if (listItem) {
+    console.log("You clicked somewhere in this item:", listItem);
+  }
+});
+```
+
+**Advantages of Event Delegation**
+
+1. **Better Performance**
+   - Fewer event listeners = less memory
+   - Faster setup time for long lists
+
+2. **Works with Dynamic Content**
+   - New elements automatically get the functionality
+   - No need to reattach listeners
+
+3. **Cleaner Code**
+   - One listener instead of hundreds
+   - Easier to maintain
+
+4. **Less Memory Usage**
+   - Important for mobile devices
+   - Scales better with large lists
+
+**When to Use Event Delegation**
+
+✅ **Use event delegation when:**
+- You have many similar elements (list items, buttons, cards)
+- Elements are added/removed dynamically
+- You want better performance
+- Elements share the same functionality
+
+❌ **Don't use event delegation when:**
+- You only have one or two elements
+- Each element needs very different behavior
+- The performance benefit isn't worth the complexity
+
+**Common Mistakes**
+
+**Mistake 1: Not checking what was clicked**
+```javascript
+// ✗ Wrong - assumes everything clicked is an LI
+list.addEventListener("click", function(event) {
+  console.log(event.target.textContent);
+  // What if user clicks the UL itself?
+});
+
+// ✓ Correct - check first
+list.addEventListener("click", function(event) {
+  if (event.target.tagName === "LI") {
+    console.log(event.target.textContent);
+  }
+});
+```
+
+**Mistake 2: Confusing target and currentTarget**
+```javascript
+// ✗ Wrong - currentTarget is always the parent
+list.addEventListener("click", function(event) {
+  console.log(event.currentTarget.textContent);
+  // Always logs the entire list content!
+});
+
+// ✓ Correct - use target for the clicked element
+list.addEventListener("click", function(event) {
+  console.log(event.target.textContent);
+  // Logs the clicked item's content
+});
+```
+
+**Mistake 3: Not using stopPropagation carefully**
+```javascript
+// ✗ Can cause issues - stops delegation from working
+listItem.addEventListener("click", function(event) {
+  event.stopPropagation();  // Prevents bubbling!
+  // Parent's delegated listener won't fire
+});
+```
+
+**Key Takeaways**
+
+1. **Event delegation = one listener on parent** instead of many on children
+
+2. **Works because of event bubbling** - events travel up the DOM tree
+
+3. **event.target** - what was clicked (child)
+   **event.currentTarget** - where listener is attached (parent)
+
+4. **Access data attributes** using:
+   - `event.target.dataset.id`
+   - `event.target.getAttribute("data-id")`
+
+5. **Always check what was clicked** before acting on it
+
+6. **Use closest()** to find parent elements when needed
+
+7. **Main benefits:**
+   - Better performance
+   - Less memory
+   - Works with dynamic content
 
 ---
