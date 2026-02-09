@@ -6842,3 +6842,507 @@ listItem.addEventListener("click", function(event) {
    - Works with dynamic content
 
 ---
+
+## Prototype Inheritance in JavaScript
+
+Understanding how objects inherit properties and methods from other objects in JavaScript.
+
+**What is Prototype Inheritance?**
+
+Prototype inheritance is a mechanism in JavaScript that allows objects to inherit properties and methods from other objects.
+
+Unlike classical inheritance (like in Java or C++), JavaScript uses prototypes - objects can directly inherit from other objects.
+
+**Simple Analogy:**
+
+Think of it like a family tree:
+- You inherit features from your parents
+- Your parents inherited from their parents
+- This forms a chain going back generations
+
+In JavaScript:
+- Objects inherit from other objects
+- Those objects inherit from their prototypes
+- This forms a **prototype chain**
+
+**The Hidden [[Prototype]] Property**
+
+Every object in JavaScript has a hidden property called `[[Prototype]]`. This property points to another object (or `null`).
+
+**How to access it:**
+```javascript
+// Method 1: __proto__ (older way, but commonly used)
+console.log(obj.__proto__);
+
+// Method 2: Object.getPrototypeOf() (recommended)
+console.log(Object.getPrototypeOf(obj));
+```
+
+**Note:** While `__proto__` is widely supported, `Object.getPrototypeOf()` is the official way to access the prototype.
+
+**Simple Example**
+```javascript
+const animal = {
+  eat: true,
+  sleep: function() {
+    console.log("Sleeping...");
+  }
+};
+
+const rabbit = {
+  run: true
+};
+
+// Set animal as rabbit's prototype
+rabbit.__proto__ = animal;
+
+console.log(rabbit.run);   // true (rabbit's own property)
+console.log(rabbit.eat);   // true (inherited from animal)
+rabbit.sleep();            // "Sleeping..." (inherited method)
+```
+
+**What's happening here:**
+```
+rabbit object
+  ├─ run: true (own property)
+  └─ [[Prototype]] → animal object
+                      ├─ eat: true
+                      └─ sleep: function
+```
+
+**The Prototype Chain**
+
+Objects can inherit from objects, which inherit from other objects, forming a chain:
+```javascript
+const livingBeing = {
+  alive: true
+};
+
+const animal = {
+  eat: true
+};
+
+const rabbit = {
+  run: true
+};
+
+// Create a chain
+animal.__proto__ = livingBeing;
+rabbit.__proto__ = animal;
+
+console.log(rabbit.run);    // true (own property)
+console.log(rabbit.eat);    // true (from animal)
+console.log(rabbit.alive);  // true (from livingBeing)
+```
+
+**Visual representation:**
+```
+rabbit
+  ├─ run: true
+  └─ [[Prototype]] → animal
+                      ├─ eat: true
+                      └─ [[Prototype]] → livingBeing
+                                          ├─ alive: true
+                                          └─ [[Prototype]] → Object.prototype
+                                                              └─ [[Prototype]] → null
+```
+
+The chain ends when it reaches `null`.
+
+**Object.create() Method**
+
+The recommended way to set up prototype inheritance is using `Object.create()`:
+```javascript
+const animal = {
+  eat: true,
+  makeSound: function() {
+    console.log("Some sound");
+  }
+};
+
+// Create rabbit with animal as its prototype
+const rabbit = Object.create(animal);
+rabbit.run = true;
+
+console.log(rabbit.run);  // true (own property)
+console.log(rabbit.eat);  // true (inherited)
+rabbit.makeSound();       // "Some sound" (inherited)
+```
+
+**What Object.create() does:**
+```javascript
+// This:
+const rabbit = Object.create(animal);
+
+// Is similar to:
+const rabbit = {};
+rabbit.__proto__ = animal;
+```
+
+But `Object.create()` is cleaner and recommended.
+
+**Constructor Functions and Prototypes**
+
+When you use constructor functions with `new`, JavaScript automatically sets up the prototype:
+```javascript
+function Animal(name) {
+  this.name = name;
+}
+
+// Add methods to the prototype
+Animal.prototype.eat = function() {
+  console.log(`${this.name} is eating`);
+};
+
+Animal.prototype.sleep = function() {
+  console.log(`${this.name} is sleeping`);
+};
+
+// Create instances
+const dog = new Animal("Dog");
+const cat = new Animal("Cat");
+
+dog.eat();   // "Dog is eating"
+cat.sleep(); // "Cat is sleeping"
+```
+
+**What happens with `new`:**
+```javascript
+const dog = new Animal("Dog");
+
+// Behind the scenes:
+// 1. Create a new empty object: {}
+// 2. Set its [[Prototype]] to Animal.prototype
+// 3. Call Animal() with 'this' pointing to the new object
+// 4. Return the new object
+```
+
+**Visual representation:**
+```
+dog
+  ├─ name: "Dog"
+  └─ [[Prototype]] → Animal.prototype
+                      ├─ eat: function
+                      ├─ sleep: function
+                      └─ [[Prototype]] → Object.prototype
+```
+
+**Classes and Prototypes**
+
+ES6 classes for the most part are just syntactic sugar over constructor functions and prototypes:
+```javascript
+class Animal {
+  constructor(name) {
+    this.name = name;
+  }
+  
+  eat() {
+    console.log(`${this.name} is eating`);
+  }
+  
+  sleep() {
+    console.log(`${this.name} is sleeping`);
+  }
+}
+
+const dog = new Animal("Dog");
+dog.eat();  // "Dog is eating"
+
+// Under the hood, it still uses prototypes!
+console.log(dog.__proto__ === Animal.prototype);  // true
+```
+
+**Why Built-in Methods Work**
+
+This is why arrays have methods like `map()`, `filter()`, strings have `includes()`, etc.
+```javascript
+const arr = [1, 2, 3];
+
+// What JavaScript does internally:
+// const arr = new Array(1, 2, 3);
+
+// arr's prototype chain:
+// arr → Array.prototype (has map, filter, etc.) → Object.prototype → null
+
+arr.map(x => x * 2);  // Works because of Array.prototype.map
+```
+
+**Visual representation:**
+```
+arr = [1, 2, 3]
+  └─ [[Prototype]] → Array.prototype
+                      ├─ map: function
+                      ├─ filter: function
+                      ├─ reduce: function
+                      └─ [[Prototype]] → Object.prototype
+                                          ├─ toString: function
+                                          ├─ hasOwnProperty: function
+                                          └─ [[Prototype]] → null
+```
+
+**Same for strings:**
+```javascript
+const str = "hello";
+
+// Internally: new String("hello")
+
+str.toUpperCase();  // Works because of String.prototype.toUpperCase
+str.includes("ell"); // Works because of String.prototype.includes
+```
+
+**Property Lookup Process**
+
+When you access a property on an object, JavaScript searches in this order:
+
+**Step 1:** Check the object itself
+**Step 2:** Check the object's prototype
+**Step 3:** Check the prototype's prototype
+**Step 4:** Continue until property is found or reach `null`
+```javascript
+const animal = {
+  eat: true
+};
+
+const rabbit = Object.create(animal);
+rabbit.run = true;
+
+// Looking up rabbit.run:
+console.log(rabbit.run);
+// Step 1: Check rabbit itself → Found! Return true
+
+// Looking up rabbit.eat:
+console.log(rabbit.eat);
+// Step 1: Check rabbit itself → Not found
+// Step 2: Check rabbit's prototype (animal) → Found! Return true
+
+// Looking up rabbit.fly:
+console.log(rabbit.fly);
+// Step 1: Check rabbit itself → Not found
+// Step 2: Check animal → Not found
+// Step 3: Check Object.prototype → Not found
+// Step 4: Reach null → Return undefined
+```
+
+**Visual flow:**
+```
+rabbit.eat
+    ↓
+Check rabbit? No
+    ↓
+Check animal? Yes! → return true
+
+rabbit.fly
+    ↓
+Check rabbit? No
+    ↓
+Check animal? No
+    ↓
+Check Object.prototype? No
+    ↓
+Reached null → return undefined
+```
+
+**Complete Example with Prototype Chain**
+```javascript
+const animal = {
+  eat: true,
+  walk: function() {
+    console.log("Animal walks");
+  }
+};
+
+// Create rabbit inheriting from animal
+const rabbit = Object.create(animal);
+rabbit.run = true;
+rabbit.hop = function() {
+  console.log("Rabbit hops");
+};
+
+// Create whiteRabbit inheriting from rabbit
+const whiteRabbit = Object.create(rabbit);
+whiteRabbit.color = "white";
+
+// Property lookups:
+console.log(whiteRabbit.color);  // "white" (own property)
+console.log(whiteRabbit.run);    // true (from rabbit)
+console.log(whiteRabbit.eat);    // true (from animal)
+
+whiteRabbit.hop();   // "Rabbit hops" (from rabbit)
+whiteRabbit.walk();  // "Animal walks" (from animal)
+```
+
+**Prototype chain:**
+```
+whiteRabbit
+  ├─ color: "white"
+  └─ [[Prototype]] → rabbit
+                      ├─ run: true
+                      ├─ hop: function
+                      └─ [[Prototype]] → animal
+                                          ├─ eat: true
+                                          ├─ walk: function
+                                          └─ [[Prototype]] → Object.prototype
+                                                              └─ [[Prototype]] → null
+```
+
+**Checking Properties**
+
+You can check if a property belongs to the object itself or is inherited:
+```javascript
+const animal = {
+  eat: true
+};
+
+const rabbit = Object.create(animal);
+rabbit.run = true;
+
+// Check if property exists (including inherited)
+console.log("run" in rabbit);   // true
+console.log("eat" in rabbit);   // true
+
+// Check if property is own (not inherited)
+console.log(rabbit.hasOwnProperty("run"));  // true
+console.log(rabbit.hasOwnProperty("eat"));  // false (inherited)
+```
+
+**Modifying Prototypes**
+
+You can add properties to prototypes dynamically:
+```javascript
+function Animal(name) {
+  this.name = name;
+}
+
+const dog = new Animal("Dog");
+const cat = new Animal("Cat");
+
+// Add method to prototype (affects all instances!)
+Animal.prototype.makeSound = function() {
+  console.log(`${this.name} makes a sound`);
+};
+
+dog.makeSound();  // "Dog makes a sound"
+cat.makeSound();  // "Cat makes a sound"
+// Both instances get the new method!
+```
+
+**Why is this powerful?**
+
+Adding methods to the prototype means:
+- All instances share the same method (memory efficient)
+- New instances automatically get the method
+- You can extend built-in objects (though not recommended)
+
+**Common Patterns**
+
+**Pattern 1: Inheritance with Constructor Functions**
+```javascript
+function Animal(name) {
+  this.name = name;
+}
+
+Animal.prototype.eat = function() {
+  console.log(`${this.name} is eating`);
+};
+
+function Dog(name, breed) {
+  Animal.call(this, name);  // Call parent constructor
+  this.breed = breed;
+}
+
+// Set up inheritance
+Dog.prototype = Object.create(Animal.prototype);
+Dog.prototype.constructor = Dog;
+
+Dog.prototype.bark = function() {
+  console.log("Woof!");
+};
+
+const myDog = new Dog("Rex", "Labrador");
+myDog.eat();   // "Rex is eating" (inherited)
+myDog.bark();  // "Woof!" (own method)
+```
+
+**Pattern 2: Inheritance with Classes (ES6+)**
+```javascript
+class Animal {
+  constructor(name) {
+    this.name = name;
+  }
+  
+  eat() {
+    console.log(`${this.name} is eating`);
+  }
+}
+
+class Dog extends Animal {
+  constructor(name, breed) {
+    super(name);  // Call parent constructor
+    this.breed = breed;
+  }
+  
+  bark() {
+    console.log("Woof!");
+  }
+}
+
+const myDog = new Dog("Rex", "Labrador");
+myDog.eat();   // "Rex is eating"
+myDog.bark();  // "Woof!"
+```
+
+**Common Mistakes**
+
+**Mistake 1: Modifying prototype after creating instances**
+```javascript
+function Animal(name) {
+  this.name = name;
+}
+
+const dog = new Animal("Dog");
+
+// ✗ This won't work as expected
+dog.prototype.eat = function() {
+  console.log("Eating");
+};
+
+// ✓ Modify the constructor's prototype
+Animal.prototype.eat = function() {
+  console.log("Eating");
+};
+```
+
+**Mistake 2: Overwriting prototype instead of extending it**
+```javascript
+function Animal(name) {
+  this.name = name;
+}
+
+// ✗ Wrong - loses constructor reference
+Animal.prototype = {
+  eat: function() {}
+};
+
+// ✓ Correct - add to existing prototype
+Animal.prototype.eat = function() {};
+```
+
+**Key Takeaways**
+
+1. **Prototype inheritance** allows objects to inherit from other objects
+
+2. **Every object has [[Prototype]]** accessible via `__proto__` or `Object.getPrototypeOf()`
+
+3. **Prototype chain** is formed when objects inherit from other objects
+
+4. **Property lookup** searches the object, then up the prototype chain
+
+5. **Object.create()** is the recommended way to set up inheritance
+
+6. **Constructor functions and classes** automatically set up prototypes
+
+7. **Built-in methods** work because of prototypes (Array.prototype, String.prototype, etc.)
+
+8. **Chain ends at null** - the final link in every prototype chain
+
+---
