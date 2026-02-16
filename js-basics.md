@@ -6417,6 +6417,7 @@ Event delegation is a technique where instead of adding event listeners to multi
 **The Problem Without Event Delegation**
 
 Imagine you have a long list of items, and you want to add click handlers to each one:
+
 ```html
 <ul>
   <li>React.js</li>
@@ -6429,12 +6430,13 @@ Imagine you have a long list of items, and you want to add click handlers to eac
 ```
 
 **Bad approach (without delegation):**
+
 ```javascript
 // ✗ Bad - Adding listener to each item individually
 const items = document.querySelectorAll("li");
 
-items.forEach(item => {
-  item.addEventListener("click", function() {
+items.forEach((item) => {
+  item.addEventListener("click", function () {
     console.log("Clicked:", this.textContent);
   });
 });
@@ -6448,6 +6450,7 @@ items.forEach(item => {
 **Why is this bad?**
 
 If you have 100 list items:
+
 - 100 separate event listeners are created
 - Each listener takes up memory
 - If you add new items dynamically, you need to attach listeners again
@@ -6456,11 +6459,12 @@ If you have 100 list items:
 **The Solution: Event Delegation**
 
 Instead of adding listeners to all children, add ONE listener to the parent:
+
 ```javascript
 // ✓ Good - Single listener on parent
 const list = document.querySelector("ul");
 
-list.addEventListener("click", function(event) {
+list.addEventListener("click", function (event) {
   if (event.target.tagName === "LI") {
     console.log("Clicked:", event.target.textContent);
   }
@@ -6477,15 +6481,16 @@ list.addEventListener("click", function(event) {
 It works because of **event bubbling**. When you click a child element, the event doesn't just happen on that element - it "bubbles up" through all parent elements.
 
 **Visual representation:**
+
 ```html
-<ul> ← Event bubbles up here (parent)
-  <li> ← You click here (child)
-    Text
-  </li>
+<ul>
+  ← Event bubbles up here (parent)
+  <li>← You click here (child) Text</li>
 </ul>
 ```
 
 **Bubbling flow:**
+
 ```
 User clicks <li>
     ↓
@@ -6504,20 +6509,23 @@ These two properties are often confused. Here's the difference:
 
 - **event.target** - The element that was actually clicked (child)
 - **event.currentTarget** - The element that has the event listener (parent)
+
 ```html
 <ul id="list">
   <li>Item 1</li>
   <li>Item 2</li>
 </ul>
 ```
+
 ```javascript
-document.getElementById("list").addEventListener("click", function(event) {
-  console.log("target:", event.target);           // <li>Item 1</li>
+document.getElementById("list").addEventListener("click", function (event) {
+  console.log("target:", event.target); // <li>Item 1</li>
   console.log("currentTarget:", event.currentTarget); // <ul id="list">
 });
 ```
 
 **Visual explanation:**
+
 ```
 Click happens here → <li>Item 1</li> ← event.target (what you clicked)
                             ↓
@@ -6527,6 +6535,7 @@ Listener is here → <ul> ← event.currentTarget (where listener is attached)
 ```
 
 **Complete Example**
+
 ```html
 <ul onclick="handleClick(event)">
   <li data-id="react">React.js</li>
@@ -6541,18 +6550,19 @@ Listener is here → <ul> ← event.currentTarget (where listener is attached)
   <li data-id="remix">Remix</li>
 </ul>
 ```
+
 ```javascript
 function handleClick(event) {
   console.log("Clicked element:", event.target);
   // <li data-id="react">React.js</li>
-  
+
   console.log("Parent element:", event.currentTarget);
   // <ul>...</ul>
-  
+
   // Common use case: Get data from clicked element
   console.log("ID:", event.target.dataset.id);
   // "react"
-  
+
   // Alternative way to get data attribute
   console.log("ID:", event.target.getAttribute("data-id"));
   // "react"
@@ -6562,33 +6572,39 @@ function handleClick(event) {
 **Breaking down the example:**
 
 **1. Single event listener on parent:**
+
 ```html
-<ul onclick="handleClick(event)">
+<ul onclick="handleClick(event)"></ul>
 ```
+
 Only ONE listener for the entire list!
 
 **2. event.target - What was clicked:**
+
 ```javascript
 console.log(event.target);
 // The specific <li> element that was clicked
 ```
 
 **3. event.currentTarget - Where the listener is:**
+
 ```javascript
 console.log(event.currentTarget);
 // The <ul> element (parent with the listener)
 ```
 
 **4. Accessing data attributes:**
+
 ```javascript
 // Method 1: Using dataset property
-event.target.dataset.id    // "react"
+event.target.dataset.id; // "react"
 
 // Method 2: Using getAttribute
-event.target.getAttribute("data-id")  // "react"
+event.target.getAttribute("data-id"); // "react"
 ```
 
 **Real-World Example 1: Todo List**
+
 ```html
 <ul id="todoList">
   <li data-id="1">
@@ -6605,17 +6621,18 @@ event.target.getAttribute("data-id")  // "react"
   </li>
 </ul>
 ```
+
 ```javascript
-document.getElementById("todoList").addEventListener("click", function(event) {
+document.getElementById("todoList").addEventListener("click", function (event) {
   // Check if delete button was clicked
   if (event.target.classList.contains("delete")) {
     const listItem = event.target.closest("li");
     const todoId = listItem.dataset.id;
-    
+
     console.log("Deleting todo:", todoId);
     listItem.remove();
   }
-  
+
   // Check if the todo text was clicked
   if (event.target.tagName === "SPAN") {
     console.log("You clicked:", event.target.textContent);
@@ -6624,21 +6641,24 @@ document.getElementById("todoList").addEventListener("click", function(event) {
 ```
 
 **Why this is powerful:**
+
 - ONE event listener handles all todos and buttons
 - Works automatically with new todos added later
 - No need to attach/detach listeners when adding/removing items
 
 **Real-World Example 2: Image Gallery**
+
 ```html
 <div id="gallery">
-  <img src="cat1.jpg" data-full="cat1-large.jpg" alt="Cat 1">
-  <img src="cat2.jpg" data-full="cat2-large.jpg" alt="Cat 2">
-  <img src="cat3.jpg" data-full="cat3-large.jpg" alt="Cat 3">
+  <img src="cat1.jpg" data-full="cat1-large.jpg" alt="Cat 1" />
+  <img src="cat2.jpg" data-full="cat2-large.jpg" alt="Cat 2" />
+  <img src="cat3.jpg" data-full="cat3-large.jpg" alt="Cat 3" />
   <!-- 100 more images... -->
 </div>
 ```
+
 ```javascript
-document.getElementById("gallery").addEventListener("click", function(event) {
+document.getElementById("gallery").addEventListener("click", function (event) {
   if (event.target.tagName === "IMG") {
     const fullSizeUrl = event.target.dataset.full;
     openLightbox(fullSizeUrl);
@@ -6652,11 +6672,13 @@ function openLightbox(url) {
 ```
 
 **Benefits:**
+
 - Only 1 listener for 100+ images
 - Much better performance
 - New images work automatically
 
 **Real-World Example 3: Dynamic Content**
+
 ```html
 <div id="container">
   <button class="action" data-action="save">Save</button>
@@ -6665,28 +6687,32 @@ function openLightbox(url) {
 
 <button id="addButton">Add New Button</button>
 ```
+
 ```javascript
 // Event delegation on container
-document.getElementById("container").addEventListener("click", function(event) {
-  if (event.target.classList.contains("action")) {
-    const action = event.target.dataset.action;
-    console.log("Action:", action);
-  }
-});
+document
+  .getElementById("container")
+  .addEventListener("click", function (event) {
+    if (event.target.classList.contains("action")) {
+      const action = event.target.dataset.action;
+      console.log("Action:", action);
+    }
+  });
 
 // Add new buttons dynamically
-document.getElementById("addButton").addEventListener("click", function() {
+document.getElementById("addButton").addEventListener("click", function () {
   const newButton = document.createElement("button");
   newButton.className = "action";
   newButton.dataset.action = "share";
   newButton.textContent = "Share";
-  
+
   document.getElementById("container").appendChild(newButton);
   // New button automatically works with event delegation!
 });
 ```
 
 **Why this is amazing:**
+
 - Dynamically added buttons work without extra setup
 - No need to attach listeners to new elements
 - Clean and maintainable code
@@ -6694,25 +6720,26 @@ document.getElementById("addButton").addEventListener("click", function() {
 **Checking Which Element Was Clicked**
 
 You often need to verify what specific element was clicked:
+
 ```javascript
-list.addEventListener("click", function(event) {
+list.addEventListener("click", function (event) {
   const clicked = event.target;
-  
+
   // Method 1: Check tag name
   if (clicked.tagName === "LI") {
     console.log("A list item was clicked");
   }
-  
+
   // Method 2: Check class
   if (clicked.classList.contains("special")) {
     console.log("A special item was clicked");
   }
-  
+
   // Method 3: Check data attribute
   if (clicked.dataset.type === "product") {
     console.log("A product was clicked");
   }
-  
+
   // Method 4: Use closest() to find parent
   const listItem = clicked.closest("li");
   if (listItem) {
@@ -6724,10 +6751,11 @@ list.addEventListener("click", function(event) {
 **Using closest() for Complex Structures**
 
 Sometimes you click on a child element inside your target:
+
 ```html
 <ul id="list">
   <li>
-    <img src="icon.png">
+    <img src="icon.png" />
     <span>Item text</span>
     <button>Delete</button>
   </li>
@@ -6735,11 +6763,12 @@ Sometimes you click on a child element inside your target:
 ```
 
 If you click the `<img>`, `event.target` is the `<img>`, not the `<li>`. Use `closest()` to find the parent:
+
 ```javascript
-document.getElementById("list").addEventListener("click", function(event) {
+document.getElementById("list").addEventListener("click", function (event) {
   // Find the closest <li> parent
   const listItem = event.target.closest("li");
-  
+
   if (listItem) {
     console.log("You clicked somewhere in this item:", listItem);
   }
@@ -6767,12 +6796,14 @@ document.getElementById("list").addEventListener("click", function(event) {
 **When to Use Event Delegation**
 
 ✅ **Use event delegation when:**
+
 - You have many similar elements (list items, buttons, cards)
 - Elements are added/removed dynamically
 - You want better performance
 - Elements share the same functionality
 
 ❌ **Don't use event delegation when:**
+
 - You only have one or two elements
 - Each element needs very different behavior
 - The performance benefit isn't worth the complexity
@@ -6780,15 +6811,16 @@ document.getElementById("list").addEventListener("click", function(event) {
 **Common Mistakes**
 
 **Mistake 1: Not checking what was clicked**
+
 ```javascript
 // ✗ Wrong - assumes everything clicked is an LI
-list.addEventListener("click", function(event) {
+list.addEventListener("click", function (event) {
   console.log(event.target.textContent);
   // What if user clicks the UL itself?
 });
 
 // ✓ Correct - check first
-list.addEventListener("click", function(event) {
+list.addEventListener("click", function (event) {
   if (event.target.tagName === "LI") {
     console.log(event.target.textContent);
   }
@@ -6796,25 +6828,27 @@ list.addEventListener("click", function(event) {
 ```
 
 **Mistake 2: Confusing target and currentTarget**
+
 ```javascript
 // ✗ Wrong - currentTarget is always the parent
-list.addEventListener("click", function(event) {
+list.addEventListener("click", function (event) {
   console.log(event.currentTarget.textContent);
   // Always logs the entire list content!
 });
 
 // ✓ Correct - use target for the clicked element
-list.addEventListener("click", function(event) {
+list.addEventListener("click", function (event) {
   console.log(event.target.textContent);
   // Logs the clicked item's content
 });
 ```
 
 **Mistake 3: Not using stopPropagation carefully**
+
 ```javascript
 // ✗ Can cause issues - stops delegation from working
-listItem.addEventListener("click", function(event) {
-  event.stopPropagation();  // Prevents bubbling!
+listItem.addEventListener("click", function (event) {
+  event.stopPropagation(); // Prevents bubbling!
   // Parent's delegated listener won't fire
 });
 ```
@@ -6856,11 +6890,13 @@ Unlike classical inheritance (like in Java or C++), JavaScript uses prototypes -
 **Simple Analogy:**
 
 Think of it like a family tree:
+
 - You inherit features from your parents
 - Your parents inherited from their parents
 - This forms a chain going back generations
 
 In JavaScript:
+
 - Objects inherit from other objects
 - Those objects inherit from their prototypes
 - This forms a **prototype chain**
@@ -6870,6 +6906,7 @@ In JavaScript:
 Every object in JavaScript has a hidden property called `[[Prototype]]`. This property points to another object (or `null`).
 
 **How to access it:**
+
 ```javascript
 // Method 1: __proto__ (older way, but commonly used)
 console.log(obj.__proto__);
@@ -6881,27 +6918,29 @@ console.log(Object.getPrototypeOf(obj));
 **Note:** While `__proto__` is widely supported, `Object.getPrototypeOf()` is the official way to access the prototype.
 
 **Simple Example**
+
 ```javascript
 const animal = {
   eat: true,
-  sleep: function() {
+  sleep: function () {
     console.log("Sleeping...");
-  }
+  },
 };
 
 const rabbit = {
-  run: true
+  run: true,
 };
 
 // Set animal as rabbit's prototype
 rabbit.__proto__ = animal;
 
-console.log(rabbit.run);   // true (rabbit's own property)
-console.log(rabbit.eat);   // true (inherited from animal)
-rabbit.sleep();            // "Sleeping..." (inherited method)
+console.log(rabbit.run); // true (rabbit's own property)
+console.log(rabbit.eat); // true (inherited from animal)
+rabbit.sleep(); // "Sleeping..." (inherited method)
 ```
 
 **What's happening here:**
+
 ```
 rabbit object
   ├─ run: true (own property)
@@ -6913,29 +6952,31 @@ rabbit object
 **The Prototype Chain**
 
 Objects can inherit from objects, which inherit from other objects, forming a chain:
+
 ```javascript
 const livingBeing = {
-  alive: true
+  alive: true,
 };
 
 const animal = {
-  eat: true
+  eat: true,
 };
 
 const rabbit = {
-  run: true
+  run: true,
 };
 
 // Create a chain
 animal.__proto__ = livingBeing;
 rabbit.__proto__ = animal;
 
-console.log(rabbit.run);    // true (own property)
-console.log(rabbit.eat);    // true (from animal)
-console.log(rabbit.alive);  // true (from livingBeing)
+console.log(rabbit.run); // true (own property)
+console.log(rabbit.eat); // true (from animal)
+console.log(rabbit.alive); // true (from livingBeing)
 ```
 
 **Visual representation:**
+
 ```
 rabbit
   ├─ run: true
@@ -6952,24 +6993,26 @@ The chain ends when it reaches `null`.
 **Object.create() Method**
 
 The recommended way to set up prototype inheritance is using `Object.create()`:
+
 ```javascript
 const animal = {
   eat: true,
-  makeSound: function() {
+  makeSound: function () {
     console.log("Some sound");
-  }
+  },
 };
 
 // Create rabbit with animal as its prototype
 const rabbit = Object.create(animal);
 rabbit.run = true;
 
-console.log(rabbit.run);  // true (own property)
-console.log(rabbit.eat);  // true (inherited)
-rabbit.makeSound();       // "Some sound" (inherited)
+console.log(rabbit.run); // true (own property)
+console.log(rabbit.eat); // true (inherited)
+rabbit.makeSound(); // "Some sound" (inherited)
 ```
 
 **What Object.create() does:**
+
 ```javascript
 // This:
 const rabbit = Object.create(animal);
@@ -6984,17 +7027,18 @@ But `Object.create()` is cleaner and recommended.
 **Constructor Functions and Prototypes**
 
 When you use constructor functions with `new`, JavaScript automatically sets up the prototype:
+
 ```javascript
 function Animal(name) {
   this.name = name;
 }
 
 // Add methods to the prototype
-Animal.prototype.eat = function() {
+Animal.prototype.eat = function () {
   console.log(`${this.name} is eating`);
 };
 
-Animal.prototype.sleep = function() {
+Animal.prototype.sleep = function () {
   console.log(`${this.name} is sleeping`);
 };
 
@@ -7002,11 +7046,12 @@ Animal.prototype.sleep = function() {
 const dog = new Animal("Dog");
 const cat = new Animal("Cat");
 
-dog.eat();   // "Dog is eating"
+dog.eat(); // "Dog is eating"
 cat.sleep(); // "Cat is sleeping"
 ```
 
 **What happens with `new`:**
+
 ```javascript
 const dog = new Animal("Dog");
 
@@ -7018,6 +7063,7 @@ const dog = new Animal("Dog");
 ```
 
 **Visual representation:**
+
 ```
 dog
   ├─ name: "Dog"
@@ -7030,31 +7076,33 @@ dog
 **Classes and Prototypes**
 
 ES6 classes for the most part are just syntactic sugar over constructor functions and prototypes:
+
 ```javascript
 class Animal {
   constructor(name) {
     this.name = name;
   }
-  
+
   eat() {
     console.log(`${this.name} is eating`);
   }
-  
+
   sleep() {
     console.log(`${this.name} is sleeping`);
   }
 }
 
 const dog = new Animal("Dog");
-dog.eat();  // "Dog is eating"
+dog.eat(); // "Dog is eating"
 
 // Under the hood, it still uses prototypes!
-console.log(dog.__proto__ === Animal.prototype);  // true
+console.log(dog.__proto__ === Animal.prototype); // true
 ```
 
 **Why Built-in Methods Work**
 
 This is why arrays have methods like `map()`, `filter()`, strings have `includes()`, etc.
+
 ```javascript
 const arr = [1, 2, 3];
 
@@ -7064,10 +7112,11 @@ const arr = [1, 2, 3];
 // arr's prototype chain:
 // arr → Array.prototype (has map, filter, etc.) → Object.prototype → null
 
-arr.map(x => x * 2);  // Works because of Array.prototype.map
+arr.map((x) => x * 2); // Works because of Array.prototype.map
 ```
 
 **Visual representation:**
+
 ```
 arr = [1, 2, 3]
   └─ [[Prototype]] → Array.prototype
@@ -7081,12 +7130,13 @@ arr = [1, 2, 3]
 ```
 
 **Same for strings:**
+
 ```javascript
 const str = "hello";
 
 // Internally: new String("hello")
 
-str.toUpperCase();  // Works because of String.prototype.toUpperCase
+str.toUpperCase(); // Works because of String.prototype.toUpperCase
 str.includes("ell"); // Works because of String.prototype.includes
 ```
 
@@ -7098,9 +7148,10 @@ When you access a property on an object, JavaScript searches in this order:
 **Step 2:** Check the object's prototype
 **Step 3:** Check the prototype's prototype
 **Step 4:** Continue until property is found or reach `null`
+
 ```javascript
 const animal = {
-  eat: true
+  eat: true,
 };
 
 const rabbit = Object.create(animal);
@@ -7124,6 +7175,7 @@ console.log(rabbit.fly);
 ```
 
 **Visual flow:**
+
 ```
 rabbit.eat
     ↓
@@ -7143,18 +7195,19 @@ Reached null → return undefined
 ```
 
 **Complete Example with Prototype Chain**
+
 ```javascript
 const animal = {
   eat: true,
-  walk: function() {
+  walk: function () {
     console.log("Animal walks");
-  }
+  },
 };
 
 // Create rabbit inheriting from animal
 const rabbit = Object.create(animal);
 rabbit.run = true;
-rabbit.hop = function() {
+rabbit.hop = function () {
   console.log("Rabbit hops");
 };
 
@@ -7163,15 +7216,16 @@ const whiteRabbit = Object.create(rabbit);
 whiteRabbit.color = "white";
 
 // Property lookups:
-console.log(whiteRabbit.color);  // "white" (own property)
-console.log(whiteRabbit.run);    // true (from rabbit)
-console.log(whiteRabbit.eat);    // true (from animal)
+console.log(whiteRabbit.color); // "white" (own property)
+console.log(whiteRabbit.run); // true (from rabbit)
+console.log(whiteRabbit.eat); // true (from animal)
 
-whiteRabbit.hop();   // "Rabbit hops" (from rabbit)
-whiteRabbit.walk();  // "Animal walks" (from animal)
+whiteRabbit.hop(); // "Rabbit hops" (from rabbit)
+whiteRabbit.walk(); // "Animal walks" (from animal)
 ```
 
 **Prototype chain:**
+
 ```
 whiteRabbit
   ├─ color: "white"
@@ -7188,26 +7242,28 @@ whiteRabbit
 **Checking Properties**
 
 You can check if a property belongs to the object itself or is inherited:
+
 ```javascript
 const animal = {
-  eat: true
+  eat: true,
 };
 
 const rabbit = Object.create(animal);
 rabbit.run = true;
 
 // Check if property exists (including inherited)
-console.log("run" in rabbit);   // true
-console.log("eat" in rabbit);   // true
+console.log("run" in rabbit); // true
+console.log("eat" in rabbit); // true
 
 // Check if property is own (not inherited)
-console.log(rabbit.hasOwnProperty("run"));  // true
-console.log(rabbit.hasOwnProperty("eat"));  // false (inherited)
+console.log(rabbit.hasOwnProperty("run")); // true
+console.log(rabbit.hasOwnProperty("eat")); // false (inherited)
 ```
 
 **Modifying Prototypes**
 
 You can add properties to prototypes dynamically:
+
 ```javascript
 function Animal(name) {
   this.name = name;
@@ -7217,18 +7273,19 @@ const dog = new Animal("Dog");
 const cat = new Animal("Cat");
 
 // Add method to prototype (affects all instances!)
-Animal.prototype.makeSound = function() {
+Animal.prototype.makeSound = function () {
   console.log(`${this.name} makes a sound`);
 };
 
-dog.makeSound();  // "Dog makes a sound"
-cat.makeSound();  // "Cat makes a sound"
+dog.makeSound(); // "Dog makes a sound"
+cat.makeSound(); // "Cat makes a sound"
 // Both instances get the new method!
 ```
 
 **Why is this powerful?**
 
 Adding methods to the prototype means:
+
 - All instances share the same method (memory efficient)
 - New instances automatically get the method
 - You can extend built-in objects (though not recommended)
@@ -7236,17 +7293,18 @@ Adding methods to the prototype means:
 **Common Patterns**
 
 **Pattern 1: Inheritance with Constructor Functions**
+
 ```javascript
 function Animal(name) {
   this.name = name;
 }
 
-Animal.prototype.eat = function() {
+Animal.prototype.eat = function () {
   console.log(`${this.name} is eating`);
 };
 
 function Dog(name, breed) {
-  Animal.call(this, name);  // Call parent constructor
+  Animal.call(this, name); // Call parent constructor
   this.breed = breed;
 }
 
@@ -7254,22 +7312,23 @@ function Dog(name, breed) {
 Dog.prototype = Object.create(Animal.prototype);
 Dog.prototype.constructor = Dog;
 
-Dog.prototype.bark = function() {
+Dog.prototype.bark = function () {
   console.log("Woof!");
 };
 
 const myDog = new Dog("Rex", "Labrador");
-myDog.eat();   // "Rex is eating" (inherited)
-myDog.bark();  // "Woof!" (own method)
+myDog.eat(); // "Rex is eating" (inherited)
+myDog.bark(); // "Woof!" (own method)
 ```
 
 **Pattern 2: Inheritance with Classes (ES6+)**
+
 ```javascript
 class Animal {
   constructor(name) {
     this.name = name;
   }
-  
+
   eat() {
     console.log(`${this.name} is eating`);
   }
@@ -7277,23 +7336,24 @@ class Animal {
 
 class Dog extends Animal {
   constructor(name, breed) {
-    super(name);  // Call parent constructor
+    super(name); // Call parent constructor
     this.breed = breed;
   }
-  
+
   bark() {
     console.log("Woof!");
   }
 }
 
 const myDog = new Dog("Rex", "Labrador");
-myDog.eat();   // "Rex is eating"
-myDog.bark();  // "Woof!"
+myDog.eat(); // "Rex is eating"
+myDog.bark(); // "Woof!"
 ```
 
 **Common Mistakes**
 
 **Mistake 1: Modifying prototype after creating instances**
+
 ```javascript
 function Animal(name) {
   this.name = name;
@@ -7302,17 +7362,18 @@ function Animal(name) {
 const dog = new Animal("Dog");
 
 // ✗ This won't work as expected
-dog.prototype.eat = function() {
+dog.prototype.eat = function () {
   console.log("Eating");
 };
 
 // ✓ Modify the constructor's prototype
-Animal.prototype.eat = function() {
+Animal.prototype.eat = function () {
   console.log("Eating");
 };
 ```
 
 **Mistake 2: Overwriting prototype instead of extending it**
+
 ```javascript
 function Animal(name) {
   this.name = name;
@@ -7320,11 +7381,11 @@ function Animal(name) {
 
 // ✗ Wrong - loses constructor reference
 Animal.prototype = {
-  eat: function() {}
+  eat: function () {},
 };
 
 // ✓ Correct - add to existing prototype
-Animal.prototype.eat = function() {};
+Animal.prototype.eat = function () {};
 ```
 
 **Key Takeaways**
@@ -7346,3 +7407,950 @@ Animal.prototype.eat = function() {};
 8. **Chain ends at null** - the final link in every prototype chain
 
 ---
+
+# Generator Functions in JavaScript
+
+Understanding functions that can pause and resume their execution.
+
+**What are Generator Functions?**
+
+Generator functions are special functions that can pause their execution and resume later from the exact same point where they paused.
+
+Unlike normal functions that run from start to finish, generators can stop midway, return a value, and continue from where they stopped when called again.
+
+**How to Create a Generator Function**
+
+Add an asterisk (`*`) after the `function` keyword:
+```javascript
+// Normal function
+function regularFunction() {
+  return "Hello";
+}
+
+// Generator function (notice the *)
+function* generatorFunction() {
+  yield "Hello";
+}
+```
+
+**The `yield` Keyword**
+
+`yield` is a special keyword that:
+1. Can only be used with generator function
+2. Returns a value
+3. Pauses the function at that point
+4. Remembers where it paused
+
+Think of `yield` like a pause button that also hands you something.
+
+**The `next()` Method**
+
+To execute a generator function step by step, use the `.next()` method:
+```javascript
+function* simpleGenerator() {
+  yield 1;
+  yield 2;
+  yield 3;
+}
+
+const gen = simpleGenerator();
+
+console.log(gen.next());  // { value: 1, done: false }
+console.log(gen.next());  // { value: 2, done: false }
+console.log(gen.next());  // { value: 3, done: false }
+console.log(gen.next());  // { value: undefined, done: true }
+```
+
+**Understanding the Return Value**
+
+Each `.next()` call returns an object with two properties:
+
+- **value**: The value that was `yield`ed
+- **done**: `true` if the generator is finished, `false` otherwise
+```javascript
+const result = gen.next();
+console.log(result.value);  // The yielded value
+console.log(result.done);   // Is the generator done?
+```
+
+**Simple Example: Counting**
+```javascript
+function* print() {
+  yield 1;
+  yield 2;
+  yield 3;
+}
+
+const printValues = print();
+
+console.log(printValues.next());  // { value: 1, done: false }
+console.log(printValues.next());  // { value: 2, done: false }
+console.log(printValues.next());  // { value: 3, done: false }
+console.log(printValues.next());  // { value: undefined, done: true }
+```
+
+**Step-by-step execution:**
+```
+1. Create generator: const printValues = print()
+   (Nothing executes yet!)
+
+2. First next():
+   → Executes until first yield
+   → Returns { value: 1, done: false }
+   → Pauses
+
+3. Second next():
+   → Resumes from where it paused
+   → Executes until second yield
+   → Returns { value: 2, done: false }
+   → Pauses
+
+4. Third next():
+   → Resumes from where it paused
+   → Executes until third yield
+   → Returns { value: 3, done: false }
+   → Pauses
+
+5. Fourth next():
+   → Resumes, but no more yields
+   → Returns { value: undefined, done: true }
+   → Generator is finished
+```
+
+**Visual Flow:**
+```
+function* print() {
+    yield 1;     ← First next() stops here
+    yield 2;     ← Second next() stops here
+    yield 3;     ← Third next() stops here
+}                ← Fourth next() reaches the end
+```
+
+**Real-World Example 1: ATM Flow**
+```javascript
+function* atmFlow() {
+  yield "Please select your language";
+  yield "Please select your account type";
+  yield "Please enter the amount you want to withdraw";
+  yield "Please enter your pin";
+}
+
+const atmSteps = atmFlow();
+
+console.log(atmSteps.next().value);  // "Please select your language"
+// User selects language...
+
+console.log(atmSteps.next().value);  // "Please select your account type"
+// User selects account type...
+
+console.log(atmSteps.next().value);  // "Please enter the amount you want to withdraw"
+// User enters amount...
+
+console.log(atmSteps.next().value);  // "Please enter your pin"
+// User enters pin...
+```
+
+**Why is this useful?**
+
+Instead of showing all steps at once, the ATM shows one step at a time, waiting for user input before moving to the next step. This is perfect for generators!
+
+**Real-World Example 2: ID Generator**
+```javascript
+function* idGenerator() {
+  let id = 0;
+  
+  while (true) {  // Infinite loop!
+    yield id;
+    id++;
+  }
+}
+
+const generateId = idGenerator();
+
+console.log(generateId.next().value);  // 0
+console.log(generateId.next().value);  // 1
+console.log(generateId.next().value);  // 2
+console.log(generateId.next().value);  // 3
+// Can keep calling forever!
+```
+
+**Why doesn't the infinite loop crash?**
+
+Because the generator pauses at each `yield`! It only continues when you call `.next()` again.
+
+**How it works:**
+```
+Call 1: next()
+  → id = 0
+  → yield 0 (pause here)
+  → Returns { value: 0, done: false }
+
+Call 2: next()
+  → Resume from pause
+  → id++ → id = 1
+  → Loop again
+  → yield 1 (pause here)
+  → Returns { value: 1, done: false }
+
+And so on...
+```
+
+**Extracting Just the Value**
+
+Instead of getting the whole object, you can get just the value:
+```javascript
+function* numbers() {
+  yield 10;
+  yield 20;
+  yield 30;
+}
+
+const gen = numbers();
+
+console.log(gen.next().value);  // 10
+console.log(gen.next().value);  // 20
+console.log(gen.next().value);  // 30
+```
+
+**Using Generators in Loops**
+
+You can use `for...of` to automatically iterate through all yielded values:
+```javascript
+function* numbers() {
+  yield 1;
+  yield 2;
+  yield 3;
+}
+
+for (const num of numbers()) {
+  console.log(num);
+}
+// Output:
+// 1
+// 2
+// 3
+```
+
+**How it works:**
+
+`for...of` automatically calls `.next()` until `done` is `true`, and gives you just the values.
+
+**Passing Values to Generators**
+
+You can pass values into a generator using `.next(value)`:
+```javascript
+function* conversation() {
+  const name = yield "What is your name?";
+  const age = yield "What is your age?";
+  return `${name} is ${age} years old`;
+}
+
+const chat = conversation();
+
+console.log(chat.next().value);        // "What is your name?"
+console.log(chat.next("John").value);  // "What is your age?"
+console.log(chat.next(25).value);      // "John is 25 years old"
+```
+
+**Step by step:**
+```
+1. next()
+   → Executes to first yield
+   → Returns "What is your name?"
+
+2. next("John")
+   → Resumes, assigns "John" to name
+   → Executes to second yield
+   → Returns "What is your age?"
+
+3. next(25)
+   → Resumes, assigns 25 to age
+   → Reaches return statement
+   → Returns "John is 25 years old"
+```
+
+**Real-World Example 3: Pagination**
+```javascript
+function* paginate(items, pageSize) {
+  for (let i = 0; i < items.length; i += pageSize) {
+    yield items.slice(i, i + pageSize);
+  }
+}
+
+const items = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+const pages = paginate(items, 3);
+
+console.log(pages.next().value);  // [1, 2, 3]
+console.log(pages.next().value);  // [4, 5, 6]
+console.log(pages.next().value);  // [7, 8, 9]
+console.log(pages.next().value);  // [10]
+console.log(pages.next().value);  // undefined
+```
+
+**Real-World Example 4: Reading Large Files**
+```javascript
+function* readFileInChunks(fileContent, chunkSize) {
+  let position = 0;
+  
+  while (position < fileContent.length) {
+    yield fileContent.slice(position, position + chunkSize);
+    position += chunkSize;
+  }
+}
+
+const file = "This is a very long file content that we want to read in chunks...";
+const reader = readFileInChunks(file, 10);
+
+console.log(reader.next().value);  // "This is a "
+console.log(reader.next().value);  // "very long "
+console.log(reader.next().value);  // "file conte"
+// And so on...
+```
+
+**Why use this?**
+
+For large files, you don't load everything into memory at once. Process it chunk by chunk!
+
+**Real-World Example 5: Task Queue**
+```javascript
+function* taskQueue() {
+  yield "Connecting to database...";
+  yield "Fetching user data...";
+  yield "Processing data...";
+  yield "Saving results...";
+  yield "Sending notification...";
+  return "All tasks completed!";
+}
+
+const tasks = taskQueue();
+
+// Simulate async task processing
+function processNextTask() {
+  const task = tasks.next();
+  
+  if (!task.done) {
+    console.log(task.value);
+    // Wait 1 second, then process next task
+    setTimeout(processNextTask, 1000);
+  } else {
+    console.log(task.value);
+  }
+}
+
+processNextTask();
+
+// Output (one per second):
+// Connecting to database...
+// Fetching user data...
+// Processing data...
+// Saving results...
+// Sending notification...
+// All tasks completed!
+```
+
+**Checking if Generator is Done**
+```javascript
+function* countdown() {
+  yield 3;
+  yield 2;
+  yield 1;
+}
+
+const count = countdown();
+
+let result = count.next();
+while (!result.done) {
+  console.log(result.value);
+  result = count.next();
+}
+
+// Output:
+// 3
+// 2
+// 1
+```
+
+**Generator Delegation with yield***
+
+You can delegate to another generator using `yield*`:
+```javascript
+function* generator1() {
+  yield 1;
+  yield 2;
+}
+
+function* generator2() {
+  yield "a";
+  yield* generator1();  // Delegate to generator1
+  yield "b";
+}
+
+for (const value of generator2()) {
+  console.log(value);
+}
+
+// Output:
+// a
+// 1
+// 2
+// b
+```
+
+**When to Use Generators**
+
+✅ **Use generators when:**
+- You need step-by-step execution
+- Working with large datasets (process chunk by chunk)
+- Implementing custom iterators
+- Creating infinite sequences
+- Managing state machines
+- Pagination or lazy loading
+
+❌ **Don't use generators when:**
+- Simple sequential operations (regular functions are fine)
+- You need all values immediately
+- The complexity isn't worth it
+
+**Generators vs Regular Functions**
+
+| Feature | Regular Function | Generator Function |
+|---------|-----------------|-------------------|
+| Syntax | `function name()` | `function* name()` |
+| Execution | Runs to completion | Can pause and resume |
+| Returns | Single value | Multiple values (via yield) |
+| Control | No control after start | Full control with next() |
+| Use case | Normal operations | Step-by-step execution |
+
+**Common Mistakes**
+
+**Mistake 1: Forgetting the asterisk**
+```javascript
+// ✗ Wrong - this is a regular function
+function generatorFunction() {
+  yield 1;  // SyntaxError!
+}
+
+// ✓ Correct
+function* generatorFunction() {
+  yield 1;
+}
+```
+
+**Mistake 2: Calling generator like a regular function**
+```javascript
+function* numbers() {
+  yield 1;
+  yield 2;
+}
+
+// ✗ Wrong - doesn't execute anything
+const result = numbers();
+console.log(result);  // [object Generator] (not the values!)
+
+// ✓ Correct - use next() to get values
+const gen = numbers();
+console.log(gen.next().value);  // 1
+console.log(gen.next().value);  // 2
+```
+
+**Mistake 3: Expecting all values at once**
+```javascript
+function* numbers() {
+  yield 1;
+  yield 2;
+  yield 3;
+}
+
+// ✗ Wrong - generators don't return arrays
+const result = numbers();
+console.log(result);  // [object Generator]
+
+// ✓ Correct - iterate or call next()
+for (const num of numbers()) {
+  console.log(num);
+}
+```
+
+**Key Takeaways**
+
+1. **Generators are special functions** created with `function*`
+
+2. **yield pauses execution** and returns a value
+
+3. **next() resumes execution** from where it paused
+
+4. **Returns an object** with `{ value, done }`
+
+5. **Perfect for step-by-step execution** and lazy evaluation
+
+6. **Can handle infinite sequences** because they're lazy
+
+7. **Use for...of** to easily iterate through all values
+
+8. **Can pass values in** using next(value)
+
+---
+
+## SOLID Principles in JavaScript
+
+Understanding the five principles that help you write better, more maintainable code.
+
+**What are SOLID Principles?**
+
+SOLID is an acronym for five design principles that help developers write more maintainable, reusable, scalable, and modular code.
+
+These principles were originally designed for object-oriented programming, but many concepts apply to JavaScript and functional programming too.
+
+**The Five Principles:**
+
+1. **S** - Single Responsibility Principle
+2. **O** - Open/Closed Principle
+3. **L** - Liskov Substitution Principle
+4. **I** - Interface Segregation Principle
+5. **D** - Dependency Inversion Principle
+
+Let's explore each one with examples.
+
+**1. Single Responsibility Principle (SRP)**
+
+**Definition:** Each class (or function/component) should have only ONE reason to change. It should focus on doing ONE thing well.
+
+**Important:** This doesn't mean one method or one property! It means one responsibility or one concern.
+
+**Common misconception:**
+
+❌ "One class should have only one method"
+✓ "One class should have one responsibility, but can have multiple methods related to that responsibility"
+
+**Example of ONE responsibility:**
+
+A `User` class managing users can have:
+- `addUser()`
+- `editUser()`
+- `deleteUser()`
+- `getUser()`
+
+All these methods relate to the SAME responsibility: **managing users**. That's still following SRP!
+
+**Bad Example: Violating SRP**
+```javascript
+class Animal {
+  walk() {
+    console.log("I can walk");
+  }
+
+  eat() {
+    console.log("I can eat");
+  }
+
+  fly() {
+    console.log("I can fly");
+  }
+}
+
+const dog = new Animal();
+const eagle = new Animal();
+
+dog.walk();  // ✓ Makes sense
+dog.fly();   // ✗ Dogs can't fly!
+```
+
+**What's wrong here?**
+
+The `Animal` class is trying to handle ALL animals, even though not all animals can fly. This violates SRP because:
+- Some animals walk
+- Some animals fly
+- Some do both
+- Trying to handle all cases in one class creates confusion
+
+**Another bad example:**
+```javascript
+class User {
+  walk() {
+    console.log("User can walk");
+  }
+
+  talk() {
+    console.log("User can talk");
+  }
+
+  eat() {
+    console.log("User can eat");
+  }
+
+  sleep() {
+    console.log("User can sleep");
+  }
+
+  cook() {
+    console.log("User can cook");
+  }
+}
+```
+
+**What's wrong here?**
+
+Not all users can cook! Only chefs or people who learned to cook can. By putting `cook()` in the base `User` class, we're saying EVERY user can cook, which isn't true.
+
+**Good Example: Following SRP**
+```javascript
+class Animal {
+  walk() {
+    console.log("I can walk");
+  }
+
+  eat() {
+    console.log("I can eat");
+  }
+}
+
+class Bird extends Animal {
+  fly() {
+    console.log("I can fly");
+  }
+}
+
+const dog = new Animal();
+const eagle = new Bird();
+
+dog.walk();   // ✓ Works
+dog.eat();    // ✓ Works
+// dog.fly(); // ✗ Not available - correct!
+
+eagle.walk(); // ✓ Works (inherited)
+eagle.eat();  // ✓ Works (inherited)
+eagle.fly();  // ✓ Works
+```
+
+**Why is this better?**
+
+- `Animal` class: Responsible for common animal behaviors (walk, eat)
+- `Bird` class: Responsible for bird-specific behaviors (fly)
+- Each class has a clear, single responsibility
+- No confusion about what each animal can or cannot do
+
+**Another good example:**
+```javascript
+class User {
+  walk() {
+    console.log("User can walk");
+  }
+
+  talk() {
+    console.log("User can talk");
+  }
+
+  eat() {
+    console.log("User can eat");
+  }
+
+  sleep() {
+    console.log("User can sleep");
+  }
+}
+
+class Chef extends User {
+  cook() {
+    console.log("Chef can cook");
+  }
+}
+
+const regularUser = new User();
+const chef = new Chef();
+
+regularUser.walk();  // ✓ Works
+// regularUser.cook(); // ✗ Not available - correct!
+
+chef.walk();  // ✓ Works (inherited)
+chef.cook();  // ✓ Works
+```
+
+**Why is this better?**
+
+- `User` class: Handles basic user abilities
+- `Chef` class: Adds cooking ability only to chefs
+- Clear separation of concerns
+
+**Visual Comparison:**
+
+**Bad (violating SRP):**
+```
+Animal class
+├─ walk()
+├─ eat()
+└─ fly() ← Problem: Not all animals fly!
+```
+
+**Good (following SRP):**
+```
+Animal class
+├─ walk()
+└─ eat()
+
+Bird class (extends Animal)
+├─ walk() (inherited)
+├─ eat() (inherited)
+└─ fly() ← Only birds fly!
+```
+
+**SRP in React Components**
+```javascript
+// ✗ Bad - Component does too many things
+function UserDashboard() {
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  
+  // Fetching data
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+  
+  // API call
+  const fetchUsers = async () => {
+    const response = await fetch('/api/users');
+    const data = await response.json();
+    setUsers(data);
+  };
+  
+  // Validation logic
+  const validateUser = (user) => {
+    return user.email.includes('@');
+  };
+  
+  // Rendering logic
+  return (
+    <div>
+      {/* Complex rendering logic */}
+    </div>
+  );
+}
+```
+
+**What's wrong?**
+
+This component is responsible for:
+1. Fetching data
+2. Validating data
+3. Rendering UI
+
+Too many responsibilities!
+```javascript
+// ✓ Good - Separated concerns
+
+// 1. API service (handles fetching)
+const userService = {
+  fetchUsers: async () => {
+    const response = await fetch('/api/users');
+    return response.json();
+  }
+};
+
+// 2. Validation utility (handles validation)
+const userValidator = {
+  isValidEmail: (email) => email.includes('@')
+};
+
+// 3. Component (only handles rendering)
+function UserDashboard() {
+  const [users, setUsers] = useState([]);
+  
+  useEffect(() => {
+    userService.fetchUsers().then(setUsers);
+  }, []);
+  
+  return (
+    <div>
+      {users.map(user => (
+        <UserCard key={user.id} user={user} />
+      ))}
+    </div>
+  );
+}
+```
+
+**Benefits of SRP:**
+
+1. **Easier to understand** - Each class/function has one clear purpose
+2. **Easier to test** - Test one thing at a time
+3. **Easier to maintain** - Changes to one responsibility don't affect others
+4. **More reusable** - Focused classes can be reused in different contexts
+5. **Reduces bugs** - Less coupling means fewer unexpected side effects
+
+**Real-World Example: User Management System**
+
+**Bad approach:**
+```javascript
+class UserManager {
+  createUser(data) {
+    // Validate data
+    if (!data.email.includes('@')) {
+      throw new Error('Invalid email');
+    }
+    
+    // Save to database
+    database.save(data);
+    
+    // Send welcome email
+    emailService.send(data.email, 'Welcome!');
+    
+    // Log activity
+    logger.log('User created:', data.id);
+    
+    // Update analytics
+    analytics.track('user_created');
+  }
+}
+```
+
+**Problems:**
+- Handles validation
+- Handles database operations
+- Handles email sending
+- Handles logging
+- Handles analytics
+
+One class, FIVE responsibilities!
+
+**Good approach:**
+```javascript
+// 1. Validation service
+class UserValidator {
+  validate(data) {
+    if (!data.email.includes('@')) {
+      throw new Error('Invalid email');
+    }
+    return true;
+  }
+}
+
+// 2. Database service
+class UserRepository {
+  save(data) {
+    return database.save(data);
+  }
+}
+
+// 3. Email service
+class EmailService {
+  sendWelcomeEmail(email) {
+    return emailService.send(email, 'Welcome!');
+  }
+}
+
+// 4. Logger service
+class Logger {
+  log(message) {
+    logger.log(message);
+  }
+}
+
+// 5. Analytics service
+class Analytics {
+  track(event) {
+    analytics.track(event);
+  }
+}
+
+// 6. User manager (coordinates other services)
+class UserManager {
+  constructor(validator, repository, emailService, logger, analytics) {
+    this.validator = validator;
+    this.repository = repository;
+    this.emailService = emailService;
+    this.logger = logger;
+    this.analytics = analytics;
+  }
+  
+  createUser(data) {
+    this.validator.validate(data);
+    const user = this.repository.save(data);
+    this.emailService.sendWelcomeEmail(user.email);
+    this.logger.log('User created:', user.id);
+    this.analytics.track('user_created');
+    return user;
+  }
+}
+```
+
+**Benefits:**
+- Each class has ONE clear responsibility
+- Easy to test each service independently
+- Can reuse services in different contexts
+- Can modify one service without affecting others
+
+**How to Identify SRP Violations**
+
+Ask yourself:
+
+1. **"Can I describe this class in one sentence without using 'and'?"**
+   - ✗ "This class manages users AND sends emails AND logs activities"
+   - ✓ "This class manages users"
+
+2. **"If I need to change X, do I need to change this class?"**
+   - If multiple different reasons require changes, you're violating SRP
+
+3. **"How many different teams might need to modify this class?"**
+   - If multiple teams (frontend, backend, analytics) need to touch it, it probably has too many responsibilities
+
+**Common Mistakes**
+
+**Mistake 1: Confusing SRP with "one method per class"**
+```javascript
+// ✗ Wrong interpretation
+class UserAdder {
+  addUser(user) { /* ... */ }
+}
+
+class UserEditor {
+  editUser(user) { /* ... */ }
+}
+
+class UserDeleter {
+  deleteUser(userId) { /* ... */ }
+}
+
+// This is too granular!
+```
+```javascript
+// ✓ Correct - One responsibility, multiple related methods
+class UserManager {
+  addUser(user) { /* ... */ }
+  editUser(user) { /* ... */ }
+  deleteUser(userId) { /* ... */ }
+}
+
+// All methods relate to the same responsibility: user management
+```
+
+**Mistake 2: Over-engineering**
+```javascript
+// ✗ Too much - simple functions don't always need classes
+class Logger {
+  log(message) {
+    console.log(message);
+  }
+}
+
+// ✓ Better - just use a function
+function log(message) {
+  console.log(message);
+}
+```
+
+Don't over-apply SOLID. Use it where it makes sense!
+
+**Key Takeaways**
+
+1. **Single Responsibility = One reason to change**
+
+2. **One responsibility can have multiple methods** related to that responsibility
+
+3. **Example:** User management (add, edit, delete users) is ONE responsibility
+
+4. **Benefits:** Easier to understand, test, maintain, and reuse
+
+5. **Ask:** "What is this class/function responsible for?" If you say "and" multiple times, you're violating SRP
+
+6. **Don't over-engineer** - Apply principles where they add value
+
+7. **Applies to:** Classes, functions, components, and modules
