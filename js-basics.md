@@ -8168,6 +8168,65 @@ function UserDashboard() {
 }
 ```
 
+**Functional Programming Examples:**
+
+**Example 1: Data Processing**
+```javascript
+// ✗ Bad - Function does too many things
+function processUserData(userData) {
+  // Validates data
+  if (!userData.email.includes('@')) {
+    throw new Error('Invalid email');
+  }
+  
+  // Formats data
+  const formatted = {
+    name: userData.name.toUpperCase(),
+    email: userData.email.toLowerCase()
+  };
+  
+  // Saves to database
+  database.save(formatted);
+  
+  // Sends email
+  emailService.send(userData.email, 'Welcome!');
+  
+  return formatted;
+}
+
+// ✓ Good - Separate functions for each responsibility
+function validateUserData(userData) {
+  if (!userData.email.includes('@')) {
+    throw new Error('Invalid email');
+  }
+  return true;
+}
+
+function formatUserData(userData) {
+  return {
+    name: userData.name.toUpperCase(),
+    email: userData.email.toLowerCase()
+  };
+}
+
+function saveUser(userData) {
+  return database.save(userData);
+}
+
+function sendWelcomeEmail(email) {
+  return emailService.send(email, 'Welcome!');
+}
+
+// Compose them together
+function processUserData(userData) {
+  validateUserData(userData);
+  const formatted = formatUserData(userData);
+  saveUser(formatted);
+  sendWelcomeEmail(formatted.email);
+  return formatted;
+}
+```
+
 **Benefits of SRP:**
 
 1. **Easier to understand** - Each class/function has one clear purpose
@@ -8861,6 +8920,89 @@ function greet(language) {
 
 Don't create abstractions until you need them. Start simple, refactor when you see the pattern.
 
+**Functional Programming Examples:**
+
+**Example 1: Discount Calculator**
+```javascript
+// ✗ Bad - Must modify function to add new discount types
+function calculateDiscount(order, discountType) {
+  if (discountType === 'seasonal') {
+    return order.total * 0.10;
+  }
+  if (discountType === 'loyalty') {
+    return order.total * 0.15;
+  }
+  if (discountType === 'bulk') {
+    return order.items > 10 ? order.total * 0.20 : 0;
+  }
+  // Adding new discount? Must modify this function!
+  return 0;
+}
+
+// ✓ Good - Pass discount strategy as parameter
+const discountStrategies = {
+  seasonal: (order) => order.total * 0.10,
+  loyalty: (order) => order.total * 0.15,
+  bulk: (order) => order.items > 10 ? order.total * 0.20 : 0,
+  // Easy to add new strategies without modifying existing code
+  flash: (order) => order.total * 0.25,
+  student: (order) => order.total * 0.12
+};
+
+function calculateDiscount(order, strategy) {
+  return strategy(order);
+}
+
+// Usage
+calculateDiscount(order, discountStrategies.seasonal);
+calculateDiscount(order, discountStrategies.loyalty);
+// Add custom strategy on the fly
+calculateDiscount(order, (order) => order.total * 0.30);
+```
+
+
+**React Examples:**
+
+**Example 1: Button Component**
+```javascript
+// ✗ Bad - Must modify component to add new button styles
+function Button({ variant, children, onClick }) {
+  let className = 'btn';
+  
+  if (variant === 'primary') {
+    className += ' btn-primary';
+  } else if (variant === 'secondary') {
+    className += ' btn-secondary';
+  } else if (variant === 'danger') {
+    className += ' btn-danger';
+  }
+  // Adding success variant? Must modify this component!
+  
+  return (
+    <button className={className} onClick={onClick}>
+      {children}
+    </button>
+  );
+}
+
+// ✓ Good - Accept className as prop (open for extension)
+function Button({ className = '', children, onClick, ...props }) {
+  return (
+    <button className={`btn ${className}`} onClick={onClick} {...props}>
+      {children}
+    </button>
+  );
+}
+
+// Usage - extend without modifying Button
+<Button className="btn-primary">Primary</Button>
+<Button className="btn-secondary">Secondary</Button>
+<Button className="btn-danger">Danger</Button>
+<Button className="btn-success">Success</Button>
+<Button className="btn-warning">Warning</Button>
+<Button className="btn-custom-gradient">Custom</Button>
+```
+
 **Key Takeaways**
 
 1. **Open for extension, closed for modification** - Add new functionality without changing existing code
@@ -9458,6 +9600,93 @@ function doSomething(obj) {
 }
 ```
 
+**Functional Programming Examples:**
+
+**Example 1: Array Operations**
+```javascript
+// ✗ Bad - Functions behave differently with same input signature
+function sumNumbers(numbers) {
+  return numbers.reduce((sum, num) => sum + num, 0);
+}
+
+function sumPositiveNumbers(numbers) {
+  // Throws error if negative numbers found - breaks LSP!
+  if (numbers.some(n => n < 0)) {
+    throw new Error('Only positive numbers allowed!');
+  }
+  return numbers.reduce((sum, num) => sum + num, 0);
+}
+
+// Code expecting sumNumbers breaks with sumPositiveNumbers
+function calculateTotal(items, sumFunction) {
+  const prices = items.map(i => i.price);
+  return sumFunction(prices); // Might throw error!
+}
+
+// ✓ Good - Functions handle all cases gracefully
+function sumNumbers(numbers) {
+  return numbers.reduce((sum, num) => sum + num, 0);
+}
+
+function sumPositiveNumbers(numbers) {
+  // Handles negative numbers gracefully
+  return numbers
+    .filter(n => n >= 0)
+    .reduce((sum, num) => sum + num, 0);
+}
+
+// Both work in any context
+function calculateTotal(items, sumFunction) {
+  const prices = items.map(i => i.price);
+  return sumFunction(prices); // Works with both!
+}
+```
+
+**React Examples:**
+
+**Example 1: Input Components**
+```javascript
+// ✗ Bad - Components don't have consistent interface
+function TextInput({ value, onChange }) {
+  return <input value={value} onChange={e => onChange(e.target.value)} />;
+}
+
+function NumberInput({ value, onChange }) {
+  // Throws error if value is not a number - breaks LSP!
+  if (isNaN(value)) {
+    throw new Error('Value must be a number');
+  }
+  return <input type="number" value={value} onChange={e => onChange(e.target.value)} />;
+}
+
+// Form breaks when switching input types
+function Form({ InputComponent }) {
+  const [value, setValue] = useState('');
+  return <InputComponent value={value} onChange={setValue} />;
+}
+
+// ✓ Good - All inputs handle values gracefully
+function TextInput({ value, onChange }) {
+  return <input value={value} onChange={e => onChange(e.target.value)} />;
+}
+
+function NumberInput({ value, onChange }) {
+  // Handles non-numeric values gracefully
+  const numValue = isNaN(value) ? '' : value;
+  return <input type="number" value={numValue} onChange={e => onChange(e.target.value)} />;
+}
+
+function EmailInput({ value, onChange }) {
+  return <input type="email" value={value} onChange={e => onChange(e.target.value)} />;
+}
+
+// Works with any input component
+function Form({ InputComponent }) {
+  const [value, setValue] = useState('');
+  return <InputComponent value={value} onChange={setValue} />;
+}
+```
+
 **Key Takeaways**
 
 1. **Child should replace parent** without breaking anything
@@ -9994,6 +10223,130 @@ class ReadOnlyDatabase extends ReadOperations {}
 3. **Less coupling** - Changes to one interface don't affect others
 4. **Better testability** - Smaller, focused units to test
 5. **Prevents errors** - No "not supported" exceptions
+
+**Functional Programming Examples:**
+
+**Example 1: API Functions**
+```javascript
+// ✗ Bad - Function requires parameters it doesn't always need
+function fetchData(url, method, headers, body, timeout, retries, cache) {
+  // Most calls don't need all parameters
+  // Forces callers to pass null/undefined for unused params
+}
+
+// Usage is messy
+fetchData('/api/users', 'GET', null, null, null, null, null);
+fetchData('/api/posts', 'POST', headers, body, null, null, null);
+
+// ✓ Good - Function takes only essential params, rest are optional
+function fetchData(url, options = {}) {
+  const {
+    method = 'GET',
+    headers,
+    body,
+    timeout,
+    retries,
+    cache
+  } = options;
+  
+  // Use only what's provided
+}
+
+// Usage is clean
+fetchData('/api/users');
+fetchData('/api/posts', { method: 'POST', headers, body });
+fetchData('/api/data', { timeout: 5000, retries: 3 });
+```
+
+**React Examples:**
+
+**Example 1: Modal Component**
+```javascript
+// ✗ Bad - Component requires props it doesn't always use
+function Modal({
+  isOpen,
+  onClose,
+  title,
+  content,
+  footer,
+  size,
+  showCloseButton,
+  closeOnEscape,
+  closeOnOverlay,
+  animation,
+  zIndex,
+  className
+}) {
+  // Most modals don't need all these props
+  // Forces developers to pass null/undefined
+  
+  return (
+    <div>
+      {/* Modal implementation */}
+    </div>
+  );
+}
+
+// Usage is cluttered
+<Modal
+  isOpen={true}
+  onClose={handleClose}
+  title="Hello"
+  content={null}
+  footer={null}
+  size={null}
+  showCloseButton={null}
+  closeOnEscape={null}
+  closeOnOverlay={null}
+  animation={null}
+  zIndex={null}
+  className={null}
+/>
+
+// ✓ Good - Base modal with only essentials, extend when needed
+function Modal({ isOpen, onClose, children }) {
+  if (!isOpen) return null;
+  
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={e => e.stopPropagation()}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// Specialized components for specific needs
+function ModalWithHeader({ isOpen, onClose, title, children }) {
+  return (
+    <Modal isOpen={isOpen} onClose={onClose}>
+      <div className="modal-header">
+        <h2>{title}</h2>
+        <button onClick={onClose}>×</button>
+      </div>
+      {children}
+    </Modal>
+  );
+}
+
+function ModalWithFooter({ isOpen, onClose, children, footer }) {
+  return (
+    <Modal isOpen={isOpen} onClose={onClose}>
+      {children}
+      <div className="modal-footer">{footer}</div>
+    </Modal>
+  );
+}
+
+// Clean usage
+<Modal isOpen={isOpen} onClose={handleClose}>
+  <p>Simple modal content</p>
+</Modal>
+
+<ModalWithHeader isOpen={isOpen} onClose={handleClose} title="Hello">
+  <p>Modal with header</p>
+</ModalWithHeader>
+```
 
 **Key Takeaways**
 
