@@ -8354,3 +8354,530 @@ Don't over-apply SOLID. Use it where it makes sense!
 6. **Don't over-engineer** - Apply principles where they add value
 
 7. **Applies to:** Classes, functions, components, and modules
+
+---
+
+**2.Open/Closed Principle (OCP)**
+
+Understanding the second SOLID principle: Open for extension, closed for modification.
+
+**What is the Open/Closed Principle?**
+
+The Open/Closed Principle states that:
+- **Open for extension** - You can add new functionality
+- **Closed for modification** - You shouldn't modify existing code
+
+In simple terms: When you need to add new features, you should be able to do so by adding new code, not by changing existing code.
+
+**Why is this important?**
+
+When you modify existing code:
+- You might break things that already work
+- You need to retest everything
+- Other developers using your code might face issues
+- Bugs can be introduced in previously working features
+
+When you extend instead:
+- Existing code remains unchanged and stable
+- Less risk of breaking things
+- Easier to add new features
+- Old functionality continues to work as before
+
+**Simple Analogy:**
+
+Think of a power outlet:
+- **Closed for modification**: The outlet stays the same
+- **Open for extension**: You can plug in different devices without changing the outlet
+
+You don't modify the outlet every time you want to use a new device. You just plug the new device in!
+
+**Bad Example: Violating OCP**
+```javascript
+class Shape {
+  constructor(type) {
+    this.type = type;
+  }
+
+  draw() {
+    switch(this.type) {
+      case "circle":
+        console.log("Drawing a circle");
+        break;
+      case "triangle":
+        console.log("Drawing a triangle");
+        break;
+      case "rectangle":
+        console.log("Drawing a rectangle");
+        break;
+      case "square":
+        console.log("Drawing a square");
+        break;
+    }
+  }
+}
+
+const circle = new Shape("circle");
+const triangle = new Shape("triangle");
+const square = new Shape("square");
+
+circle.draw();    // "Drawing a circle"
+triangle.draw();  // "Drawing a triangle"
+```
+
+**What's wrong here?**
+
+Every time you want to add a new shape (like pentagon, hexagon, etc.), you have to:
+1. **Modify** the `Shape` class
+2. Add a new case to the switch statement
+3. Risk breaking existing shapes
+4. Retest all shapes
+
+**Timeline of changes:**
+```
+Week 1: Add circle, triangle, square
+  → Modify Shape class
+
+Week 2: Need pentagon
+  → Modify Shape class again (add new case)
+
+Week 3: Need hexagon
+  → Modify Shape class again (add new case)
+
+Week 4: Need octagon
+  → Modify Shape class again (add new case)
+  → Oops! Broke triangle while adding octagon!
+```
+
+Every new shape requires modifying the same class. This violates OCP!
+
+**Good Example: Following OCP**
+```javascript
+class Shape {
+  draw() {
+    throw new Error("Draw method should be implemented");
+  }
+}
+
+class Circle extends Shape {
+  draw() {
+    console.log("Drawing a circle");
+  }
+}
+
+class Triangle extends Shape {
+  draw() {
+    console.log("Drawing a triangle");
+  }
+}
+
+class Square extends Shape {
+  draw() {
+    console.log("Drawing a square");
+  }
+}
+
+const circle = new Circle();
+const triangle = new Triangle();
+const square = new Square();
+
+circle.draw();    // "Drawing a circle"
+triangle.draw();  // "Drawing a triangle"
+```
+
+**Why is this better?**
+
+To add a new shape, you just create a new class:
+```javascript
+// Adding pentagon - NO modification to existing code!
+class Pentagon extends Shape {
+  draw() {
+    console.log("Drawing a pentagon");
+  }
+}
+
+const pentagon = new Pentagon();
+pentagon.draw();  // Works!
+```
+
+**Benefits:**
+- No modification to existing `Shape`, `Circle`, `Triangle`, or `Square` classes
+- No risk of breaking existing shapes
+- No need to retest old shapes
+- Easy to add new shapes anytime
+
+**Timeline with OCP:**
+```
+Week 1: Add Circle, Triangle, Square classes
+  → Create new classes
+
+Week 2: Need Pentagon
+  → Create new Pentagon class (NO modification to others)
+
+Week 3: Need Hexagon
+  → Create new Hexagon class (NO modification to others)
+
+Week 4: Need Octagon
+  → Create new Octagon class (NO modification to others)
+  → All old shapes still work perfectly!
+```
+
+**Comparison:**
+
+**Bad (violating OCP):**
+```
+Shape class (gets modified every time)
+  ├─ draw() with switch statement
+  │    ├─ case "circle"
+  │    ├─ case "triangle"
+  │    ├─ case "square"
+  │    └─ case "pentagon" ← Added by modifying existing code
+```
+
+**Good (following OCP):**
+```
+Shape class (never modified)
+  └─ draw() (base method)
+
+Circle class (extends Shape)
+  └─ draw() (circle implementation)
+
+Triangle class (extends Shape)
+  └─ draw() (triangle implementation)
+
+Pentagon class (new, extends Shape) ← Added without modifying anything!
+  └─ draw() (pentagon implementation)
+```
+
+**Real-World Example: Fetch Function**
+
+**Bad approach (violating OCP):**
+```javascript
+async function fetchData(url) {
+  if (url === "/api/users") {
+    const result = await fetch(url, {
+      headers: { "Authorization": "Bearer token" }
+    });
+    return result;
+  }
+  
+  if (url === "/api/posts") {
+    const result = await fetch(url, {
+      headers: { "Content-Type": "application/json" }
+    });
+    return result;
+  }
+  
+  if (url === "/api/comments") {
+    const result = await fetch(url, {
+      method: "POST",
+      headers: { "Authorization": "Bearer token" }
+    });
+    return result;
+  }
+  
+  const result = await fetch(url);
+  return result;
+}
+```
+
+**Problems:**
+
+Every time a new endpoint needs different configuration, you have to:
+1. Modify the `fetchData` function
+2. Add a new `if` statement
+3. Risk breaking existing fetch calls
+4. The function keeps growing and growing
+
+**Good approach (following OCP):**
+```javascript
+async function fetchData(url, options = {}) {
+  const result = await fetch(url, options);
+  return result;
+}
+
+// Usage - EXTEND by passing different options
+fetchData("/api/users", {
+  headers: { "Authorization": "Bearer token" }
+});
+
+fetchData("/api/posts", {
+  headers: { "Content-Type": "application/json" }
+});
+
+fetchData("/api/comments", {
+  method: "POST",
+  headers: { "Authorization": "Bearer token" }
+});
+
+// Simple call without options
+fetchData("/api/data");
+```
+
+**Why is this better?**
+
+- Function never needs to be modified
+- Each call can pass different options to extend functionality
+- No risk of breaking existing calls
+- Much cleaner and more flexible
+
+**Another Example: Payment Processing**
+
+**Bad approach:**
+```javascript
+class PaymentProcessor {
+  processPayment(amount, method) {
+    switch(method) {
+      case "credit_card":
+        console.log(`Processing $${amount} via Credit Card`);
+        // Credit card logic
+        break;
+      case "paypal":
+        console.log(`Processing $${amount} via PayPal`);
+        // PayPal logic
+        break;
+      case "bitcoin":
+        console.log(`Processing $${amount} via Bitcoin`);
+        // Bitcoin logic
+        break;
+      // Need to add Stripe? Modify this class!
+      // Need to add Apple Pay? Modify this class!
+    }
+  }
+}
+```
+
+**Good approach:**
+```javascript
+class PaymentMethod {
+  process(amount) {
+    throw new Error("Process method must be implemented");
+  }
+}
+
+class CreditCardPayment extends PaymentMethod {
+  process(amount) {
+    console.log(`Processing $${amount} via Credit Card`);
+    // Credit card specific logic
+  }
+}
+
+class PayPalPayment extends PaymentMethod {
+  process(amount) {
+    console.log(`Processing $${amount} via PayPal`);
+    // PayPal specific logic
+  }
+}
+
+class BitcoinPayment extends PaymentMethod {
+  process(amount) {
+    console.log(`Processing $${amount} via Bitcoin`);
+    // Bitcoin specific logic
+  }
+}
+
+// Easy to add new payment methods without modifying existing code!
+class StripePayment extends PaymentMethod {
+  process(amount) {
+    console.log(`Processing $${amount} via Stripe`);
+    // Stripe specific logic
+  }
+}
+
+// Usage
+const paymentMethods = [
+  new CreditCardPayment(),
+  new PayPalPayment(),
+  new BitcoinPayment(),
+  new StripePayment()
+];
+
+paymentMethods.forEach(method => method.process(100));
+```
+
+**OCP in React Components**
+
+**Bad approach:**
+```javascript
+function Button({ type }) {
+  if (type === "primary") {
+    return <button className="btn-primary">Primary</button>;
+  }
+  
+  if (type === "secondary") {
+    return <button className="btn-secondary">Secondary</button>;
+  }
+  
+  if (type === "danger") {
+    return <button className="btn-danger">Danger</button>;
+  }
+  
+  // Need to add "success" button? Modify this component!
+  
+  return <button>Default</button>;
+}
+```
+
+**Good approach:**
+```javascript
+function Button({ className, children, ...props }) {
+  return (
+    <button className={className} {...props}>
+      {children}
+    </button>
+  );
+}
+
+// Extend without modifying Button component
+<Button className="btn-primary">Primary</Button>
+<Button className="btn-secondary">Secondary</Button>
+<Button className="btn-danger">Danger</Button>
+<Button className="btn-success">Success</Button>
+<Button className="btn-warning">Warning</Button>
+```
+
+**Achieving OCP: Common Techniques**
+
+**1. Using Parameters/Arguments**
+```javascript
+// ✗ Bad - needs modification for each case
+function calculateDiscount(customerType) {
+  if (customerType === "regular") return 0.05;
+  if (customerType === "premium") return 0.10;
+  if (customerType === "vip") return 0.20;
+}
+
+// ✓ Good - pass the discount rate
+function calculateDiscount(discountRate) {
+  return discountRate;
+}
+
+calculateDiscount(0.05);  // Regular
+calculateDiscount(0.10);  // Premium
+calculateDiscount(0.20);  // VIP
+calculateDiscount(0.30);  // New tier - no modification needed!
+```
+
+**2. Using Inheritance**
+```javascript
+class Animal {
+  makeSound() {
+    throw new Error("Implement makeSound");
+  }
+}
+
+class Dog extends Animal {
+  makeSound() {
+    return "Woof!";
+  }
+}
+
+class Cat extends Animal {
+  makeSound() {
+    return "Meow!";
+  }
+}
+
+// Add new animal without modifying existing code
+class Cow extends Animal {
+  makeSound() {
+    return "Moo!";
+  }
+}
+```
+
+**3. Using Composition**
+```javascript
+class Logger {
+  constructor(writer) {
+    this.writer = writer;
+  }
+  
+  log(message) {
+    this.writer.write(message);
+  }
+}
+
+class ConsoleWriter {
+  write(message) {
+    console.log(message);
+  }
+}
+
+class FileWriter {
+  write(message) {
+    // Write to file
+  }
+}
+
+// Extend without modifying Logger
+const consoleLogger = new Logger(new ConsoleWriter());
+const fileLogger = new Logger(new FileWriter());
+
+// Add new writer type without modifying Logger
+class DatabaseWriter {
+  write(message) {
+    // Write to database
+  }
+}
+
+const dbLogger = new Logger(new DatabaseWriter());
+```
+
+**When to Apply OCP**
+
+✅ **Apply OCP when:**
+- You anticipate frequent additions (new shapes, payment methods, etc.)
+- Changes would require modifying core functionality
+- You want to make your code more maintainable
+- Multiple developers work on the same codebase
+
+❌ **Don't over-apply when:**
+- Requirements are stable and won't change
+- Adding abstraction adds unnecessary complexity
+- YAGNI (You Aren't Gonna Need It) principle applies
+
+**Common Mistakes**
+
+**Mistake 1: Over-engineering simple cases**
+```javascript
+// ✗ Overkill for a simple greeting
+class Greeter {
+  greet() {
+    throw new Error("Implement greet");
+  }
+}
+
+class EnglishGreeter extends Greeter {
+  greet() { return "Hello"; }
+}
+
+// ✓ Better - just use a parameter
+function greet(language) {
+  return language === "en" ? "Hello" : "Bonjour";
+}
+```
+
+**Mistake 2: Creating too many classes too early**
+
+Don't create abstractions until you need them. Start simple, refactor when you see the pattern.
+
+**Key Takeaways**
+
+1. **Open for extension, closed for modification** - Add new functionality without changing existing code
+
+2. **Extend don't modify** - Create new classes/functions instead of modifying old ones
+
+3. **Common techniques:**
+   - Pass parameters/options
+   - Use inheritance
+   - Use composition
+
+4. **Benefits:**
+   - Existing code stays stable
+   - Less risk of bugs
+   - Easier to add features
+   - Better maintainability
+
+5. **Don't over-apply** - Use when it adds value, not for everything
+
+---
