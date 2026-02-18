@@ -9475,3 +9475,540 @@ function doSomething(obj) {
 7. **LSP ensures** your inheritance hierarchy makes sense
 
 ---
+
+**4. Interface Segregation Principle (ISP)**
+
+The Interface Segregation Principle states that:
+
+**No class should be forced to implement methods or properties it doesn't use.**
+
+In simpler terms: Create specific, focused interfaces rather than one large, general-purpose interface. Don't make classes depend on things they don't need.
+
+**Simple Analogy:**
+
+Think of a restaurant menu:
+- **Bad**: One giant menu with breakfast, lunch, dinner, drinks, desserts all together (overwhelming)
+- **Good**: Separate menus for breakfast, lunch, dinner (focused, easy to use)
+
+You wouldn't force someone who just wants coffee to look through the entire lunch menu. Similarly, don't force a class to implement methods it doesn't need.
+
+**Note on Interfaces:**
+
+While JavaScript doesn't have built-in interfaces like TypeScript, the principle still applies to:
+- Base classes that child classes extend
+- Object shapes and contracts
+- Function parameters
+- Component props in React
+
+**Bad Example: Violating ISP**
+```typescript
+// TypeScript example (but principle applies to JavaScript too)
+interface IPerson {
+  name: string;
+  age: number;
+  hobby: string;
+  fly: boolean;  // ← Not all persons can fly!
+}
+
+class Person implements IPerson {
+  name: string;
+  age: number;
+  hobby: string;
+  fly: boolean;  // ← Forced to have this even though it doesn't make sense
+  
+  constructor(name: string, age: number, hobby: string) {
+    this.name = name;
+    this.age = age;
+    this.hobby = hobby;
+    this.fly = false;  // ← What do we even put here?
+  }
+}
+```
+
+**What's wrong here?**
+
+- Regular people can't fly
+- But the interface forces them to have a `fly` property
+- We're including something that doesn't belong
+- This clutters the interface with unnecessary properties
+
+**Visual representation:**
+```
+IPerson interface
+├─ name ✓ (needed)
+├─ age ✓ (needed)
+├─ hobby ✓ (needed)
+└─ fly ✗ (NOT needed for regular Person!)
+```
+
+**Good Example: Following ISP**
+```typescript
+interface IPerson {
+  name: string;
+  age: number;
+  hobby: string;
+}
+
+interface IPersonWhoCanFly {
+  fly: boolean;
+}
+
+class Person implements IPerson {
+  name: string;
+  age: number;
+  hobby: string;
+  
+  constructor(name: string, age: number, hobby: string) {
+    this.name = name;
+    this.age = age;
+    this.hobby = hobby;
+  }
+}
+
+class FlyingPerson implements IPerson, IPersonWhoCanFly {
+  name: string;
+  age: number;
+  hobby: string;
+  fly: boolean;
+  
+  constructor(name: string, age: number, hobby: string) {
+    this.name = name;
+    this.age = age;
+    this.hobby = hobby;
+    this.fly = true;
+  }
+}
+```
+
+**Why this is better:**
+
+- Regular people only implement `IPerson` (what they need)
+- Flying people implement both interfaces (exactly what they need)
+- Each interface is focused and specific
+- No class is forced to have properties it doesn't use
+
+**Visual representation:**
+```
+IPerson interface
+├─ name ✓
+├─ age ✓
+└─ hobby ✓
+
+IPersonWhoCanFly interface
+└─ fly ✓
+
+Person → uses IPerson only
+FlyingPerson → uses both IPerson and IPersonWhoCanFly
+```
+
+**Real-World Example: Office Equipment**
+
+**Bad approach (violating ISP):**
+```javascript
+class MultiFunctionDevice {
+  print() {
+    console.log("Printing...");
+  }
+
+  scan() {
+    console.log("Scanning...");
+  }
+
+  fax() {
+    console.log("Faxing...");
+  }
+}
+
+class Printer extends MultiFunctionDevice {
+  print() {
+    console.log("Printing...");
+  }
+
+  scan() {
+    throw new Error("Printer cannot scan");
+  }
+
+  fax() {
+    throw new Error("Printer cannot fax");
+  }
+}
+
+class Scanner extends MultiFunctionDevice {
+  print() {
+    throw new Error("Scanner cannot print");
+  }
+
+  scan() {
+    console.log("Scanning...");
+  }
+
+  fax() {
+    throw new Error("Scanner cannot fax");
+  }
+}
+```
+
+**What's wrong?**
+
+- `Printer` is forced to have `scan()` and `fax()` methods it can't use
+- `Scanner` is forced to have `print()` and `fax()` methods it can't use
+- Methods throw errors because the device doesn't support those features
+- Violates LSP (Liskov Substitution Principle) too!
+
+**Timeline of problems:**
+```
+User: "Let me use this MultiFunctionDevice to print"
+  → Uses Printer → ✓ Works
+
+User: "Let me use this MultiFunctionDevice to scan"
+  → Uses Printer → ✗ Error! "Printer cannot scan"
+
+User: "But it's a MultiFunctionDevice, why can't it scan?"
+  → Because we forced Printer to inherit methods it can't use
+```
+
+**Good approach (following ISP):**
+```javascript
+// Separate, focused classes
+class PrinterService {
+  print() {
+    console.log("Printing...");
+  }
+}
+
+class ScannerService {
+  scan() {
+    console.log("Scanning...");
+  }
+}
+
+class FaxService {
+  fax() {
+    console.log("Faxing...");
+  }
+}
+
+// Devices only inherit what they need
+class Printer extends PrinterService {
+  print() {
+    console.log("Basic printer: Printing...");
+  }
+}
+
+class Scanner extends ScannerService {
+  scan() {
+    console.log("Basic scanner: Scanning...");
+  }
+}
+
+// Multi-function device uses composition
+class MultiFunctionDevice {
+  constructor() {
+    this.printer = new PrinterService();
+    this.scanner = new ScannerService();
+    this.fax = new FaxService();
+  }
+
+  print() {
+    this.printer.print();
+  }
+
+  scan() {
+    this.scanner.scan();
+  }
+
+  fax() {
+    this.fax.fax();
+  }
+}
+
+// Usage
+const printer = new Printer();
+printer.print();  // ✓ Works
+// printer.scan(); // ✗ Not available (correct!)
+
+const scanner = new Scanner();
+scanner.scan();   // ✓ Works
+// scanner.print(); // ✗ Not available (correct!)
+
+const mfd = new MultiFunctionDevice();
+mfd.print();  // ✓ Works
+mfd.scan();   // ✓ Works
+mfd.fax();    // ✓ Works
+```
+
+**Why this is better:**
+
+- Each device only has methods it can actually use
+- No forced implementations
+- No throwing errors
+- Clear, focused classes
+- Easy to add new devices
+
+**Visual comparison:**
+
+**Bad (violating ISP):**
+```
+MultiFunctionDevice
+├─ print()
+├─ scan()
+└─ fax()
+      ↓
+Printer (inherits ALL)
+├─ print() ✓ (works)
+├─ scan() ✗ (throws error!)
+└─ fax() ✗ (throws error!)
+```
+
+**Good (following ISP):**
+```
+PrinterService
+└─ print()
+      ↓
+Printer (inherits ONLY what it needs)
+└─ print() ✓ (works)
+```
+
+**ISP in JavaScript (without TypeScript)**
+
+Even without interfaces, you can follow ISP:
+
+**Bad approach:**
+```javascript
+class Employee {
+  work() { console.log("Working"); }
+  code() { console.log("Coding"); }
+  design() { console.log("Designing"); }
+  manage() { console.log("Managing"); }
+}
+
+class Developer extends Employee {
+  work() { console.log("Working"); }
+  code() { console.log("Coding"); }
+  design() { throw new Error("Developer doesn't design"); }
+  manage() { throw new Error("Developer doesn't manage"); }
+}
+```
+
+**Good approach:**
+```javascript
+class Employee {
+  work() { console.log("Working"); }
+}
+
+class Developer extends Employee {
+  code() { console.log("Coding"); }
+}
+
+class Designer extends Employee {
+  design() { console.log("Designing"); }
+}
+
+class Manager extends Employee {
+  manage() { console.log("Managing"); }
+}
+```
+
+**ISP in React Components**
+
+**Bad approach (violating ISP):**
+```javascript
+// Component expects ALL these props, even if not needed
+function UserProfile({
+  name,
+  email,
+  address,
+  phoneNumber,
+  creditCard,
+  socialSecurity,
+  bankAccount
+}) {
+  return (
+    <div>
+      <h1>{name}</h1>
+      <p>{email}</p>
+    </div>
+  );
+}
+
+// Using the component - forced to pass all props!
+<UserProfile
+  name="John"
+  email="john@example.com"
+  address={null}          // Don't need this
+  phoneNumber={null}      // Don't need this
+  creditCard={null}       // Don't need this
+  socialSecurity={null}   // Don't need this
+  bankAccount={null}      // Don't need this
+/>
+```
+
+**Good approach (following ISP):**
+```javascript
+// Component only asks for what it needs
+function UserProfile({ name, email }) {
+  return (
+    <div>
+      <h1>{name}</h1>
+      <p>{email}</p>
+    </div>
+  );
+}
+
+// Separate component for sensitive info
+function UserSensitiveInfo({ creditCard, socialSecurity, bankAccount }) {
+  return (
+    <div>
+      {/* Display sensitive info */}
+    </div>
+  );
+}
+
+// Clean usage
+<UserProfile name="John" email="john@example.com" />
+```
+
+**Another React Example:**
+
+**Bad approach:**
+```javascript
+function Button({
+  text,
+  onClick,
+  onHover,
+  onFocus,
+  onBlur,
+  onDoubleClick,
+  onRightClick,
+  onMouseEnter,
+  onMouseLeave
+}) {
+  return <button onClick={onClick}>{text}</button>;
+}
+
+// Only using onClick, but forced to be aware of all events
+<Button
+  text="Click me"
+  onClick={handleClick}
+  onHover={undefined}
+  onFocus={undefined}
+  // ... all these undefined values!
+/>
+```
+
+**Good approach:**
+```javascript
+function Button({ text, onClick }) {
+  return <button onClick={onClick}>{text}</button>;
+}
+
+// Clean and focused
+<Button text="Click me" onClick={handleClick} />
+
+// If you need more events, create a specialized component
+function InteractiveButton({ text, onClick, onHover }) {
+  return (
+    <button onClick={onClick} onMouseEnter={onHover}>
+      {text}
+    </button>
+  );
+}
+```
+
+**Real-World Example: Database Operations**
+
+**Bad approach:**
+```javascript
+class Database {
+  connect() { /* ... */ }
+  disconnect() { /* ... */ }
+  read() { /* ... */ }
+  write() { /* ... */ }
+  update() { /* ... */ }
+  delete() { /* ... */ }
+  backup() { /* ... */ }
+  restore() { /* ... */ }
+}
+
+class ReadOnlyDatabase extends Database {
+  write() { throw new Error("Read-only!"); }
+  update() { throw new Error("Read-only!"); }
+  delete() { throw new Error("Read-only!"); }
+  backup() { throw new Error("Not supported"); }
+  restore() { throw new Error("Not supported"); }
+}
+```
+
+**Good approach:**
+```javascript
+class DatabaseConnection {
+  connect() { /* ... */ }
+  disconnect() { /* ... */ }
+}
+
+class ReadOperations extends DatabaseConnection {
+  read() { /* ... */ }
+}
+
+class WriteOperations extends DatabaseConnection {
+  write() { /* ... */ }
+  update() { /* ... */ }
+  delete() { /* ... */ }
+}
+
+class BackupOperations extends DatabaseConnection {
+  backup() { /* ... */ }
+  restore() { /* ... */ }
+}
+
+// Use composition for full database
+class FullDatabase {
+  constructor() {
+    this.read = new ReadOperations();
+    this.write = new WriteOperations();
+    this.backup = new BackupOperations();
+  }
+}
+
+// Read-only database only uses what it needs
+class ReadOnlyDatabase extends ReadOperations {}
+```
+
+**When to Apply ISP**
+
+✅ **Apply ISP when:**
+- You have large interfaces with many methods
+- Not all classes need all methods
+- You're forcing classes to implement unused methods
+- You're throwing errors in "not supported" methods
+
+❌ **Don't over-apply when:**
+- Interface is already small and focused
+- All implementing classes genuinely need all methods
+- Splitting would create unnecessary complexity
+
+**Benefits of ISP**
+
+1. **Cleaner code** - Classes only have what they need
+2. **Easier to understand** - Clear, focused interfaces
+3. **Less coupling** - Changes to one interface don't affect others
+4. **Better testability** - Smaller, focused units to test
+5. **Prevents errors** - No "not supported" exceptions
+
+**Key Takeaways**
+
+1. **Don't force classes to implement what they don't use**
+
+2. **Create small, focused interfaces** instead of large, general ones
+
+3. **"Fat interfaces"** with many methods are a code smell
+
+4. **If throwing "not supported" errors**, you're violating ISP
+
+5. **Composition over inheritance** often helps follow ISP
+
+6. **In React**, keep component props focused and minimal
+
+7. **Benefits**: Cleaner, more maintainable, less coupled code
+
+---
