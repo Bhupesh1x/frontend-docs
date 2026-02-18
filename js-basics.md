@@ -10012,3 +10012,591 @@ class ReadOnlyDatabase extends ReadOperations {}
 7. **Benefits**: Cleaner, more maintainable, less coupled code
 
 ---
+
+**5. Dependency Inversion Principle (DIP)**
+
+The Dependency Inversion Principle states that:
+
+1. **High-level modules should not depend on low-level modules.** Both should depend on abstractions.
+2. **Abstractions should not depend on details.** Details should depend on abstractions.
+
+In simpler terms: Don't make your important code directly depend on specific implementations. Use abstractions (interfaces, parameters, props) so you can easily swap implementations without changing the high-level code.
+
+**Simple Analogy:**
+
+Think of electrical outlets:
+- **High-level**: Your lamp
+- **Low-level**: The power source (could be electricity, solar, generator)
+- **Abstraction**: The electrical plug/socket
+
+The lamp doesn't care WHERE the power comes from. It just plugs into a socket (abstraction). You can change the power source without changing the lamp.
+
+**Understanding the Terms:**
+
+- **High-level module**: The main business logic, the important stuff (like `UserService`)
+- **Low-level module**: Implementation details, specific technologies (like `MySQLDatabase`)
+- **Abstraction**: An interface, base class, or parameter that hides the details
+
+**Bad Example: Violating DIP**
+```javascript
+class MySQLDatabase {
+  save(data) {
+    console.log("Saving data to MySQL database");
+  }
+}
+
+class UserService {
+  constructor() {
+    this.db = new MySQLDatabase();  // ← Tightly coupled!
+  }
+
+  saveUser(user) {
+    this.db.save(user);
+  }
+}
+
+const userService = new UserService();
+userService.saveUser({ name: "John" });
+```
+
+**What's wrong here?**
+
+`UserService` (high-level) is **directly coupled** to `MySQLDatabase` (low-level). Problems:
+
+1. **Hard-coded dependency**: `UserService` creates `MySQLDatabase` directly
+2. **Cannot change database**: Want MongoDB? Must modify `UserService`
+3. **Hard to test**: Cannot easily mock the database for testing
+4. **Inflexible**: Tightly coupled code
+
+**Visual representation:**
+```
+UserService (high-level)
+    ↓ directly depends on
+MySQLDatabase (low-level)
+
+If we want to change to MongoDB:
+    → Must modify UserService class
+    → Risk breaking existing code
+    → Not flexible
+```
+
+**Timeline of problems:**
+```
+Week 1: Built with MySQL
+  → UserService hardcoded with MySQLDatabase
+
+Week 2: Client wants to switch to MongoDB
+  → Must change UserService code
+  → Must test everything again
+  → Risk breaking existing features
+
+Week 3: Another client wants PostgreSQL
+  → Must change UserService code AGAIN
+  → More testing, more risk
+```
+
+**Good Example: Following DIP**
+```javascript
+// Abstraction - base class
+class Database {
+  save(data) {
+    throw new Error("save() must be implemented");
+  }
+}
+
+// Low-level modules - specific implementations
+class MySQLDatabase extends Database {
+  save(data) {
+    console.log("Saving data to MySQL database");
+  }
+}
+
+class MongoDBDatabase extends Database {
+  save(data) {
+    console.log("Saving data to MongoDB database");
+  }
+}
+
+class PostgreSQLDatabase extends Database {
+  save(data) {
+    console.log("Saving data to PostgreSQL database");
+  }
+}
+
+// High-level module - depends on abstraction (parameter)
+class UserService {
+  constructor(db) {  // ← Depends on abstraction, not concrete class
+    this.db = db;
+  }
+
+  saveUser(user) {
+    this.db.save(user);
+  }
+}
+
+// Usage - inject the specific implementation
+const mySqlDb = new MySQLDatabase();
+const userService = new UserService(mySqlDb);
+userService.saveUser({ name: "John" });
+
+// Easy to switch implementations!
+const mongoDb = new MongoDBDatabase();
+const mongoUserService = new UserService(mongoDb);
+mongoUserService.saveUser({ name: "Jane" });
+
+const postgresDb = new PostgreSQLDatabase();
+const postgresUserService = new UserService(postgresDb);
+postgresUserService.saveUser({ name: "Bob" });
+```
+
+**Why this is better:**
+
+1. **Loose coupling**: `UserService` doesn't know about specific databases
+2. **Easy to change**: Swap databases without modifying `UserService`
+3. **Easy to test**: Inject mock database for testing
+4. **Flexible**: Add new databases without touching `UserService`
+
+**Visual representation:**
+```
+UserService (high-level)
+    ↓ depends on
+Database (abstraction)
+    ↑ implemented by
+├─ MySQLDatabase (low-level)
+├─ MongoDBDatabase (low-level)
+└─ PostgreSQLDatabase (low-level)
+
+UserService doesn't know about specific databases!
+We inject whichever we want.
+```
+
+**Timeline with DIP:**
+```
+Week 1: Built with MySQL
+  → Create MySQLDatabase
+  → Inject into UserService
+  → UserService unchanged
+
+Week 2: Client wants MongoDB
+  → Create MongoDBDatabase
+  → Inject into UserService
+  → UserService UNCHANGED (no modifications!)
+
+Week 3: Another client wants PostgreSQL
+  → Create PostgreSQLDatabase
+  → Inject into UserService
+  → UserService STILL UNCHANGED
+```
+
+**Key Concept: Dependency Injection**
+
+Dependency Injection means passing dependencies (like the database) as parameters instead of creating them inside the class.
+
+**Without Dependency Injection (bad):**
+```javascript
+class UserService {
+  constructor() {
+    this.db = new MySQLDatabase();  // Created inside
+  }
+}
+```
+
+**With Dependency Injection (good):**
+```javascript
+class UserService {
+  constructor(db) {  // Passed as parameter
+    this.db = db;
+  }
+}
+
+const db = new MySQLDatabase();
+const service = new UserService(db);  // Injected
+```
+
+**Real-World Example 1: Notification Service**
+
+**Bad approach (violating DIP):**
+```javascript
+class EmailService {
+  send(message) {
+    console.log(`Sending email: ${message}`);
+  }
+}
+
+class NotificationService {
+  constructor() {
+    this.emailService = new EmailService();  // Tightly coupled!
+  }
+
+  notify(message) {
+    this.emailService.send(message);
+  }
+}
+
+// Problem: What if we want to send SMS instead of email?
+// Must modify NotificationService!
+```
+
+**Good approach (following DIP):**
+```javascript
+// Abstraction
+class MessageService {
+  send(message) {
+    throw new Error("send() must be implemented");
+  }
+}
+
+// Implementations
+class EmailService extends MessageService {
+  send(message) {
+    console.log(`Sending email: ${message}`);
+  }
+}
+
+class SMSService extends MessageService {
+  send(message) {
+    console.log(`Sending SMS: ${message}`);
+  }
+}
+
+class PushNotificationService extends MessageService {
+  send(message) {
+    console.log(`Sending push notification: ${message}`);
+  }
+}
+
+// High-level module depends on abstraction
+class NotificationService {
+  constructor(messageService) {  // Depends on abstraction
+    this.messageService = messageService;
+  }
+
+  notify(message) {
+    this.messageService.send(message);
+  }
+}
+
+// Easy to switch implementations!
+const emailNotification = new NotificationService(new EmailService());
+emailNotification.notify("Hello via Email");
+
+const smsNotification = new NotificationService(new SMSService());
+smsNotification.notify("Hello via SMS");
+
+const pushNotification = new NotificationService(new PushNotificationService());
+pushNotification.notify("Hello via Push");
+```
+
+**Real-World Example 2: Payment Processing**
+
+**Bad approach:**
+```javascript
+class StripePayment {
+  process(amount) {
+    console.log(`Processing $${amount} via Stripe`);
+  }
+}
+
+class OrderService {
+  constructor() {
+    this.payment = new StripePayment();  // Locked to Stripe!
+  }
+
+  processOrder(amount) {
+    this.payment.process(amount);
+  }
+}
+
+// Client wants to use PayPal? Tough luck, must modify OrderService!
+```
+
+**Good approach:**
+```javascript
+// Abstraction
+class PaymentProcessor {
+  process(amount) {
+    throw new Error("process() must be implemented");
+  }
+}
+
+// Implementations
+class StripePayment extends PaymentProcessor {
+  process(amount) {
+    console.log(`Processing $${amount} via Stripe`);
+  }
+}
+
+class PayPalPayment extends PaymentProcessor {
+  process(amount) {
+    console.log(`Processing $${amount} via PayPal`);
+  }
+}
+
+class CryptoPayment extends PaymentProcessor {
+  process(amount) {
+    console.log(`Processing $${amount} via Cryptocurrency`);
+  }
+}
+
+// High-level module
+class OrderService {
+  constructor(paymentProcessor) {  // Abstraction injected
+    this.payment = paymentProcessor;
+  }
+
+  processOrder(amount) {
+    this.payment.process(amount);
+  }
+}
+
+// Flexible usage
+const stripeOrder = new OrderService(new StripePayment());
+stripeOrder.processOrder(100);
+
+const paypalOrder = new OrderService(new PayPalPayment());
+paypalOrder.processOrder(200);
+
+const cryptoOrder = new OrderService(new CryptoPayment());
+cryptoOrder.processOrder(300);
+```
+
+**DIP in React**
+
+**Bad approach (violating DIP):**
+```javascript
+// Component tightly coupled to specific API implementation
+function UserProfile() {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    // Directly calling specific API
+    fetch('https://api.example.com/user')
+      .then(res => res.json())
+      .then(data => setUser(data));
+  }, []);
+
+  return <div>{user?.name}</div>;
+}
+
+// Problem: Cannot switch APIs, hard to test
+```
+
+**Good approach (following DIP with custom hooks):**
+```javascript
+// Abstraction - custom hook
+function useUser(userId) {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    fetchUser(userId).then(setUser);
+  }, [userId]);
+
+  return user;
+}
+
+// Can swap implementation easily
+function fetchUser(userId) {
+  // Could be REST API
+  return fetch(`https://api.example.com/user/${userId}`)
+    .then(res => res.json());
+
+  // Or GraphQL
+  // return graphqlClient.query({ ... });
+
+  // Or local storage
+  // return Promise.resolve(JSON.parse(localStorage.getItem('user')));
+}
+
+// Component depends on abstraction (hook), not implementation
+function UserProfile({ userId }) {
+  const user = useUser(userId);  // Using abstraction
+  return <div>{user?.name}</div>;
+}
+```
+
+**Better React example with dependency injection:**
+```javascript
+// Data service abstraction
+class UserDataService {
+  getUser(userId) {
+    throw new Error("getUser() must be implemented");
+  }
+}
+
+// Implementations
+class APIUserService extends UserDataService {
+  async getUser(userId) {
+    const res = await fetch(`https://api.example.com/user/${userId}`);
+    return res.json();
+  }
+}
+
+class MockUserService extends UserDataService {
+  async getUser(userId) {
+    return { id: userId, name: "Mock User" };
+  }
+}
+
+// Custom hook that accepts service
+function useUser(userId, userService) {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    userService.getUser(userId).then(setUser);
+  }, [userId, userService]);
+
+  return user;
+}
+
+// Component
+function UserProfile({ userId, userService }) {
+  const user = useUser(userId, userService);
+  return <div>{user?.name}</div>;
+}
+
+// Usage
+const apiService = new APIUserService();
+<UserProfile userId={123} userService={apiService} />
+
+// Easy to switch for testing!
+const mockService = new MockUserService();
+<UserProfile userId={123} userService={mockService} />
+```
+
+**DIP with Functions (Functional Programming)**
+
+**Bad approach:**
+```javascript
+function processOrder(order) {
+  // Directly calling specific payment service
+  const result = stripePayment.charge(order.amount);
+  
+  if (result.success) {
+    sendEmailNotification(order.customerEmail);
+  }
+}
+
+// Tightly coupled to Stripe and email
+```
+
+**Good approach:**
+```javascript
+function processOrder(order, paymentService, notificationService) {
+  // Depends on abstractions (parameters)
+  const result = paymentService.charge(order.amount);
+  
+  if (result.success) {
+    notificationService.send(order.customerEmail);
+  }
+}
+
+// Usage - inject dependencies
+processOrder(order, stripePayment, emailService);
+processOrder(order, paypalPayment, smsService);
+processOrder(order, cryptoPayment, pushService);
+```
+
+**Testing Benefits**
+
+DIP makes testing much easier:
+
+**Without DIP (hard to test):**
+```javascript
+class UserService {
+  constructor() {
+    this.db = new MySQLDatabase();  // Can't mock!
+  }
+
+  async getUser(id) {
+    return this.db.query(`SELECT * FROM users WHERE id = ${id}`);
+  }
+}
+
+// Testing is hard - must connect to real MySQL database!
+```
+
+**With DIP (easy to test):**
+```javascript
+class UserService {
+  constructor(db) {
+    this.db = db;
+  }
+
+  async getUser(id) {
+    return this.db.query(`SELECT * FROM users WHERE id = ${id}`);
+  }
+}
+
+// Testing is easy - inject a mock!
+class MockDatabase {
+  async query(sql) {
+    return { id: 1, name: "Test User" };
+  }
+}
+
+const mockDb = new MockDatabase();
+const service = new UserService(mockDb);
+// Now we can test without real database!
+```
+
+**Benefits of DIP**
+
+1. **Loose coupling** - Modules independent of each other
+2. **Easy to change** - Swap implementations without changing high-level code
+3. **Easy to test** - Inject mocks for testing
+4. **Flexible** - Add new implementations easily
+5. **Maintainable** - Changes localized to specific implementations
+
+**Common Mistakes**
+
+**Mistake 1: Creating dependencies inside classes**
+```javascript
+// ✗ Bad
+class Service {
+  constructor() {
+    this.db = new MySQL();  // Created inside
+  }
+}
+
+// ✓ Good
+class Service {
+  constructor(db) {  // Injected
+    this.db = db;
+  }
+}
+```
+
+**Mistake 2: Depending on concrete classes**
+```javascript
+// ✗ Bad
+class Service {
+  constructor(db: MySQLDatabase) {  // Specific type
+    this.db = db;
+  }
+}
+
+// ✓ Good
+class Service {
+  constructor(db: Database) {  // Abstract type
+    this.db = db;
+  }
+}
+```
+
+**Key Takeaways**
+
+1. **High-level code shouldn't depend on low-level code** - both depend on abstractions
+
+2. **Use dependency injection** - pass dependencies as parameters
+
+3. **Depend on abstractions** (interfaces, base classes, parameters), not concrete implementations
+
+4. **Benefits**: Loose coupling, easy testing, flexibility, maintainability
+
+5. **In React**: Use custom hooks and props for dependency injection
+
+6. **In functions**: Pass dependencies as parameters
+
+7. **Testing becomes easy** - inject mocks instead of real implementations
+
+---
