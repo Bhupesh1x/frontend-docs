@@ -8881,3 +8881,597 @@ Don't create abstractions until you need them. Start simple, refactor when you s
 5. **Don't over-apply** - Use when it adds value, not for everything
 
 ---
+
+**3. Liskov Substitution Principle (LSP)**
+
+The Liskov Substitution Principle states that:
+
+**A subclass should be able to replace its parent class without breaking the application's functionality.**
+
+In simpler terms: If you have a parent class and a child class, you should be able to use the child class anywhere you're using the parent class, and everything should still work correctly.
+
+**Simple Analogy:**
+
+Think of USB devices:
+- All USB devices can be plugged into a USB port
+- A USB mouse, keyboard, or drive should work in any USB port
+- If you replace a USB mouse with a USB keyboard, the port still works
+- If a device breaks the port or causes errors, it violates this principle
+
+**The Key Rule:**
+
+**Child classes should:**
+- Do everything the parent class can do
+- Not break any of the parent class's functionality
+- Not throw unexpected errors where the parent doesn't
+- Maintain the same behavior contracts
+
+**Bad Example: Violating LSP**
+```javascript
+class Father {
+  walk() {
+    console.log("Father is walking");
+  }
+}
+
+class Son extends Father {
+  walk() {
+    throw new Error("Son cannot walk");
+  }
+}
+
+class YoungerSon extends Father {
+  walk() {
+    console.log("Younger son is walking");
+  }
+}
+
+function makeWalk(person) {
+  person.walk();  // Expects this to work for any person
+}
+
+const father = new Father();
+const son = new Son();
+const youngerSon = new YoungerSon();
+
+makeWalk(father);     // ✓ Works: "Father is walking"
+makeWalk(youngerSon); // ✓ Works: "Younger son is walking"
+makeWalk(son);        // ✗ Breaks: Error thrown!
+```
+
+**What's wrong here?**
+
+The `Son` class throws an error in `walk()`, but the parent `Father` class doesn't. This breaks LSP because:
+
+1. We expect `makeWalk()` to work with any person
+2. It works with `Father` and `YoungerSon`
+3. But it breaks with `Son`
+4. We cannot safely replace `Father` with `Son`
+
+**Visual representation:**
+```
+makeWalk(Father) → ✓ Works
+makeWalk(YoungerSon) → ✓ Works
+makeWalk(Son) → ✗ Throws error (violates LSP!)
+```
+
+**Why this matters:**
+
+If you're writing code that expects a `Father` object:
+```javascript
+function dailyRoutine(person) {
+  person.walk();  // Should work for Father and all children
+  // ... rest of routine
+}
+
+// This should work with any child of Father
+dailyRoutine(new Father());
+dailyRoutine(new YoungerSon());
+dailyRoutine(new Son());  // ✗ Crashes!
+```
+
+The code breaks when you use `Son`, even though it's a valid child of `Father`. This is a LSP violation.
+
+**Good Example: Following LSP**
+
+**Approach 1: Handle gracefully**
+```javascript
+class Father {
+  walk() {
+    console.log("Father is walking");
+  }
+}
+
+class Son extends Father {
+  walk() {
+    console.log("Son cannot walk yet");
+    // Doesn't throw error, handles gracefully
+  }
+}
+
+class YoungerSon extends Father {
+  walk() {
+    console.log("Younger son is walking");
+  }
+}
+
+function makeWalk(person) {
+  person.walk();
+}
+
+makeWalk(new Father());     // "Father is walking"
+makeWalk(new Son());        // "Son cannot walk yet" ✓ Works!
+makeWalk(new YoungerSon()); // "Younger son is walking"
+```
+
+**Why this works:**
+
+All implementations of `walk()` succeed without errors. They might do different things, but they all work. You can safely replace `Father` with any child class.
+
+**Approach 2: Better class design**
+```javascript
+class Person {
+  constructor(name, canWalk) {
+    this.name = name;
+    this.canWalk = canWalk;
+  }
+  
+  walk() {
+    if (this.canWalk) {
+      console.log(`${this.name} is walking`);
+    } else {
+      console.log(`${this.name} cannot walk yet`);
+    }
+  }
+}
+
+class Father extends Person {
+  constructor() {
+    super("Father", true);
+  }
+}
+
+class Son extends Person {
+  constructor() {
+    super("Son", false);  // Indicate that son can't walk yet
+  }
+}
+
+class YoungerSon extends Person {
+  constructor() {
+    super("Younger Son", true);
+  }
+}
+
+// All work perfectly!
+makeWalk(new Father());     // "Father is walking"
+makeWalk(new Son());        // "Son cannot walk yet"
+makeWalk(new YoungerSon()); // "Younger son is walking"
+```
+
+**Real-World Example 1: Birds**
+
+**Bad approach (violating LSP):**
+```javascript
+class Bird {
+  fly() {
+    console.log("Bird is flying");
+  }
+}
+
+class Sparrow extends Bird {
+  fly() {
+    console.log("Sparrow is flying");
+  }
+}
+
+class Penguin extends Bird {
+  fly() {
+    throw new Error("Penguins can't fly!");
+  }
+}
+
+function makeBirdFly(bird) {
+  bird.fly();  // Expects all birds to fly
+}
+
+makeBirdFly(new Sparrow());  // ✓ Works
+makeBirdFly(new Penguin());  // ✗ Breaks! (LSP violation)
+```
+
+**Good approach (following LSP):**
+```javascript
+class Bird {
+  move() {
+    console.log("Bird is moving");
+  }
+}
+
+class FlyingBird extends Bird {
+  fly() {
+    console.log("Flying in the air");
+  }
+  
+  move() {
+    this.fly();
+  }
+}
+
+class FlightlessBird extends Bird {
+  walk() {
+    console.log("Walking on ground");
+  }
+  
+  move() {
+    this.walk();
+  }
+}
+
+class Sparrow extends FlyingBird {}
+class Penguin extends FlightlessBird {}
+
+function makeBirdMove(bird) {
+  bird.move();  // All birds can move
+}
+
+makeBirdMove(new Sparrow());  // "Flying in the air"
+makeBirdMove(new Penguin());  // "Walking on ground"
+// Both work! ✓
+```
+
+**Why this works:**
+
+- All birds can `move()` (common behavior)
+- Some fly, some walk (specific behavior)
+- No bird throws an error
+- You can safely replace any bird with another
+
+**Real-World Example 2: Shapes and Area**
+
+**Bad approach:**
+```javascript
+class Shape {
+  area() {
+    return 0;
+  }
+}
+
+class Rectangle extends Shape {
+  constructor(width, height) {
+    super();
+    this.width = width;
+    this.height = height;
+  }
+  
+  area() {
+    return this.width * this.height;
+  }
+}
+
+class Circle extends Shape {
+  constructor(radius) {
+    super();
+    this.radius = radius;
+  }
+  
+  area() {
+    throw new Error("Circle area calculation not implemented!");
+    // This breaks LSP!
+  }
+}
+
+function printArea(shape) {
+  console.log("Area:", shape.area());
+}
+
+printArea(new Rectangle(5, 10));  // ✓ Works
+printArea(new Circle(5));         // ✗ Breaks!
+```
+
+**Good approach:**
+```javascript
+class Shape {
+  area() {
+    throw new Error("area() must be implemented by subclass");
+  }
+}
+
+class Rectangle extends Shape {
+  constructor(width, height) {
+    super();
+    this.width = width;
+    this.height = height;
+  }
+  
+  area() {
+    return this.width * this.height;
+  }
+}
+
+class Circle extends Shape {
+  constructor(radius) {
+    super();
+    this.radius = radius;
+  }
+  
+  area() {
+    return Math.PI * this.radius * this.radius;
+  }
+}
+
+function printArea(shape) {
+  console.log("Area:", shape.area());
+}
+
+printArea(new Rectangle(5, 10));  // Area: 50
+printArea(new Circle(5));         // Area: 78.54
+// Both work! ✓
+```
+
+**Real-World Example 3**
+
+```javascript
+// ✗ Bad
+class Vehicle {
+  startEngine() {
+    console.log("Engine started");
+    return true;
+  }
+}
+
+class Car extends Vehicle {}
+
+class Bicycle extends Vehicle {
+  startEngine() {
+    throw new Error("Bicycles don't have engines!");
+  }
+}
+
+function startAllVehicles(vehicles) {
+  vehicles.forEach(v => v.startEngine());
+}
+```
+
+```javascript
+// ✓ Good
+class Vehicle {
+  start() {
+    console.log("Vehicle started");
+  }
+}
+
+class MotorizedVehicle extends Vehicle {
+  startEngine() {
+    console.log("Engine started");
+  }
+  
+  start() {
+    this.startEngine();
+  }
+}
+
+class NonMotorizedVehicle extends Vehicle {
+  start() {
+    console.log("Ready to go!");
+  }
+}
+
+class Car extends MotorizedVehicle {}
+class Bicycle extends NonMotorizedVehicle {}
+
+function startAllVehicles(vehicles) {
+  vehicles.forEach(v => v.start());  // All work!
+}
+
+const vehicles = [new Car(), new Bicycle()];
+startAllVehicles(vehicles);
+// Engine started
+// Ready to go!
+```
+
+**Real-World Example 4: Payment Methods**
+
+**Bad approach:**
+```javascript
+class PaymentMethod {
+  process(amount) {
+    console.log(`Processing payment of $${amount}`);
+    return true;
+  }
+}
+
+class CreditCard extends PaymentMethod {
+  process(amount) {
+    console.log(`Charging credit card $${amount}`);
+    return true;
+  }
+}
+
+class Cash extends PaymentMethod {
+  process(amount) {
+    throw new Error("Cannot process cash payments online!");
+    // Breaks LSP!
+  }
+}
+
+function processPayment(paymentMethod, amount) {
+  if (paymentMethod.process(amount)) {
+    console.log("Payment successful");
+  }
+}
+
+processPayment(new CreditCard(), 100);  // ✓ Works
+processPayment(new Cash(), 100);        // ✗ Breaks!
+```
+
+**Good approach:**
+```javascript
+class PaymentMethod {
+  process(amount) {
+    throw new Error("process() must be implemented");
+  }
+  
+  isOnlineSupported() {
+    return false;
+  }
+}
+
+class OnlinePayment extends PaymentMethod {
+  isOnlineSupported() {
+    return true;
+  }
+}
+
+class OfflinePayment extends PaymentMethod {
+  isOnlineSupported() {
+    return false;
+  }
+  
+  process(amount) {
+    console.log(`Processing offline payment of $${amount}`);
+    return false;
+  }
+}
+
+class CreditCard extends OnlinePayment {
+  process(amount) {
+    console.log(`Charging credit card $${amount}`);
+    return true;
+  }
+}
+
+class Cash extends OfflinePayment {
+  process(amount) {
+    console.log(`Cash payment of $${amount} - requires in-person payment`);
+    return false;
+  }
+}
+
+function processPayment(paymentMethod, amount) {
+  if (!paymentMethod.isOnlineSupported()) {
+    console.log("This payment method requires in-person payment");
+    return;
+  }
+  
+  if (paymentMethod.process(amount)) {
+    console.log("Payment successful");
+  }
+}
+
+processPayment(new CreditCard(), 100);  // Works
+processPayment(new Cash(), 100);        // Handled gracefully
+```
+
+**LSP Rules to Follow**
+
+**1. Child class must accept same input types as parent**
+```javascript
+// ✗ Bad
+class Parent {
+  doSomething(value) {
+    // Accepts any value
+  }
+}
+
+class Child extends Parent {
+  doSomething(value) {
+    if (typeof value !== 'number') {
+      throw new Error("Only numbers!");  // Stricter than parent
+    }
+  }
+}
+
+// ✓ Good
+class Child extends Parent {
+  doSomething(value) {
+    // Accepts any value, like parent
+  }
+}
+```
+
+**2. Child class should return compatible types**
+```javascript
+// ✗ Bad
+class Parent {
+  getValue() {
+    return 42;  // Returns number
+  }
+}
+
+class Child extends Parent {
+  getValue() {
+    return "42";  // Returns string - different type!
+  }
+}
+
+// ✓ Good
+class Child extends Parent {
+  getValue() {
+    return 100;  // Returns number, like parent
+  }
+}
+```
+
+**3. Child class shouldn't throw new exceptions**
+```javascript
+// ✗ Bad
+class Parent {
+  calculate(x) {
+    return x * 2;  // Doesn't throw
+  }
+}
+
+class Child extends Parent {
+  calculate(x) {
+    if (x < 0) {
+      throw new Error("No negatives!");  // New exception!
+    }
+    return x * 2;
+  }
+}
+
+// ✓ Good
+class Child extends Parent {
+  calculate(x) {
+    return Math.abs(x) * 2;  // Handles negatives without throwing
+  }
+}
+```
+
+**When LSP is Violated**
+
+Signs that you're violating LSP:
+
+1. **Throwing exceptions in child classes** where parent doesn't
+2. **Returning different types** than parent
+3. **Requiring stricter inputs** than parent
+4. **Changing behavior unexpectedly** from parent
+5. **Needing type checks** before using objects
+```javascript
+// If you're doing this, you're probably violating LSP:
+function doSomething(obj) {
+  if (obj instanceof SpecificChild) {
+    // Special handling for this child
+  } else {
+    // Normal handling
+  }
+}
+```
+
+**Key Takeaways**
+
+1. **Child should replace parent** without breaking anything
+
+2. **Same inputs, compatible outputs** - maintain the contract
+
+3. **Don't throw new errors** where parent doesn't
+
+4. **Handle edge cases gracefully** - don't break expectations
+
+5. **If you need type checking**, you probably violated LSP
+
+6. **Better class design** prevents LSP violations
+
+7. **LSP ensures** your inheritance hierarchy makes sense
+
+---
