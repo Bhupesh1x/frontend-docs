@@ -7408,7 +7408,7 @@ Animal.prototype.eat = function () {};
 
 ---
 
-# Generator Functions in JavaScript
+## Generator Functions in JavaScript
 
 Understanding functions that can pause and resume their execution.
 
@@ -10951,5 +10951,668 @@ class Service {
 6. **In functions**: Pass dependencies as parameters
 
 7. **Testing becomes easy** - inject mocks instead of real implementations
+
+---
+
+## Object-Oriented Programming (OOP) in JavaScript
+
+Understanding classes and it's principles of OOP.
+
+**What are Classes?**
+
+A class is a blueprint for creating objects. It is like a data structure using which we can create new data structures. It can be defined using the `class` keyword followed by the name of the class. The body of the class is enclosed in curly braces `{}`.
+
+Classes can have:
+- **fields** (variables that store data)
+- **Methods** (functions that define behavior)
+
+**Basic Class Example:**
+```javascript
+class SuperHero {
+  superHeroName = "Silver Surfer";
+
+  getName() {
+    return this.superHeroName;
+  }
+}
+
+const hero = new SuperHero();
+
+console.log(hero);                // SuperHero { superHeroName: "Silver Surfer" }
+console.log(hero.superHeroName);  // "Silver Surfer"
+console.log(hero.getName());      // "Silver Surfer"
+```
+
+**What's happening here:**
+
+1. We define a class `SuperHero`
+2. It has a property `superHeroName`
+3. It has a method `getName()`
+4. We create an object `hero` using `new SuperHero()`
+5. We can access properties and methods using the object
+
+**Constructor**
+
+Constructor is a special method that gets executed immediately when you create an object from a class using the `new` keyword.
+
+**Use case:** Initialize values when creating an object.
+```javascript
+class SuperHero {
+  superHeroName = "Silver Surfer";
+  location = "Earth";
+
+  constructor(location) {
+    if (location) this.location = location;
+  }
+
+  getName() {
+    return this.superHeroName;
+  }
+
+  getLocation() {
+    return `${this.superHeroName} from ${this.location}`;
+  }
+}
+
+const hero = new SuperHero("Jupiter");
+const heroFromEarth = new SuperHero();
+
+console.log(hero.getName());              // "Silver Surfer"
+console.log(hero.getLocation());          // "Silver Surfer from Jupiter"
+
+console.log(heroFromEarth.getName());     // "Silver Surfer"
+console.log(heroFromEarth.getLocation()); // "Silver Surfer from Earth"
+```
+
+**What's happening:**
+
+1. `constructor(location)` runs when we do `new SuperHero("Jupiter")`
+2. If a location is provided, it updates the default location
+3. If no location is provided, it keeps the default "Earth"
+
+**The Four Main Principles of OOP**
+
+1. **Inheritance** - Classes can inherit from other classes
+2. **Encapsulation** - Bundle related data and methods together
+3. **Abstraction** - Hide complex details, show only essentials
+4. **Polymorphism** - Same method, different behaviors
+
+Let's explore each one.
+
+**1. Inheritance**
+
+Inheritance means extending another class using the `extends` keyword. This allows you to reuse code from an existing class.
+
+**Syntax:** `class ChildClass extends ParentClass {}`
+
+**Why use inheritance?**
+
+If you need to create a new class and there's already a class with most of what you need, you can extend (inherit) that class instead of repeating code.
+
+**Example:**
+```javascript
+class Hero {
+  name = "Captain America";
+  power = "Shield & Strength";
+
+  fightWithVillain(villainName) {
+    return `Fighting with ${villainName}`;
+  }
+}
+
+class IronMan extends Hero {
+  // IronMan inherits all properties and methods from Hero
+}
+
+const ironMan = new IronMan();
+
+console.log(ironMan.name);                    // "Captain America"
+console.log(ironMan.power);                   // "Strength"
+console.log(ironMan.fightWithVillain("Thanos")); // "Fighting with Thanos"
+```
+
+**What happened:**
+
+`IronMan` class is empty, but because it extends `Hero`, it gets all of Hero's properties and methods!
+
+**Important:** Only extend a class if you need everything it has. Otherwise, you'll get unnecessary properties.
+
+**The `super` Keyword**
+
+The `super` keyword is used for two main purposes:
+
+1. **Pass values to parent constructor**
+2. **Access parent class methods**
+
+**Example:**
+```javascript
+class SuperHero {
+  superHeroName = "Captain America";
+  location = "Earth";
+
+  constructor(location) {
+    if (location) this.location = location;
+  }
+
+  fightWithVillain(villainName) {
+    return `Fighting with ${villainName}`;
+  }
+
+  getLocation() {
+    return `${this.superHeroName} from ${this.location}`;
+  }
+}
+
+class IronMan extends SuperHero {
+  constructor(location) {
+    super(location);  // Passes location to parent constructor
+  }
+
+  getIronManLocation() {
+    const locationDetails = super.getLocation();  // Calls parent method
+    return locationDetails;
+  }
+}
+
+const ironMan = new IronMan("Mars");
+console.log(ironMan);                       // { superHeroName: "Captain America", location: "Mars" }
+console.log(ironMan.getIronManLocation());  // "Captain America from Mars"
+```
+
+**What's happening:**
+
+1. `super(location)` calls the parent class constructor with the location
+2. `super.getLocation()` calls the parent class method
+
+**Important:** If your child class has a constructor, you MUST call `super()` before using `this`.
+
+**2. Encapsulation**
+
+Encapsulation means combining (wrapping) all related data and methods in a single unit, protecting them from direct external access.
+
+**Think of it like a capsule:**
+- Medicine (data) is protected by the outer layer (class)
+- You can't directly access the medicine; you must take the whole capsule
+
+**How classes achieve encapsulation:**
+
+When you use classes, all related properties and methods are bundled together. They can't be directly accessed from outside (especially if they're private).
+
+**Example:**
+```javascript
+class BankAccount {
+  #balance;  // Private field (cannot be accessed outside)
+
+  constructor() {
+    this.#balance = 0;
+  }
+
+  addAmount(amount) {
+    if (amount < 0) throw new Error("Cannot add negative amount");
+    this.#balance += amount;
+  }
+
+  withdrawAmount(amount) {
+    if (amount < 0) throw new Error("Cannot withdraw negative amount");
+    if (amount > this.#balance) throw new Error("Insufficient balance");
+    this.#balance -= amount;
+  }
+
+  getBalance() {
+    return `Your current balance is Rs. ${this.#balance}`;
+  }
+}
+
+const account = new BankAccount();
+
+account.addAmount(500);
+account.addAmount(2500);
+console.log(account.getBalance());  // "Your current balance is Rs. 3000"
+
+// Cannot access balance directly
+console.log(account.#balance);      // Error! Private field
+```
+
+**Benefits:**
+
+- Balance is protected (private)
+- Can only be modified through provided methods
+- Validation happens before any changes
+- Internal data is safe from external tampering
+
+**3. Abstraction**
+
+Abstraction means hiding internal details and showing only the necessary information to the user.
+
+**Think of a car:**
+- You use the steering wheel, pedals, and gear shift (simple interface)
+- You don't need to know how the engine works internally
+
+**Example:**
+
+In the `BankAccount` example above:
+- Users get simple methods: `addAmount()`, `withdrawAmount()`, `getBalance()`
+- Users don't need to know HOW the balance is stored or calculated
+- Internal complexity is hidden
+
+**Abstract classes in  languages like Java or C#**
+
+```java
+
+abstract class Animal {
+    abstract void makeSound();  // must be implemented
+}
+
+// We can't do
+
+new Animal(); // ❌ Error
+
+// But we can extend it:
+class Dog extends Animal {
+    void makeSound() {
+        System.out.println("Bark");
+    }
+}
+
+```
+
+**Abstract Classes (Simulated in JavaScript)**
+
+JavaScript doesn't directly support abstract classes, but we can simulate them by throwing errors:
+```javascript
+class Animal {
+  constructor(name) {
+    this.name = name;
+  }
+
+  makeSound() {
+    throw new Error("Method 'makeSound()' must be implemented");
+  }
+}
+
+class Dog extends Animal {
+  constructor() {
+    super("Dog");
+  }
+
+  makeSound() {
+    console.log("Woof! Woof!");
+  }
+}
+
+class Cat extends Animal {
+  constructor() {
+    super("Cat");
+  }
+  
+  // Forgot to implement makeSound!
+}
+
+const dog = new Dog();
+dog.makeSound();  // "Woof! Woof!"
+
+const cat = new Cat();
+cat.makeSound();  // Error: Method 'makeSound()' must be implemented
+```
+
+**What's happening:**
+
+- `Animal` is like an abstract class (blueprint)
+- Child classes MUST implement `makeSound()`
+- If they don't, an error is thrown
+
+**4. Polymorphism**
+
+Polymorphism means "many forms". The same method can behave differently based on context.
+
+**Think of a TV remote:**
+- `pressPower()` on TV → turns TV on/off
+- `pressPower()` on AC → turns AC on/off
+- `pressPower()` on Music System → turns it on/off
+
+Same button, different devices, different actions!
+
+**Example 1: Method Overriding**
+```javascript
+class Device {
+  pressPower() {
+    console.log("Device is on now");
+  }
+}
+
+class TV extends Device {
+  pressPower() {
+    console.log("TV is on now");
+  }
+}
+
+class AC extends Device {
+  pressPower() {
+    console.log("AC is on now");
+  }
+}
+
+class MusicSystem extends Device {
+  pressPower() {
+    console.log("Music System is on now");
+  }
+}
+
+const tv = new TV();
+const ac = new AC();
+const music = new MusicSystem();
+
+tv.pressPower();      // "TV is on now"
+ac.pressPower();      // "AC is on now"
+music.pressPower();   // "Music System is on now"
+```
+
+**What's happening:**
+
+- Same method name `pressPower()`
+- Different behavior based on the object type
+- Each class overrides the parent's method
+
+**Example 2: Different Behavior Based on Arguments**
+```javascript
+function sum(a, b, c) {
+  if (c) {
+    return a + b + c;  // Three numbers
+  }
+  return a + b;        // Two numbers
+}
+
+console.log(sum(1, 2));      // 3
+console.log(sum(1, 2, 3));   // 6
+```
+
+Same function, different behavior based on arguments!
+
+**Another Example:**
+```javascript
+class Animal {
+  makeSound() {
+    console.log("Animal makes a sound");
+  }
+}
+
+class Dog extends Animal {
+  makeSound() {
+    console.log("Woof! Woof!");
+  }
+}
+
+class Cat extends Animal {
+  makeSound() {
+    console.log("Meow!");
+  }
+}
+
+const animals = [new Dog(), new Cat(), new Animal()];
+
+animals.forEach(animal => animal.makeSound());
+// "Woof! Woof!"
+// "Meow!"
+// "Animal makes a sound"
+```
+
+**Note on Method Overloading:**
+
+Method overloading (having multiple methods with the same name but different parameters) is NOT supported in JavaScript. The last defined method simply overwrites previous ones.
+```javascript
+class Sum {
+  add(a, b) {
+    console.log(a + b);
+  }
+
+  add(a, b, c) {
+    console.log(a + b + c);  // This overwrites the previous add()
+  }
+}
+
+const calculator = new Sum();
+calculator.add(1, 2);     // NaN (trying to add 1 + 2 + undefined)
+calculator.add(1, 2, 3);  // 6
+```
+
+**Access Modifiers**
+
+Access modifiers control who can access properties and methods.
+
+JavaScript supports two access modifiers:
+1. **Public** (default) - accessible everywhere
+2. **Private** (using `#`) - accessible only inside the class
+
+**Note:** `protected` is NOT supported in JavaScript (but is in TypeScript).
+
+**Example:**
+```javascript
+class SuperHero {
+  superHeroName = "Captain America";     // Public
+  #superPower = "Strength & Shield";     // Private
+
+  #getDetails() {                        // Private method
+    return this.superHeroName;
+  }
+
+  getSuperHeroDetails() {                // Public method
+    const heroDetails = this.#getDetails();
+    return `${heroDetails} with super power: ${this.#superPower}`;
+  }
+
+  getSuperPower() {
+    return this.#superPower;
+  }
+}
+
+const hero = new SuperHero();
+
+console.log(hero.superHeroName);        // "Captain America" ✓
+console.log(hero.getSuperPower());      // "Strength & Shield" ✓
+
+console.log(hero.#superPower);          // Error! Private field
+hero.#getDetails();                     // Error! Private method
+```
+
+**Summary of access modifiers:**
+
+| Modifier | Symbol | Accessible in class | Accessible outside | Accessible in subclass |
+|----------|--------|--------------------|--------------------|----------------------|
+| Public | (none) | ✓ | ✓ | ✓ |
+| Private | `#` | ✓ | ✗ | ✗ |
+| Protected | N/A | (Not supported in JS) |
+
+**Interfaces**
+
+Interfaces define the structure (contract) that a class must follow. They specify what properties and methods a class should have.
+
+**JavaScript doesn't support interfaces natively**, but TypeScript does.
+
+**TypeScript Example:**
+```typescript
+interface IPerson {
+  name: string;
+  age: number;
+  walk(): void;
+}
+
+class Person implements IPerson {
+  name = "";
+  age = 0;
+
+  walk() {
+    console.log("Person is walking");
+  }
+}
+```
+
+**In JavaScript**, you can use JSDoc comments to document expected structure:
+```javascript
+/**
+ * @typedef {Object} IPerson
+ * @property {string} name
+ * @property {number} age
+ * @property {function(): void} walk
+ */
+
+class Person {
+  name = "";
+  age = 0;
+
+  walk() {
+    console.log("Person is walking");
+  }
+}
+```
+
+**Static Properties and Methods**
+
+Static properties and methods belong to the class itself, not to instances (objects) created from the class.
+
+**Use case:** Utility functions that don't need object state.
+
+**Example:**
+```javascript
+class MathUtils {
+  static pi = 3.14;  // Static property
+
+  static square(number) {  // Static method
+    return number * number;
+  }
+
+  static cube(number) {
+    return number * number * number;
+  }
+}
+
+// Access directly on the class (no need to create object)
+console.log(MathUtils.pi);         // 3.14
+console.log(MathUtils.square(4));  // 16
+console.log(MathUtils.cube(3));    // 27
+
+// Cannot access via instance
+const utils = new MathUtils();
+console.log(utils.square(4));      // undefined (static methods are not on instances)
+```
+
+**When to use static:**
+
+- Utility functions (Math.max(), Math.min())
+- Factory methods (creating objects)
+- Constants shared across all instances
+- Helper functions that don't need instance data
+
+**Binding `this` in Methods**
+
+When you pass a class method as a callback, it can lose its `this` reference. You can bind it in the constructor to preserve the reference.
+
+**Example:**
+```javascript
+class SuperHero {
+  superHeroName = "Captain America";
+
+  constructor() {
+    this.getName = this.getName.bind(this);  // Bind 'this'
+  }
+
+  getName() {
+    console.log(this.superHeroName);
+  }
+}
+
+const superHero = new SuperHero();
+
+// Without binding
+setTimeout(superHero.getName, 2000);  // undefined (loses 'this')
+
+// With binding (in constructor)
+setTimeout(superHero.getName, 2000);  // "Captain America" ✓
+```
+
+**Why does this happen?**
+
+When you pass `superHero.getName` to `setTimeout`, it loses the connection to `superHero`. Binding ensures `this` always refers to the correct object.
+
+**Alternative solutions:**
+```javascript
+// Solution 1: Arrow function in setTimeout
+setTimeout(() => superHero.getName(), 2000);
+
+// Solution 2: Use arrow function as class method
+class SuperHero {
+  superHeroName = "Captain America";
+
+  getName = () => {  // Arrow function (auto-binds 'this')
+    console.log(this.superHeroName);
+  }
+}
+```
+
+**Classical OOP vs JavaScript OOP**
+
+**Classical OOP (Java, C++, etc.):**
+- Once an object is created from a class, the relationship ends
+- Class and object are separate entities
+- Changes to the class don't affect existing objects
+
+**JavaScript OOP (Prototype-based):**
+- Even after creating objects, the relationship continues
+- Objects stay connected to the class via prototypes
+- Changes to the class affect existing objects!
+
+**Example:**
+```javascript
+class SuperHero {
+  name = "Captain America";
+
+  fight() {
+    console.log("Superhero is fighting");
+  }
+}
+
+const hero = new SuperHero();
+
+hero.fight();  // "Superhero is fighting"
+
+// Add method AFTER creating the object
+SuperHero.prototype.run = function() {
+  console.log("Superhero is running");
+};
+
+// Existing object gets the new method!
+hero.run();  // "Superhero is running" ✓
+```
+
+**What's happening:**
+
+- We created `hero` before `run()` method existed
+- We added `run()` to the class prototype later
+- The existing `hero` object automatically gets access to it!
+
+This is unique to JavaScript's prototype-based inheritance.
+
+**Key Takeaways**
+
+1. **Classes** are blueprints for creating objects
+
+2. **Constructor** runs when creating objects with `new`
+
+3. **Four OOP Principles:**
+   - **Inheritance** - reuse code with `extends`
+   - **Encapsulation** - bundle data and methods
+   - **Abstraction** - hide complexity
+   - **Polymorphism** - same method, different behaviors
+
+4. **`super`** keyword accesses parent class
+
+5. **Access modifiers:**
+   - Public (default)
+   - Private (`#`)
+
+6. **Static** properties/methods belong to the class, not instances
+
+7. **Bind `this`** in constructor for async callbacks
+
+8. **JavaScript is prototype-based** - objects stay connected to classes
 
 ---
