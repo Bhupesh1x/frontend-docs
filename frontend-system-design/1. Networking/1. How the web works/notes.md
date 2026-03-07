@@ -69,7 +69,7 @@ DNS Server → ISP → Router → OS → Browser     [returns: 142.250.195.46]
 Browser → OS → Router → ISP → Server         [makes actual request using the IP]
 ```
 
-- ![dns-lookup](/1.%20How%20the%20web%20works/images/dns-lookup.png)
+- ![dns-lookup](./images/dns-lookup.png)
 - ![isp](/1.%20How%20the%20web%20works/images/isp.png)
 - ![isp-network](/1.%20How%20the%20web%20works/images/isp-network.png)
 
