@@ -13,9 +13,9 @@
 
 ---
 
-- ![dns-lookup](/1.%20How%20the%20web%20works/images/dns-lookup.png)
-- ![isp](/1.%20How%20the%20web%20works/images/isp.png)
-- ![isp-network](/1.%20How%20the%20web%20works/images/isp-network.png)
+- ![dns-lookup](./images/dns-lookup.png)
+- ![isp](./images/isp.png)
+- ![isp-network](./images/isp-network.png)
 
 ---
 
@@ -59,9 +59,9 @@ Client  ──ACK──▶  Server       "Ready! Let's go." ✅ Connection open
 
 ---
 
-- ![isp-and-client-server-handshake](/1.%20How%20the%20web%20works/images/isp-and-client-server-handshake.png)
-- ![client-server-connection](/1.%20How%20the%20web%20works/images/client-server-connection.png)
-- ![https-client-server-connection](/1.%20How%20the%20web%20works/images/https-client-server-connection.png)
+- ![isp-and-client-server-handshake](./images/isp-and-client-server-handshake.png)
+- ![client-server-connection](./images/client-server-connection.png)
+- ![https-client-server-connection](./images/https-client-server-connection.png)
 
 ---
 
