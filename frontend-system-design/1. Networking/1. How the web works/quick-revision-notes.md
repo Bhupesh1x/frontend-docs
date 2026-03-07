@@ -84,3 +84,92 @@ Client  ──ACK──▶  Server       "Ready! Let's go." ✅ Connection open
 | **HTTPS/TLS** | Sealed envelope — contents unreadable if intercepted |
 | **Browser + HTML/CSS/JS** | Kitchen — raw ingredients assembled into the final meal |
 | **Server** | Restaurant — takes orders (requests), sends back food (responses) |
+
+---
+
+# How the Web Page Renders — Quick Revision
+
+---
+
+## ⚡ Full Pipeline
+```
+HTML Parsing (DOM)  →  Fetch CSS/JS  →  CSS Parsing (CSSOM)
+→  JS Execution  →  Render Tree  →  Layout  →  Paint  →  Compositing
+```
+
+---
+
+## 📌 Each Step in Brief
+
+| Step | Name | One-liner |
+|------|------|-----------|
+| 1 | **HTML Parsing** | Browser reads HTML top-to-bottom, builds DOM tree |
+| 2 | **Fetch Resources** | Encounters `<link>`/`<script>` tags, fetches CSS & JS |
+| 3 | **CSS Parsing** | Builds CSSOM — **render blocking** (waits for full CSS) |
+| 4 | **JS Execution** | Runs JS — **parser blocking** by default (use `async`/`defer`) |
+| 5 | **Render Tree** | Merges DOM + CSSOM — only visible elements, final styles |
+| 6 | **Layout** | Calculates exact size & position of every element |
+| 7 | **Paint** | Fills in colours, fonts, borders, backgrounds |
+| 8 | **Compositing** | Stacks layers (`z-index`, `transform`, `opacity`) → final screen |
+
+---
+
+## 🌳 DOM vs CSSOM vs Render Tree
+
+| | DOM | CSSOM | Render Tree |
+|-|-----|-------|-------------|
+| Built from | HTML | CSS | DOM + CSSOM merged |
+| Contains | All elements | All CSS rules | Visible elements only |
+| Includes `display:none`? | ✅ Yes | ✅ Yes | ❌ No |
+
+---
+
+## ⚙️ JS: async vs defer vs default
+
+| | Download | Executes |
+|--|----------|----------|
+| **default** | Blocks HTML parsing | Immediately |
+| **async** | Parallel with HTML | As soon as downloaded |
+| **defer** | Parallel with HTML | After HTML fully parsed |
+
+---
+
+## ⚙️ JS Execution — 3 Internal Phases
+```
+Parsing  →  Compilation (JIT)  →  Execution (Call Stack)
+```
+
+- **Parsing** — Code → AST (Abstract Syntax Tree)
+- **Compilation** — AST → bytecode (V8 engine, JIT compiled)
+- **Execution** — Runs on the Call Stack
+
+---
+
+## 🔑 Key Terms
+
+| Term | Meaning |
+|------|---------|
+| **DOM** | Tree of all HTML elements in memory |
+| **CSSOM** | Tree of all CSS rules mapped to elements |
+| **Render Tree** | DOM + CSSOM merged; only visible elements with final styles |
+| **Render Blocking** | Browser won't render until this is done (CSS) |
+| **Parser Blocking** | Browser stops parsing HTML until this is done (JS) |
+| **Layout / Reflow** | Calculating size and position of every element |
+| **Paint** | Drawing colours, fonts, borders on screen |
+| **Compositing** | Stacking independent layers into final image |
+| **JRE** | JS Runtime Environment — engine + Web APIs + Event Loop |
+| **Call Stack** | Where JS functions are pushed/popped during execution |
+
+---
+
+## 💡 Analogies to Remember
+
+| Step | Analogy |
+|------|---------|
+| **DOM** | Skeleton/structure of a building |
+| **CSSOM** | Interior design plan |
+| **JS** | Electrical wiring — can change the structure |
+| **Render Tree** | Final blueprint with everything combined |
+| **Layout** | Architect measuring exact room positions |
+| **Paint** | Painters filling walls with colour and decoration |
+| **Compositing** | Stacking transparent sheets on a projector |
