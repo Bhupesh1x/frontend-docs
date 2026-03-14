@@ -91,3 +91,6 @@
 | 5xx  | Server side error  | 500 <br/> 502 <br/> 503 <br/> 504 <br/> 507  | 500: Internal server error <br/> 502: Bad gateway <br/> 503: Service Unavailable (Server is down) <br/> 504: Gateway timeout (Server was processing something but it took server more time then expected)<br/> 507: Insufficient storage (Mostly with file upload/download requests)   |
 
 - We can also handle frontend based on this status codes. And also can apply retry logic like if we are getting 503 we can retry as the server was down and might get up in sometime. But with status code 400 there is no point in retrying as we will get the same error again and again as the request is faulty.
+
+
+- Practical example of rest api at - /practical
