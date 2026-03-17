@@ -1,96 +1,192 @@
-## Rest API's
+## REST APIs
 
-- **API (Application Programming Interface)**: If we have two different programming services and we want to connect them or have communication between them then we can use api's for it.
+**API (Application Programming Interface)** — A way for two different services/applications to talk to each other. Instead of knowing how the other service works internally, you just use its API.
 
-- **REST**: Representational State Transfer it defines how the data transferred in communication between two services should be structured.
+**REST (Representational State Transfer)** — A set of rules/conventions that defines how data should be structured and transferred between two services over the web. REST is built on top of HTTP.
 
-- Rest is build on top of HTTP protocol and it provides foundation how the data and be delivered or transferred on the web.
+> 💡 **Analogy:** An API is like a waiter in a restaurant. You (client) don't go into the kitchen (server) directly, you tell the waiter (API) what you want, and they bring back what you asked for. REST is the menu format, a standard way of placing that order.
 
-**Benefits of REST Api's**
+---
 
-- **1. Ease of use**: It is easy to use as it is build on top of HTTP and follows the predefined set of rules.
-- **2. Stateless**: Rest apis don't maintain the state between the request. Each individual request is on it's own and take the relevant information for the current request.
-- **3. Scalability**: Scaling REST Api's is easy as the load increases we can do the horizontal or vertical scaling.
-- **4. Flexibility of data**: Based on the use case we can choose the data format suits our need in REST Api's like JSON or XML.
-- **5. Uniform interface**: As REST is built on top of HTTP there are set of rules and standard which is followed while communication so the request and response follow a particular convention.
-- **6. Caching**: We can also cache the data which doesn't change much often to reduce the load on the server. And as REST uses HTTP we get default HTTP level caching with it.
-- **7. Separation of concern**: The two services connected doesn't have to be on the same language and they don't need to be depended on each other.
-- **8. Language agnostic**: The two services connected doesn't have to be on the same language they can be written on the different languages and can be connected with each other with the help of REST api's.
-- **9. Ease of Testing**: Testing REST Api's is very easy and efficiently using different services like REST.
-- **10. Security**: We can use REST with Https which provides out of the box security to the api's and also we can leverage Auth headers to include security in the api's services.
+**Why REST? — Benefits**
 
-**Building blocks of the rest api's**
+**1. Ease of Use** — Built on HTTP, which developers already know. Follows a predictable set of rules so there's less to learn.
 
-**1. URL**
+**2. Stateless** — The server does not remember anything between requests. Every request must carry all the information it needs on its own (like auth tokens, user info, etc.). This keeps the server simple and scalable.
 
-- URL is used to reach to the method which needs to be executed. It consist of different parts which help us to get to and execute the correct method.
+> 💡 **Example:** When you call `GET /api/orders`, you must send your auth token with that request. The server doesn't remember you from your last request.
 
-- Eg. http://localhost:5000/api/users | http://localhost:5000/api/todos
+**3. Scalability** — Because requests are stateless, you can add more servers easily (horizontal scaling) any server can handle any request without needing shared session memory.
 
-- In this /api/path and /api/todos are the path. Which help us determine which method to execute in the server route.
+**4. Flexibility of Data** — REST doesn't lock you into one data format. You can use JSON (most common), XML, plain text, etc. depending on what suits your use case.
+
+**5. Uniform Interface** — Because REST follows HTTP conventions, every REST API works similarly. A developer who knows REST can pick up any REST API quickly.
+
+**6. Caching** — Responses that don't change often (like a list of countries) can be cached. REST gets HTTP-level caching for free the browser or intermediary can cache responses without extra setup.
+
+**7. Separation of Concerns** — The client and server are independent. The frontend doesn't care how the backend works internally, and vice versa. They just agree on the API contract.
+
+**8. Language Agnostic** — A Python backend can serve a React frontend. A Node.js service can talk to a Java service. REST doesn't care what language either side is written in, it only cares about HTTP.
+
+**9. Ease of Testing** — REST APIs are easy to test using tools like Postman, Insomnia, or even `curl` in the terminal. You can test each endpoint independently.
+
+**10. Security** — Use HTTPS to encrypt all traffic. Add `Authorization` headers (Bearer tokens, API keys) to protect endpoints. REST doesn't enforce security itself, but it integrates cleanly with standard HTTP security mechanisms.
+
+---
+
+**Building Blocks of REST APIs**
+
+---
+
+**1. URL (Uniform Resource Locator)**
+
+The URL identifies the specific resource or action you want to interact with. Every REST endpoint has a unique URL.
+```
+http://localhost:5000/api/users
+http://localhost:5000/api/todos/123
+```
+
+**Parts of a URL:**
+
+| Part | Example | Purpose |
+|------|---------|---------|
+| Protocol | `http://` or `https://` | How the request is sent |
+| Host | `localhost` or `api.example.com` | Which server to reach |
+| Port | `:5000` | Which port on that server |
+| Path | `/api/users` | Which resource/endpoint |
+| Query Params | `?page=1&limit=10` | Filters, pagination, options |
+| Fragment | `#section` | Client-side only (not sent to server) |
 
 - ![url parts](./images/url-parts.png)
 
-**2. Methods**
+> 💡 **REST convention for paths:**
+> - `GET /api/users` → get all users
+> - `GET /api/users/42` → get user with ID 42
+> - `POST /api/users` → create a new user
+> - `DELETE /api/users/42` → delete user 42
 
-- We have few different methods available for different operations:
+---
 
-- Get: Get method is used for getting/receiving some data from the server
-- Post: Post method is used for sending some data to the server for saving or creating some entry on the server.
-- PUT/PATCH: We use PUT/PATCH to update the existing data using server. PUT method is used when we want to update the full record and if we want to make the partial update then we use PATCH method.
-- DELETE: Delete method is used for deleting some data from the server.
-- HEAD: Head method is used for getting data related to some Headers from the server.
-- OPTIONS: Options method is used for some security checks made before actual request to check if the requested server allows the client request or not.
-- CONNECT: Connect method is used for establish the connection between the client and server. So the next time we make the request the extra hop of handshake is not needed in the next set of requests.
-- TRACE: Trace method is used for tracing some information on the server to check if everything is going correctly and diagnose any issue. It is mostly used in the DEV mode as we don't want to leak any info on the prod.
+**2. HTTP Methods**
+
+Methods tell the server what operation to perform on the resource.
+
+| Method | Purpose | Example |
+|--------|---------|---------|
+| **GET** | Fetch/read data — no side effects | `GET /api/users` |
+| **POST** | Create a new resource | `POST /api/users` with body `{name: "Raj"}` |
+| **PUT** | Replace/update a full resource | `PUT /api/users/42` — sends complete updated object |
+| **PATCH** | Partially update a resource | `PATCH /api/users/42` — sends only changed fields |
+| **DELETE** | Remove a resource | `DELETE /api/users/42` |
+| **HEAD** | Same as GET but returns only headers, no body | Used to check if a resource exists |
+| **OPTIONS** | Returns what methods are allowed on this endpoint used in CORS preflight checks | Browser sends this before a cross-origin request |
+| **CONNECT** | Establishes a tunnel (used for HTTPS proxying) | Rarely used directly in REST |
+| **TRACE** | Echoes back the request for debugging, **disabled in production** | Used in development/diagnostics only |
+
+> 💡 **PUT vs PATCH:**
+> Imagine updating a user profile with fields `{name, email, age}`.
+> - `PUT` — you must send all three fields. Missing fields get overwritten with empty/null.
+> - `PATCH` — you send only `{age: 26}`. Only age changes. Name and email stay the same.
+
+---
 
 **3. Headers**
 
-- In each request there are some headers are set which defines the things about the request and response.
+Headers are metadata attached to every HTTP request and response. They tell both sides important information about the request/response, content type, authentication, encoding, caching, etc.
 
-- Some of the important request headers:
+**Request Headers:**
 
-- Request Headers: 
+| Header | Purpose | Example |
+|--------|---------|---------|
+| `Host` | Target server hostname | `api.example.com` |
+| `Origin` | Where the request is coming from | `https://www.example.com` |
+| `Referer` | The previous page that triggered the request | `https://www.example.com/home` |
+| `User-Agent` | Info about the client's browser and OS | `Mozilla/5.0 (Windows NT 10.0...)` |
+| `Accept` | What content type the client can handle | `application/json` |
+| `Accept-Language` | Preferred response language | `en-US,en;q=0.9` |
+| `Accept-Encoding` | Compression algorithm the client supports | `gzip, deflate, br` |
+| `Connection` | Whether to keep the TCP connection open | `keep-alive` or `close` |
+| `Authorization` | Auth credentials for protected routes | `Bearer eyJhbGci...` |
+| `Cookie` | Send stored cookies back to the server | `session=abc123` |
 
-| Header   | Use case | Example     |
-|--------|-----|----------|
-| Host  | Target Host  | https://www.1.cdn.example.com |
-| Origin  | Origin Host  | https://www.example.com |
-| Referrer  | Indicate the previous page making the request  | https://www.example.com/123 |
-| User Agent  | Indicate the client User agent string - OS, Browser  | Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 |
-| Accept  | Indicate which all content type is accepted in response  | application/json |
-| Accept-Language  | Preferred response content language  | en-US,en;q=0.9 |
-| Accept-encoding  | Encoding algorithm  | gzip, deflate, br, zstd |
-| Connection  | Keep TCP connection open/close configuration  | keep-alive/close |
-| Authorization  | Send auth credentials  | Authorization: Bearer {token} |
-| Cookie  | Previous server token can be resend | key=value; |
+**Response Headers:**
 
-- Response Headers:
+| Header | Purpose | Example |
+|--------|---------|---------|
+| `Date` | When the response was generated | `Sat, 14 Mar 2026 12:12:11 GMT` |
+| `Server` | Info about the server software | `nginx` or `cloudflare` |
+| `Content-Type` | Format of the response body | `application/json` |
+| `Content-Length` | Size of the response body in bytes | `73` |
+| `Set-Cookie` | Tells the client to store a cookie | `token=ey123; HttpOnly` |
+| `Content-Encoding` | How the response body is compressed | `br` (Brotli) or `gzip` |
 
-| Header   | Use case | Example     |
-|--------|-----|----------|
-| Date  | Generated response Date and time  | Sat, 14 Mar 2026 12:12:11 GMT |
-| server | Provides server info  | cloudflare/nginx |
-| Content-Type | Type of response content  | application/json text/html |
-| Content-Length | Original body response length  | 73 |
-| Set-cookie | Informs about cookie  | Set-cookie: token=ey123ytre |
-| Content-Encoding | Response content encoding  | br |
+---
 
-**4. Status Code**
+**4. Status Codes**
 
-- When we make the request when it get's resolved we get some status code with it. It helps us identify what happened with the request. Did it get successful or failed.
+Every HTTP response includes a status code a 3-digit number that tells the client what happened with the request.
 
-- Different Status Codes:
+**1xx — Informational**
 
-| Status Code range | range Use Case | Status Code | Use Case |
-|----------|----------|----------|----------|
-| 1xx  | Information  | 100 <br/> 101  | 100 - Continue <br/> 101 - Switching (HTTP - ws)  |
-| 2xx  | Success  | 200<br/>201<br/>202<br/>204<br/>206  | 200 - OK (Work is done) <br/> 201 - Created <br/> 202 - Accepted (Request accepted successfully used when doing some async work) <br/> 204 - No Content (Work done but no content to sent eg. Delete data) <br/> 206 - Partial Content (Sent or received partial data successfully can be used when there is chunk of data saved successfully from the big chunk)  |
-| 3xx  | Redirection  | 301 <br/> 302  | 301: Moved permanently <br/> 302: Moved temporary <br/> 307: Moved temporary but persist the method <br/> 308: Moved permanently but persist the method |
-| 4xx  | Client side error  | 400 <br/> 401 <br/> 403 <br/> 404 <br/> 405  | 400: Bad Request (Got the incorrect data) <br/> 401: Unauthorized (not logged in) <br/> 403: Authorization (Logged in but not authorized to access this resource) <br/> 404: Not found <br/> 405: Method not allowed  |
-| 5xx  | Server side error  | 500 <br/> 502 <br/> 503 <br/> 504 <br/> 507  | 500: Internal server error <br/> 502: Bad gateway <br/> 503: Service Unavailable (Server is down) <br/> 504: Gateway timeout (Server was processing something but it took server more time then expected)<br/> 507: Insufficient storage (Mostly with file upload/download requests)   |
+| Code | Name | Meaning |
+|------|------|---------|
+| 100 | Continue | Server received the request headers, client can proceed to send the body |
+| 101 | Switching Protocols | Upgrading connection (e.g. HTTP → WebSocket) |
 
-- We can also handle frontend based on this status codes. And also can apply retry logic like if we are getting 503 we can retry as the server was down and might get up in sometime. But with status code 400 there is no point in retrying as we will get the same error again and again as the request is faulty.
+**2xx — Success**
 
+| Code | Name | Meaning |
+|------|------|---------|
+| 200 | OK | Request succeeded, response body contains the result |
+| 201 | Created | A new resource was successfully created (e.g. after POST) |
+| 202 | Accepted | Request accepted but processing is async, result not ready yet |
+| 204 | No Content | Success, but nothing to return (e.g. after DELETE) |
+| 206 | Partial Content | Returning a chunk of data (e.g. video streaming, resumable uploads) |
+
+**3xx — Redirection**
+
+| Code | Name | Meaning |
+|------|------|---------|
+| 301 | Moved Permanently | Resource has a new permanent URL, update your bookmarks |
+| 302 | Found (Temp Redirect) | Temporarily at a different URL |
+| 307 | Temporary Redirect | Same as 302 but **preserves the HTTP method** (POST stays POST) |
+| 308 | Permanent Redirect | Same as 301 but **preserves the HTTP method** |
+
+> 💡 **301 vs 307:** If you POST to a URL and get a 301, the browser may change it to a GET on redirect. With 307, the method is preserved, your POST stays a POST.
+
+**4xx — Client Errors** (you sent something wrong)
+
+| Code | Name | Meaning |
+|------|------|---------|
+| 400 | Bad Request | Request is malformed or has invalid data |
+| 401 | Unauthorized | Not logged in / no valid auth token |
+| 403 | Forbidden | Logged in, but not allowed to access this resource |
+| 404 | Not Found | Resource doesn't exist at this URL |
+| 405 | Method Not Allowed | The method used (e.g. DELETE) isn't allowed on this endpoint |
+| 429 | Too Many Requests | Rate limit exceeded, slow down |
+
+> 💡 **401 vs 403:**
+> - 401 = "Who are you?" (not authenticated)
+> - 403 = "I know who you are, but you can't come in" (not authorized)
+
+**5xx — Server Errors** (server did something wrong)
+
+| Code | Name | Meaning |
+|------|------|---------|
+| 500 | Internal Server Error | Generic server crash — check server logs |
+| 502 | Bad Gateway | Server got a bad response from an upstream service |
+| 503 | Service Unavailable | Server is down or overloaded — try again later |
+| 504 | Gateway Timeout | Upstream server took too long to respond |
+| 507 | Insufficient Storage | Server ran out of storage (common with file uploads) |
+
+**Using Status Codes in Frontend Logic:**
+
+You can and should write frontend logic based on status codes:
+- `401` → redirect to login page
+- `403` → show "Access Denied" message
+- `404` → show "Not Found" page
+- `503` → **retry** (server was temporarily down, worth trying again)
+- `400` → **don't retry** (your request is wrong, fix the data first)
+- `429` → retry after a delay (respect the rate limit)
 
 - Practical example of rest api at - /practical
