@@ -41,7 +41,7 @@ Query Transformation is the step where you **improve the user's query before ret
 
 ---
 
-####Technique 1 — Parallel Query (Fan Out) Retrieval
+#### **Technique 1 — Parallel Query (Fan Out) Retrieval**
 
 **The core idea:** Instead of searching with just the user's original query, generate multiple alternative versions of the query using an LLM, then search with all of them simultaneously.
 
@@ -117,3 +117,86 @@ Query Transformation adds an extra LLM call per query, which means latency and c
 - Your documents use technical or domain-specific language users might not know
 - The quality of retrieval is more important than response speed
 - You're getting poor results from basic RAG on certain types of queries 
+
+#### Technique 2: Reciprocal Rank Fusion (RRF)
+
+**Overview:**
+Reciprocal Rank Fusion is an advanced retrieval technique that builds upon the Parallel Query (Fan Out) Retrieval method. Instead of simply combining unique chunks from multiple queries, RRF intelligently ranks and prioritizes chunks based on their relevance scores and frequency of appearance across different search results.
+
+**How It Works:**
+
+**Step 1: Query Generation (Same as Parallel Query)**
+* Start with the user's original question
+* Use an LLM to generate alternative phrasings or reformulations of the same question
+* This creates multiple query variations that capture different aspects of the user's intent
+
+**Step 2: Parallel Retrieval**
+* Execute vector searches using both the original query and LLM-generated variations
+* Each query retrieves its own set of relevant chunks from the vector database
+* Retrieve chunks based on semantic similarity scores
+
+**Step 3: Reciprocal Rank Fusion (The Key Difference)**
+Instead of just taking unique chunks, RRF applies a sophisticated ranking algorithm:
+
+* **Frequency-based scoring:** Chunks appearing in multiple search results get higher priority
+* **Position-based scoring:** Chunks ranked higher in individual results get bonus points
+* **Combined scoring:** The algorithm considers both how many times a chunk appears AND where it appears
+
+**Ranking Logic:**
+1. **First priority:** Chunks appearing in ALL search results (e.g., if you have 3 queries and 1 chunk appears in all 3 results)
+2. **Second priority:** Chunks appearing in multiple results (e.g., appears in 2 out of 3 results)
+3. **Tie-breaking:** When chunks appear in the same number of results, prioritize based on their original position/rank in those results
+
+**Step 4: Context Assembly and LLM Query**
+* Pass the ranked chunks to the LLM in order of their RRF scores
+* Include the user's original query
+* LLM generates response using the most relevant context first
+
+**Example Scenario:**
+
+Let's say you ask: "How do I optimize database queries?"
+
+**Query 1 (Original):** "How do I optimize database queries?"
+**Query 2 (LLM-generated):** "What are best practices for database performance?"
+**Query 3 (LLM-generated):** "How to improve SQL query speed?"
+
+**Retrieved Chunks:**
+
+Query 1 results:
+1. Chunk A (about indexing)
+2. Chunk B (about query planning)
+3. Chunk C (about caching)
+
+Query 2 results:
+1. Chunk A (about indexing)
+2. Chunk D (about connection pooling)
+3. Chunk B (about query planning)
+
+Query 3 results:
+1. Chunk A (about indexing)
+2. Chunk E (about query optimization)
+3. Chunk B (about query planning)
+
+**RRF Ranking:**
+1. **Chunk A** (appears in all 3 results, position 1 in all)
+2. **Chunk B** (appears in all 3 results, but at positions 2, 3, 3)
+3. **Chunk C** (appears in 1 result, position 3)
+4. **Chunk D** (appears in 1 result, position 2)
+5. **Chunk E** (appears in 1 result, position 2)
+
+![reciprocate rank fusion technique diagram](./images/reciprocate-rank-fusion-technique-diagram.png)
+
+---
+
+**Why This Works Better:**
+
+* **Reduces noise:** Less relevant chunks that only appear once get lower priority
+* **Identifies consensus:** Chunks appearing across multiple queries are likely more relevant
+* **Maintains quality:** Position information ensures high-quality matches aren't overlooked
+* **More accurate responses:** LLM receives context in order of actual relevance
+
+**Key Advantages:**
+* Better than simple deduplication (which treats all unique chunks equally)
+* Captures semantic similarity across different query phrasings
+* Provides weighted context to the LLM rather than random or arbitrary ordering
+* Improves answer quality by prioritizing most relevant information
