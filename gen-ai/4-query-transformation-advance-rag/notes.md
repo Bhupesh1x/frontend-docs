@@ -177,6 +177,8 @@ Query 3 results:
 2. Chunk E (about query optimization)
 3. Chunk B (about query planning)
 
+**Practical Example at - ./reciprocal-rank-fusion-practical**
+
 **RRF Ranking:**
 1. **Chunk A** (appears in all 3 results, position 1 in all)
 2. **Chunk B** (appears in all 3 results, but at positions 2, 3, 3)
