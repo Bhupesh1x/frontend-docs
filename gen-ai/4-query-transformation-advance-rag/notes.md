@@ -202,3 +202,113 @@ Query 3 results:
 * Captures semantic similarity across different query phrasings
 * Provides weighted context to the LLM rather than random or arbitrary ordering
 * Improves answer quality by prioritizing most relevant information
+
+## Technique 3: Query Decomposition
+
+**Overview:**
+Query Decomposition is a technique that breaks down complex user queries into smaller, more manageable sub-queries to improve retrieval accuracy. This technique can be implemented in two ways: less abstract (Chain of Thought) and more abstract approaches. By decomposing queries, we can generate richer context and retrieve more relevant information from the vector database.
+
+**Approach 1: Less Abstract Way (Chain of Thought)**
+
+**Core Concept:**
+Instead of treating the user's query as a single monolithic question, we break it down into meaningful components. Each component is processed separately through the LLM, generating intermediate responses that help create better vector embeddings for retrieval.
+
+**How It Works:**
+
+**Step 1: Query Breakdown**
+* Analyze the user's original query
+* Decompose it into logical sub-queries or components
+* Each sub-query focuses on a specific aspect or part of the original question
+
+**Step 2: Sequential LLM Processing**
+* For each sub-query:
+  * Send it to the LLM
+  * Get a response/reasoning for that specific part
+  * Generate vector embeddings from the LLM's response
+
+**Step 3: Enriched Vector Search**
+* Use the generated responses and their embeddings for semantic search
+* The LLM-generated intermediate responses often contain domain-specific terminology and context
+* This leads to better matches with relevant chunks in the vector database
+
+**Step 4: Final Response Generation**
+* Combine all retrieved chunks from the various searches
+* Include the original user query
+* Send everything to the LLM for final answer generation
+
+**Detailed Example:**
+
+**User Query:** "Explain machine learning"
+
+**Breakdown Process:**
+Instead of searching directly, we decompose:
+
+1. **Sub-query 1:** "Explain machine"
+   * LLM generates response about machines, computing devices, algorithms
+   * Create vector embeddings from this response
+   * Perform semantic search using these embeddings
+
+2. **Sub-query 2:** "Explain learning"
+   * LLM generates response about learning processes, pattern recognition, training
+   * Create vector embeddings from this response
+   * Perform semantic search using these embeddings
+
+3. **Sub-query 3:** "Explain machine learning"
+   * LLM generates response about ML concepts, algorithms, applications
+   * Create vector embeddings from this response
+   * Perform semantic search using these embeddings
+
+**Why This Works:**
+
+Each LLM response enriches the search context:
+* **"machine" query** → might retrieve chunks about computational systems, algorithms, processing
+* **"learning" query** → might retrieve chunks about pattern recognition, training data, models
+* **"machine learning" query** → retrieves chunks specifically about ML
+
+**Final Assembly:**
+* Collected chunks from all three searches
+* Original query: "Explain machine learning"
+* LLM synthesizes everything into a comprehensive answer
+
+**Flow Diagram:**
+```
+User Query → Break into parts → For each part:
+                                  ↓
+                            LLM Response
+                                  ↓
+                          Vector Embeddings
+                                  ↓
+                          Semantic Search
+                                  ↓
+                        Retrieved Chunks
+                                  
+All Retrieved Chunks + Original Query → Final LLM → Response
+```
+
+**Key Advantages:**
+
+1. **Richer Context:** LLM-generated responses contain domain-specific terminology and concepts
+2. **Better Embeddings:** Intermediate responses create more relevant vector representations
+3. **Comprehensive Coverage:** Different aspects of the query are explored separately
+4. **Reduced Ambiguity:** Breaking down complex queries makes each search more focused
+5. **Higher Relevance:** Retrieved chunks are more likely to match the actual information needed
+
+**When to Use:**
+* Complex, multi-faceted questions
+* Queries that can be naturally decomposed into logical parts
+* When you need comprehensive coverage of a topic
+* Situations where direct search might miss relevant context
+
+**Potential Considerations:**
+* More LLM calls means higher latency and cost
+* Need to determine optimal decomposition strategy
+* Balancing between too granular and too broad breakdowns
+* Managing the combination of multiple result sets
+
+**Example Use Cases:**
+* "Compare supervised and unsupervised learning algorithms" → Break into "supervised learning" + "unsupervised learning" + "algorithms comparison"
+* "How does photosynthesis affect climate change?" → Break into "photosynthesis process" + "climate change mechanisms" + "relationship between both"
+* "Explain the history and impact of blockchain technology" → Break into "blockchain history" + "blockchain technology" + "blockchain impact"
+
+
+![Query decomposition less abstract](./images/query-decomposition-less-abstract.png)
