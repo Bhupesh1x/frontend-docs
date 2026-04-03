@@ -314,3 +314,59 @@ All Retrieved Chunks + Original Query → Final LLM → Response
 
 
 ![Query decomposition less abstract](./images/query-decomposition-less-abstract.png)
+
+
+#### Technique 4: HyDE (Hypothetical Document Embeddings)
+
+Generate a hypothetical answer document from LLM, then search using that document instead of the original query
+
+**Key Insight:** Documents match documents better than queries match documents
+
+**Process:**
+1. User asks question
+2. **LLM generates** hypothetical document (detailed answer)
+3. **Create embeddings** from hypothetical document
+4. **Search vector DB** using these embeddings
+5. Retrieve relevant chunks
+6. **Final LLM call** with chunks + original query
+
+**Example:**
+Query: "How does gradient descent work?"
+
+HyDE generates:
+"Gradient descent is an optimization algorithm... uses backpropagation... calculates partial derivatives... learning rate... SGD, Adam, RMSprop..."
+
+Search with this → Better matches with technical docs!
+
+**Why It Works:**
+* **Richer vocabulary:** Generated doc has technical terms
+* **Better matching:** Doc-to-doc similarity > query-to-doc similarity
+* **Context expansion:** LLM includes related concepts automatically
+* **Bridges gap:** Casual user language → formal documentation language
+
+**Advantages:**
+* ✅ Better semantic matching
+* ✅ Technical terminology improves retrieval
+* ✅ Works great for well-known topics
+
+**Limitations:**
+* ❌ **Hallucination risk:** If LLM doesn't know topic, generates wrong content
+* ❌ **Needs big models:** Requires well-trained, large LLMs with broad knowledge
+* ❌ **Higher cost:** Extra LLM call before search
+* ❌ **Domain dependent:** Struggles with niche/emerging topics
+
+**When to Use:**
+* ✅ Technical questions, well-established topics
+* ✅ User uses casual language, docs are technical
+* ✅ Large knowledge base with formal content
+
+**When to Avoid:**
+* ❌ Specialized/proprietary domains
+* ❌ Topics not in LLM training data
+* ❌ Cost/latency critical scenarios
+
+**Remember:** Quality depends on LLM's knowledge! Use large, capable models (GPT-4, Claude Opus, etc.)
+
+![hyde technique flow](./images/hyde.png)
+
+![hyde technique example image](./images/hyde-example.png)
