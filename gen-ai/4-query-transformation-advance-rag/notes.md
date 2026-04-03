@@ -367,6 +367,8 @@ Search with this → Better matches with technical docs!
 
 **Remember:** Quality depends on LLM's knowledge! Use large, capable models (GPT-4, Claude Opus, etc.)
 
+**Practical Example at - ./hyde**
+
 ![hyde technique flow](./images/hyde.png)
 
 ![hyde technique example image](./images/hyde-example.png)
