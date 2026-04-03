@@ -203,7 +203,7 @@ Query 3 results:
 * Provides weighted context to the LLM rather than random or arbitrary ordering
 * Improves answer quality by prioritizing most relevant information
 
-## Technique 3: Query Decomposition
+#### Technique 3: Query Decomposition
 
 **Overview:**
 Query Decomposition is a technique that breaks down complex user queries into smaller, more manageable sub-queries to improve retrieval accuracy. This technique can be implemented in two ways: less abstract (Chain of Thought) and more abstract approaches. By decomposing queries, we can generate richer context and retrieve more relevant information from the vector database.
@@ -257,6 +257,8 @@ Instead of searching directly, we decompose:
    * LLM generates response about ML concepts, algorithms, applications
    * Create vector embeddings from this response
    * Perform semantic search using these embeddings
+
+ **Practical Example at - ./query-decomposition-less-abstract-cot**  
 
 **Why This Works:**
 
