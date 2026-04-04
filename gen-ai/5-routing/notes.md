@@ -78,6 +78,7 @@ Vector DB:
 **Remember:** Routing = Smart dispatcher that sends queries to the right place!
 
 **Data source routing example at: ./practical/data-source-routing.py**
+**Model routing example at: ./practical/model-routing.py**
 
 
 ![alt text](./images/routing-example-1.png)
