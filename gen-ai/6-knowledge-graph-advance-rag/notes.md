@@ -80,5 +80,7 @@ Doc chunks  Relationships
 
 ```
 
+**Practical Example at: [./practical](./practical/)**
+
 
 ![knowledge-graph](./images/knowledge-graph.png)
