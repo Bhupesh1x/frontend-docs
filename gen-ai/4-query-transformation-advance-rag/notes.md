@@ -101,7 +101,7 @@ def generate_parallel_queries(user_query: str, n: int = 3) -> list[str]:
 - Narrow queries: fan-out covers more angles of the same topic
 ---
 
-**Practical Example at - ./query-transformation-fanout-practical**
+**Practical Example at: [./query-transformation-fanout-practical](./query-transformation-fanout-practical/)**
 
 ---
 
@@ -177,7 +177,7 @@ Query 3 results:
 2. Chunk E (about query optimization)
 3. Chunk B (about query planning)
 
-**Practical Example at - ./reciprocal-rank-fusion-practical**
+**Practical Example at: [./reciprocal-rank-fusion-practical](./reciprocal-rank-fusion-practical/)**
 
 **RRF Ranking:**
 1. **Chunk A** (appears in all 3 results, position 1 in all)
@@ -257,8 +257,8 @@ Instead of searching directly, we decompose:
    * LLM generates response about ML concepts, algorithms, applications
    * Create vector embeddings from this response
    * Perform semantic search using these embeddings
-
- **Practical Example at - ./query-decomposition-less-abstract-cot**  
+ 
+ **Practical Example at: [./query-decomposition-less-abstract-cot](./query-decomposition-less-abstract-cot/)** 
 
 **Why This Works:**
 
@@ -367,7 +367,7 @@ Search with this → Better matches with technical docs!
 
 **Remember:** Quality depends on LLM's knowledge! Use large, capable models (GPT-4, Claude Opus, etc.)
 
-**Practical Example at - ./hyde**
+**Practical Example at: [./hyde](./hyde/)**
 
 ![hyde technique flow](./images/hyde.png)
 
