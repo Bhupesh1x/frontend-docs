@@ -146,7 +146,7 @@ User Query → Embed → Semantic Search → Retrieve Chunks → Prompt LLM → 
 
 ---
 
-**Practical Example At: ./practical**
+**Practical Example at: [./practical](./practical/)**
 
 ---
 
