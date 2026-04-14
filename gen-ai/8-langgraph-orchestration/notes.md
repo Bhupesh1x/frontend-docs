@@ -24,4 +24,6 @@ In plain code, if you have 10 steps in an AI pipeline, they all get tangled toge
 
 LangGraph makes debugging much easier because you can see exactly which node ran, what state went in, and what state came out. On top of that, you can plug in tools like **LangSmith** or **Langfuse** to get a detailed visual trace of your entire flow. These tools show you a timeline of every node execution, how long each took, what the inputs and outputs were, and where errors happened. This is especially useful in large codebases where a bug could be hiding in any one of many nodes.
 
+**Practical Example at: [./practical/graph.py](./practical/graph.py)**
+
 - ![langraph-example](./images/langraph-example.png)
