@@ -21,6 +21,8 @@ Without checkpointing, the LLM has no idea what your project is. It will ask you
 
 With checkpointing, LangGraph loads your Day 1 conversation and passes it to the LLM. Now the LLM knows you are building a food delivery app and can give a relevant answer right away.
 
+**Practical Example at: [./practical](./practical)**
+
 **What does "state" mean here**
 
 State is just the current snapshot of your conversation. It includes things like:
@@ -39,3 +41,6 @@ The checkpoints can be stored in different places depending on your setup:
 **Why it matters**
 
 Without this, every conversation is stateless. The LLM forgets everything the moment the session ends. Checkpointing is what makes it possible to build things like multi-step agents, long running workflows, and chatbots that actually feel like they know you.
+
+Example:
+![langgraph-checkpointing](./images/langgraph-checkpointing.png)
