@@ -9,7 +9,7 @@ load_dotenv()
 
 redis_url = os.getenv("REDIS_URL")
 
-config = {"configurable": {"thread_id": "2"}}
+config = {"configurable": {"thread_id": "6"}}
 
 def init():
   
