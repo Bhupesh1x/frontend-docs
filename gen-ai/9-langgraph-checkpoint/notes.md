@@ -96,9 +96,9 @@ The "checkpointer" is what makes pausing and resuming possible. Without it, the 
 **Examples:**
 
 **User Flow:**
-![alt text](./images/human-in-loop-user-flow.png)
+![human-in-loop-user-flow](./images/human-in-loop-user-flow.png)
 
 ---
 
 **Human Support Flow:**
-![alt text](./images/human-in-loop-support-flow.png)
+![human-in-loop-support-flow](./images/human-in-loop-support-flow.png)

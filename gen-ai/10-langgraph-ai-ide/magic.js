@@ -1,0 +1,1 @@
+const add = (a, b) = + b; const subtract = (a, b) = - b; console.log('Addition: 5 + 3 = ', add(5, 3)); console.log('Subtraction: 10 - 4 = ', subtract(10, 4)); 
