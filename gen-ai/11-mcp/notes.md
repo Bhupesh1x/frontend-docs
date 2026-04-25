@@ -40,4 +40,6 @@ The AI connects to the MCP server, picks the right tools (search and email), run
 
 User asks a question, the MCP client sends it to the MCP server, the server looks at its available tools, runs the right one, and sends the result back to the client, which shows it to the user.
 
+**Practical Example at: [./practical/main.py](./practical/main.py)**
+
 ![mcp-flow](./images/mcp-flow.png)
