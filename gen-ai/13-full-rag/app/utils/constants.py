@@ -1,0 +1,4 @@
+STATUS = {
+  "SAVING": "SAVING",
+  "QUEUED": "QUEUED",
+}

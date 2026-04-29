@@ -1,7 +1,7 @@
-from uuid import uuid4
-
 from fastapi import FastAPI, UploadFile
 
+from .db.db import files_table
+from .utils.constants import STATUS
 from .utils.file import save_to_desk
 
 app = FastAPI(title="full-rag")
@@ -11,12 +11,26 @@ def status():
   return {"status": "Health OK!"}
 
 @app.post("/upload")
-async def upload_file(file: UploadFile):
+async def upload_file(file: UploadFile):  
+  file_info = {
+    "name": file.filename,
+    "status": STATUS["SAVING"]
+  }
   
-  id = uuid4()
+  # Insert the file info in db
+  file_id = files_table.insert(file_info)
   
-  file_path = f"./mnt/uploads/{id}/{file.filename}"
+  file_path = f"./mnt/uploads/{file_id}/{file.filename}"
   
+  # Save file to disk
   await save_to_desk(file=await file.read(), path=file_path)
   
-  return { "file_id": id }
+  # TODO: Push file to queue so it can be picked and processed by worker
+  
+  # Update file status to queued
+  files_table.update(
+    {"status": STATUS["QUEUED"]},
+    doc_ids=[file_id]
+  )
+  
+  return { "file_id": file_id }
