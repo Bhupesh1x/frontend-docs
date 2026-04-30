@@ -4,6 +4,9 @@ from .db.db import files_table
 from .utils.constants import STATUS
 from .utils.file import save_to_desk
 
+from .queue.process import q
+from app.queue.worker import process_file
+
 app = FastAPI(title="full-rag")
 
 @app.get("/")
@@ -25,7 +28,7 @@ async def upload_file(file: UploadFile):
   # Save file to disk
   await save_to_desk(file=await file.read(), path=file_path)
   
-  # TODO: Push file to queue so it can be picked and processed by worker
+  result = q.enqueue(process_file, file_id, file.filename)
   
   # Update file status to queued
   files_table.update(
