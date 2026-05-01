@@ -28,7 +28,7 @@ async def upload_file(file: UploadFile):
   # Save file to disk
   await save_to_desk(file=await file.read(), path=file_path)
   
-  result = q.enqueue(process_file, file_id, file.filename)
+  result = q.enqueue(process_file, file_id, file_path)
   
   # Update file status to queued
   files_table.update(
