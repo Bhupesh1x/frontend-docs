@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, HTTPException
+from fastapi import FastAPI, UploadFile, HTTPException, Form, File
 
 from .db.db import files_table
 from .utils.constants import STATUS
@@ -23,7 +23,14 @@ async def get_file_by_id(id: str):
   return file
 
 @app.post("/upload")
-async def upload_file(file: UploadFile):  
+async def upload_file(job_description: str = Form(...), file: UploadFile = File(...)):  
+  
+  if not file:
+    raise HTTPException(status_code=400, detail="File is required")
+  
+  if not job_description.strip():
+    raise HTTPException(status_code=400, detail="Job description is required")
+  
   file_info = {
     "name": file.filename,
     "status": STATUS["SAVING"]
@@ -37,7 +44,7 @@ async def upload_file(file: UploadFile):
   # Save file to disk
   await save_to_desk(file=await file.read(), path=file_path)
   
-  result = q.enqueue(process_file, file_id, file_path)
+  q.enqueue(process_file, file_id, file_path, job_description)
   
   # Update file status to queued
   files_table.update(
