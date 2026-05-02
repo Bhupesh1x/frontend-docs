@@ -5,8 +5,8 @@ from openai import OpenAI
 from dotenv import load_dotenv
 
 from ..db.db import files_table
-
 from ..utils.constants import STATUS
+from ..utils.file import clean_up_files
 
 load_dotenv(dotenv_path=".env")
 
@@ -42,7 +42,7 @@ def process_file(id: str, file_path: str, job_description: str):
   for i, page in enumerate(doc):
     # Render page to an image (pixmap)
     
-    image_path = f"./mnt/uploads/images/{id}/image-{i}.jpg"
+    image_path = f"./mnt/uploads/{id}/images/image-{i}.jpg"
     
     os.makedirs(os.path.dirname(image_path), exist_ok=True)
     
@@ -135,6 +135,10 @@ def process_file(id: str, file_path: str, job_description: str):
     {"status": STATUS["PROCESSED"], "result": ai_result, "job_description": job_description },
     doc_ids=[id]
   )
+  
+  folder_path = f"./mnt/uploads/{id}"
+  
+  clean_up_files(folder_path)
     
     
   
