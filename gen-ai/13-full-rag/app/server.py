@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile
+from fastapi import FastAPI, UploadFile, HTTPException
 
 from .db.db import files_table
 from .utils.constants import STATUS
@@ -12,6 +12,15 @@ app = FastAPI(title="full-rag")
 @app.get("/")
 def status():
   return {"status": "Health OK!"}
+
+@app.get("/{id}")
+async def get_file_by_id(id: str):
+  file = files_table.get(doc_id=id)
+  
+  if not file:
+    raise HTTPException(status_code=404, detail="Item not found")
+  
+  return file
 
 @app.post("/upload")
 async def upload_file(file: UploadFile):  
