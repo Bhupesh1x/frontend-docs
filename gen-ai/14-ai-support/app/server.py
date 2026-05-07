@@ -3,22 +3,17 @@ import os
 from uuid import uuid4
 from pydantic import BaseModel
 from dotenv import load_dotenv
-from langchain_groq import ChatGroq
-from qdrant_client import QdrantClient
-from langchain_qdrant import QdrantVectorStore
 from fastapi import FastAPI, UploadFile, HTTPException, File
 
 from .lib.file import save_to_desk
 from .lib.utils import getPdfChunks
-from .lib.embeddings import GeminiEmbeddings
+from .lib.agent import getAgent, llm
+from .lib.qdrant import createVectorStore
+from .constants import SEARCH_INTERPRETER_PROMPT
 
 load_dotenv(dotenv_path=".env")
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-QDRANT_URL = os.getenv("QDRANT_URL")
-QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
-QDRANT_COLLECTION_NAME = os.getenv("QDRANT_COLLECTION_NAME")
-QDRANT_VECTOR_NAME = os.getenv("QDRANT_VECTOR_NAME")
 
 QUERY_LIMIT = 3
 
@@ -27,18 +22,6 @@ class QueryRequest(BaseModel):
   
 
 app = FastAPI(title="ai-support")
-
-embeddings = GeminiEmbeddings()
-
-client = QdrantClient(
-    url=QDRANT_URL,
-    api_key=QDRANT_API_KEY
-)
-
-llm = ChatGroq(
-    model="llama-3.3-70b-versatile",
-    api_key=GROQ_API_KEY
-)
 
 @app.get("/")
 def status():
@@ -51,56 +34,56 @@ def ask(payload: QueryRequest):
     raise HTTPException(status_code=400, detail="Question is required")
   
   try:
-    vector_store = QdrantVectorStore(
-      client=client,
-      collection_name=QDRANT_COLLECTION_NAME,
-      embedding=embeddings,
-      vector_name=QDRANT_VECTOR_NAME
-    )
-    
-    # Semantic similarity search
-    results = vector_store.similarity_search_with_score(
-      query=payload.query,
-      k=QUERY_LIMIT
-    )
-    
-    docs = []
-    context_parts = []
-    
-    for doc, score in results:
-      docs.append({
-          "content": doc.page_content,
-          "metadata": doc.metadata,
-          "score": score
+    # =================================================
+    # STEP 1 → AGENT DECIDES TOOL USAGE
+    # =================================================
+    agent_executer = getAgent()
+    agent_response = agent_executer.invoke({
+      "input": payload.query,
     })
-      
-    context_parts.append(doc.page_content)
     
-    # Combine all retrieved chunks
-    context = "\n\n".join(context_parts)  
+    # =================================================
+    # STEP 2 → EXTRACT SEARCH TOOL RESULTS
+    # =================================================
+    tools_results = ""
     
-    # Prompt for Groq
-    prompt = f"""
-      You are helpful AI assistant.
-
-      Answer the user's question ONLY using the provided context.
-
-      If the answer is not present in the context,
-      say: "I could not find the answer in the uploaded documents."
+    for step in agent_response.get("intermediate_steps", []): 
+      action, observation = step
+    
+      if action.tool == "searchTool":
+        tools_results = observation
       
-      Context: {context}
+    # =================================================
+    # STEP 3 → HANDLE GREETINGS / NO TOOL CALL
+    # =================================================  
+    
+    if not tools_results:
+      return {
+        "query": payload.query,
+        "answer": agent_response["output"]
+      }
       
-      Question: {payload.query}
-
-      Answer:
+    # =================================================
+    # STEP 4 → GET SEARCH RESULTS FROM TOOL
+    # =================================================
+    search_prompt = f"""
+      {SEARCH_INTERPRETER_PROMPT}
+      
+      USER QUESTION: {payload.query}
+      
+      SEARCH RESULTS: {tools_results}
+      
+      FINAL ANSWER:
     """
-    ai_response = llm.invoke(prompt)
-      
+    
+    final_answer = llm.invoke(
+      search_prompt
+    )
+    
     return {
       "query": payload.query,
-      "results": ai_response.content,
-      "sources": docs
-    }  
+      "answer": final_answer.content
+    }
     
   except Exception as e:
     raise HTTPException(status_code=500, detail=str(e))  
@@ -136,12 +119,7 @@ async def upload_file(file: UploadFile = File(...)):
           detail=f"Unsupported file type: {ext}"
       )
   
-  vector_store = QdrantVectorStore(
-    client=client,
-    collection_name=QDRANT_COLLECTION_NAME,
-    embedding=embeddings,
-    vector_name=QDRANT_VECTOR_NAME
-  )
+  vector_store = createVectorStore()
   
   vector_store.add_documents(chunks)
   
